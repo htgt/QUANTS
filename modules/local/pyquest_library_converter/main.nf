@@ -14,14 +14,15 @@ process TRANSFORM_LIBRARY_FOR_PYQUEST {
     container "docker.io/python:3.12.7"
 
     input:
-        path(oligo_library)
+        tuple val(meta), path(oligo_library)
 
     output:
-        path("*.pyquest.tsv"), emit: oligo_library
+        tuple val(meta), path("*.pyquest.tsv"), emit: oligo_library
 
     script:
         def software = getSoftwareName(task.process)
         def input    = oligo_library
+        // File currently being re-processed/overwritten in publish_dir if already present
         def output   = input.getName().split("\\.")[0] + '.pyquest.tsv'
 
     """

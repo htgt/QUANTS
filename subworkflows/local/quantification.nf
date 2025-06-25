@@ -28,11 +28,18 @@ workflow QUANTIFICATION {
 
     main:
         ch_sample_counts = Channel.empty()
+
+        // Channel with meta and oligo library outside of it
+        ch_oligo_library = reads.map { meta, reads ->
+            def lib = meta.oligo_library ?: params.oligo_library
+            return [meta, lib]
+        }
+
         if (params.transform_library) {
             //
             // MODULE: Run Python library transformer
             //
-            TRANSFORM_LIBRARY_FOR_PYQUEST ( oligo_library )
+            TRANSFORM_LIBRARY_FOR_PYQUEST ( ch_oligo_library )
         }
 
         if (params.quantification == "pyquest") {
@@ -40,9 +47,9 @@ workflow QUANTIFICATION {
             // MODULE: Run pyQUEST
             //
             if (params.transform_library) {
-                PYQUEST ( reads, TRANSFORM_LIBRARY_FOR_PYQUEST.out.oligo_library )
+                PYQUEST ( reads.join(TRANSFORM_LIBRARY_FOR_PYQUEST.out.oligo_library) )
             } else {
-                PYQUEST ( reads, oligo_library )
+                PYQUEST ( reads )
             }
 
             ch_sample_library_counts = PYQUEST.out.library_counts
