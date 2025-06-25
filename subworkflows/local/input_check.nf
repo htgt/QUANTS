@@ -26,8 +26,9 @@ workflow INPUT_CHECK_FASTQ {
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_fastq_channels(LinkedHashMap row) {
     def meta = [:]
-    meta.id           = row.sample
-    meta.single_end   = row.single_end.toBoolean()
+    meta.id            = row.sample
+    meta.single_end    = row.single_end.toBoolean()
+    meta.oligo_library = row.oligo_library
 
     def array = []
     if (!file(row.fastq_1).exists()) {

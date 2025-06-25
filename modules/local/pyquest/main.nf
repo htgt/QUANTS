@@ -17,8 +17,7 @@ process PYQUEST {
     container "quay.io/wtsicgp/pyquest:1.1.0"
 
     input:
-        tuple val(meta), path(reads)
-        path(oligo_library)
+        tuple val(meta), path(reads), path(oligo_library)
 
     output:
         tuple val(meta), path("*query_counts.tsv.gz")       , emit: read_counts
