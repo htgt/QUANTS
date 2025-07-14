@@ -3,16 +3,10 @@
 //
 
 params.options = [:]
-def modules = params.modules.clone()
-
 //
 // MODULE: cutadapt
 //
-def adapter_cutadapt_options  = modules['cutadapt_adapter']
-if (params.adapter_cutadapt_options) {
-    adapter_cutadapt_options.args += " " + params.adapter_cutadapt_options
-}
-include { CUTADAPT as CUTADAPT_ADAPTER  } from '../../modules/local/cutadapt/main' addParams( options: adapter_cutadapt_options )
+include { CUTADAPT as CUTADAPT_ADAPTER  } from '../../modules/local/cutadapt/main'
 
 workflow ADAPTER_TRIMMING {
     take:
@@ -20,12 +14,22 @@ workflow ADAPTER_TRIMMING {
 
     main:
         ch_trimmed_reads = Channel.empty()
+
+        def modules = params.modules.clone()
+        def adapter_options = modules['cutadapt_adapter']
+
+        ch_reads = reads.map { meta, reads ->
+            def adapter_option = adapter_options.clone()
+            adapter_option.args += " " + (meta.adapter_path ? "-a \"file:${meta.adapter_path}\"" : params.adapter_cutadapt_options)
+            return [meta, reads, adapter_option]
+        }
+
         if (params.adapter_trimming == "cutadapt") {
             //
             // MODULE: Run cutadapt
             //
 
-            CUTADAPT_ADAPTER ( reads )
+            CUTADAPT_ADAPTER ( ch_reads )
             ch_trimmed_reads = CUTADAPT_ADAPTER.out.reads
             ch_trimmed_stats = CUTADAPT_ADAPTER.out.json
         }
