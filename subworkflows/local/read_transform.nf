@@ -3,7 +3,6 @@
 //
 
 params.options = [:]
-def modules = params.modules.clone()
 
 //
 // MODULE: SeqKit seq
@@ -17,23 +16,28 @@ workflow READ_TRANSFORM {
 
     main:
         ch_transform_reads = Channel.empty()
+
+        def modules = params.modules.clone()
+        def seqkit_seq_options = modules['seqkit_seq']
+
         //
         // MODULE: Run SeqKit seq
         //
         ch_transform_reads = reads.map { meta, reads ->
             def transform_type = meta.read_transform ?: params.read_transform
             def suffix = transform_type
-            def seqkit_opts = ""
+            def seqkit_seq_option = seqkit_seq_options.clone()
+
 
             // Set seqkit_opts based on tranform_type
             if (transform_type.contains('complement')) {
-                seqkit_opts += " -p"
+                seqkit_seq_option.args += " -p"
             }
             if (transform_type.contains('reverse')) {
-                 seqkit_opts += " -r"
+                 seqkit_seq_option.args += " -r"
             }
 
-            return [meta, reads, suffix, seqkit_opts]
+            return [meta, reads, suffix, seqkit_seq_option]
         }
 
         SEQKIT_SEQ ( ch_transform_reads )
