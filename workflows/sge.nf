@@ -338,14 +338,16 @@ workflow SGE {
     //
     // SUBWORKFLOW: Read transformation (reverse, complement or reverse_complement)
     // Data must be SE by this stage
-    //
-    if (params.read_transform ) {
-        READ_TRANSFORM ( ch_read_transform )
-        ch_read_filter = READ_TRANSFORM.out.reads
-        ch_software_versions = ch_software_versions.mix(READ_TRANSFORM.out.versions)
-    } else {
-        ch_read_filter = ch_read_transform
-    }
+    // Select samples for read transformation
+    sample_select = ch_read_transform
+                        .branch { meta, file ->
+                            to_transform: meta?.read_transform || (!meta?.read_transform && params.read_transform)
+                            no_transform: true
+                    }
+    READ_TRANSFORM(sample_select.to_transform)
+    ch_transformed = READ_TRANSFORM.out.reads
+    ch_software_versions = ch_software_versions.mix(READ_TRANSFORM.out.versions)
+    ch_read_filter = ch_transformed.mix(sample_select.no_transform)
 
     //
     // SUBWORKFLOW: Run read filtering (data must be SE by this stage)

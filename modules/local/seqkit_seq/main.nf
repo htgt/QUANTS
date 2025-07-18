@@ -16,8 +16,7 @@ process SEQKIT_SEQ {
     container "quay.io/biocontainers/seqkit:0.15.0--0"
 
     input:
-        tuple val(meta), path(reads)
-        val(suffix)
+        tuple val(meta), path(reads), val(suffix), val(seqkit_seq_option)
 
     output:
         tuple val(meta), path("*.fq.gz"), emit: reads
@@ -30,7 +29,7 @@ process SEQKIT_SEQ {
     """
     seqkit \
         seq \
-        $options.args \
+        ${seqkit_seq_option.args} \
         --threads $task.cpus \
         ${reads[0]} > ${prefix}.${suffix}.fq
 
