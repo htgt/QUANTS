@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+import json
 import os
 import csv
 import sys
 import errno
 import argparse
+from validate_samplesheet import validate_samplesheet
 
 def parse_args(args=None):
     Description = "Reformat QUANTS samplesheet file and check its contents."
@@ -13,6 +15,7 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument("FILE_IN", help="Input samplesheet file.")
     parser.add_argument("FILE_OUT", help="Output file.")
+    parser.add_argument("PARAMS_IN", help="Input Params file.")
     return parser.parse_args(args)
 
 
@@ -60,7 +63,7 @@ def validate_headers(fieldnames: list, REQUIRED_HEADERS: list, OPTIONAL_HEADERS:
     return HEADERS
 
 
-def check_samplesheet(file_in, file_out):
+def check_samplesheet(file_in, file_out, params_in):
     """
     This function checks that the samplesheet follows the following structure:
 
@@ -69,6 +72,9 @@ def check_samplesheet(file_in, file_out):
     SAMPLE_PE,SAMPLE_PE_RUN2_1.fastq.gz,SAMPLE_PE_RUN2_2.fastq.gz,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
     SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
     """
+    
+    with open(params_in) as f:
+        params = json.load(f)
 
     sample_mapping_dict = {}
 
@@ -102,6 +108,9 @@ def check_samplesheet(file_in, file_out):
 
         # Check sample entries
         for line in f_reads_ln:
+            
+            validate_samplesheet(line, params)
+            
             lspl = [val for val in line.values() if val and val.strip()]
 
             for val in line.values():
@@ -212,7 +221,7 @@ def check_samplesheet(file_in, file_out):
 
 def main(args=None):
     args = parse_args(args)
-    check_samplesheet(args.FILE_IN, args.FILE_OUT)
+    check_samplesheet(args.FILE_IN, args.FILE_OUT, args.PARAMS_IN)
 
 
 if __name__ == "__main__":

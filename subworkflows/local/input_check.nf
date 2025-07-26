@@ -15,13 +15,52 @@ workflow INPUT_CHECK_FASTQ {
 
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
-    SAMPLESHEET_CHECK_FASTQ ( samplesheet )
+
+    // TODO: Create a new process to extract necessary parameters for samplesheet validation from params
+    // create a temp params file and pass it down to SAMPLESHEET_CHECK_FASTQ -> check_samplesheet_fastq.py as a path
+
+    paramsDump = DUMP_PARAMS()
+
+    SAMPLESHEET_CHECK_FASTQ ( samplesheet, paramsDump )
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channels(it) }
         .set { reads }
     emit:
         reads // channel: [ val(meta), [ reads ] ]
 }
+
+process DUMP_PARAMS {
+
+    output:
+    path("tempParams.json")
+
+    script:
+    def jsonText = groovy.json.JsonOutput.toJson([
+                single_end                          : params.single_end,
+                adapter_cutadapt_options            : params.adapter_cutadapt_options,
+                primer_cutadapt_options             : params.primer_cutadapt_options,
+                append_start                        : params.append_start,
+                append_end                          : params.append_end,
+                oligo_library                       : params.oligo_library,
+                input_type                          : params.input_type,
+                raw_sequencing_qc                   : params.raw_sequencing_qc,
+                adapter_trimming                    : params.adapter_trimming,
+                adapter_trimming_qc                 : params.adapter_trimming_qc,
+                primer_trimming                     : params.primer_trimming,
+                primer_trimming_qc                  : params.primer_trimming_qc,
+                read_modification                   : params.read_modification,
+                append_quality                      : params.append_quality,
+                transform_library                   : params.transform_library,
+                read_transform                      : params.read_transform,
+                quantification                      : params.quantification,
+                pyquest_library_converter_options   : params.pyquest_library_converter_options
+            ])
+   
+    """
+    echo '${jsonText.replace("'", "\\'")}' > tempParams.json
+    """
+}
+
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_fastq_channels(LinkedHashMap row) {

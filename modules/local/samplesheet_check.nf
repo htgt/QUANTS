@@ -13,16 +13,19 @@ process SAMPLESHEET_CHECK_FASTQ {
 
     input:
     path samplesheet
+    path "tempParams.json"
 
     output:
     path '*.csv'
 
     script: // This script is bundled with the pipeline, in QUANTS/bin/
-    """
-    check_samplesheet_fastq.py \\
-        $samplesheet \\
-        samplesheet.valid.csv
-    """
+
+        """
+        check_samplesheet_fastq.py \\
+            $samplesheet \\
+            samplesheet.valid.csv \\ 
+            tempParams.json 
+        """
 }
 
 process SAMPLESHEET_CHECK_CRAM {
