@@ -32,7 +32,7 @@ workflow INPUT_CHECK_FASTQ {
 process DUMP_PARAMS {
 
     output:
-    path("tempParams.json")
+    path "tempParams.json"
 
     script:
     def jsonText = groovy.json.JsonOutput.toJson([

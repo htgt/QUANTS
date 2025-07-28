@@ -13,7 +13,7 @@ process SAMPLESHEET_CHECK_FASTQ {
 
     input:
     path samplesheet
-    path "tempParams.json"
+    path paramsDump
 
     output:
     path '*.csv'
@@ -23,8 +23,8 @@ process SAMPLESHEET_CHECK_FASTQ {
         """
         check_samplesheet_fastq.py \\
             $samplesheet \\
-            samplesheet.valid.csv \\ 
-            tempParams.json 
+            $paramsDump  \\
+            samplesheet.valid.csv
         """
 }
 

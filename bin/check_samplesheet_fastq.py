@@ -14,8 +14,8 @@ def parse_args(args=None):
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument("FILE_IN", help="Input samplesheet file.")
-    parser.add_argument("FILE_OUT", help="Output file.")
     parser.add_argument("PARAMS_IN", help="Input Params file.")
+    parser.add_argument("FILE_OUT", help="Output file.")
     return parser.parse_args(args)
 
 
@@ -63,7 +63,7 @@ def validate_headers(fieldnames: list, REQUIRED_HEADERS: list, OPTIONAL_HEADERS:
     return HEADERS
 
 
-def check_samplesheet(file_in, file_out, params_in):
+def check_samplesheet(file_in, params_in, file_out):
     """
     This function checks that the samplesheet follows the following structure:
 
@@ -221,7 +221,7 @@ def check_samplesheet(file_in, file_out, params_in):
 
 def main(args=None):
     args = parse_args(args)
-    check_samplesheet(args.FILE_IN, args.FILE_OUT, args.PARAMS_IN)
+    check_samplesheet(args.FILE_IN, args.PARAMS_IN, args.FILE_OUT)
 
 
 if __name__ == "__main__":
