@@ -16,6 +16,7 @@ workflow INPUT_CHECK_FASTQ {
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
 
+    // process to extract necessary parameters for samplesheet validation from params
     paramsDump = DUMP_PARAMS()
 
     SAMPLESHEET_CHECK_FASTQ ( samplesheet, paramsDump )
@@ -71,6 +72,9 @@ def create_fastq_channels(LinkedHashMap row) {
     meta.append_start              = row.append_start
     meta.append_end                = row.append_end
     meta.oligo_library             = row.oligo_library
+
+    println "row.append_start ==>> ${row.append_start}"
+    println "row.append_end ==>> ${row.append_end}"
 
     def array = []
     if (!file(row.fastq_1).exists()) {

@@ -22,21 +22,24 @@ def validate_row(row, params, errors):
     row_errors = [] 
 
     if params["read_modification"]:
-        if row.get("append_start") and row["append_end"] and params["append_start"] and params["append_end"]:
-            row_errors.append("'append_start' and 'append_end' are set both globally (in params) and in the samplesheet for this row. They should not be set in both places.")
-
-    if not params["read_modification"] and row["append_start"] and row["append_end"]:
-        row_errors.append("'read_modification' is not enabled globally, but 'append_start' and 'append_end' are set in the samplesheet for this row. These settings will likely be ignored.")
-    
-    
-    if params["quantification"] == "pyquest" and params["oligo_library"] and row["oligo_library"]:
-        row_errors.append("When 'quantification' is enabled globally, 'oligo_library' should not be set globally and in samplesheet simultaneously.")
+        if (row["append_start"] and row["append_end"] and params["append_start"] and params["append_end"]):
+            row_errors.append(
+                "'append_start' and 'append_end' are set both globally (in params) and in the samplesheet for this row. "
+                "They should not be set in both places."
+            )
+        elif not (row["append_start"] and row["append_end"] or params["append_start"] and params["append_end"]):
+            row_errors.append(
+                "'read_modification' is set globally, but 'append_start' and 'append_end' is not set either in samplesheet or globally"
+            )
+    else:
+        if (row["append_start"] and row["append_end"]) or (params["append_start"] and params["append_end"]):
+            row_errors.append(
+                "'read_modification' is not set globally, but 'append_start' and 'append_end' is set either in samplesheet or globally"
+            )
         
-    if params["transform_library"] and not params["quantification"]:
-        row_errors.append("If transform_library is set to true, quantification must also be set to true.")
     
     if row_errors:
-        errors.extend([f"Row {row.get('row_identifier', 'N/A')} : Sample {row["sample"]}: {err}" for err in row_errors])
+        errors.extend([f"Row {row.get('row_identifier', 'N/A')} : Sample {row['sample']}: {err}" for err in row_errors])
         return False 
     return True 
 

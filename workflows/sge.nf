@@ -104,10 +104,10 @@ if (params.read_filtering_qc && !params.read_filtering) {
 }
 
 // Check that when append_start, append_end or append_quality are set that read_modification has been set to true
-// if (!params.read_modification && (params.append_start || params.append_end || params.append_quality)) {
-//     printErr("If append_start, append_end or append_quality is set, read_modification must be set to true.")
-//     exit 1
-// }
+if (!params.read_modification && params.append_quality) {
+    printErr("If append_quality is set, read_modification must be set to true.")
+    exit 1
+}
 
 // // Check either append_start or append_end provided when read_modification is set
 // if (params.read_modification && !params.append_start && !params.append_end) {
@@ -122,10 +122,10 @@ if (params.read_modification && (!params.append_quality || params.append_quality
 }
 
 // Check quantification is set if library is provided
-// if (params.oligo_library && !params.quantification) {
-//     printErr("If a library file is provided by oligo_library, quantification must be set to true.")
-//     exit 1
-// }
+if (params.oligo_library && !params.quantification) {
+    printErr("If a library file is provided by oligo_library, quantification must be set to true.")
+    exit 1
+}
 
 // Check quantification software (if set)
 def quantification_software = ['pyquest']
