@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
+import copy
 import json
 import os
 import csv
 import sys
 import errno
 import argparse
-from validate_samplesheet import validate_samplesheet
+from validate_samplesheet import validate_all_samples
 
 def parse_args(args=None):
     Description = "Reformat QUANTS samplesheet file and check its contents."
@@ -105,11 +106,13 @@ def check_samplesheet(file_in, params_in, file_out):
         headers = [header for header in f_reads.fieldnames if header.strip()]
 
         HEADERS = validate_headers(headers, REQUIRED_HEADERS, OPTIONAL_HEADERS)
-
+        
+        validating_samples = copy.deepcopy(f_reads_ln)
+        
+        validate_all_samples(validating_samples, params)
+        
         # Check sample entries
         for line in f_reads_ln:
-            
-            validate_samplesheet(line, params)
             
             lspl = [val for val in line.values() if val and val.strip()]
 

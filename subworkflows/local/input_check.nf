@@ -16,9 +16,6 @@ workflow INPUT_CHECK_FASTQ {
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
 
-    // TODO: Create a new process to extract necessary parameters for samplesheet validation from params
-    // create a temp params file and pass it down to SAMPLESHEET_CHECK_FASTQ -> check_samplesheet_fastq.py as a path
-
     paramsDump = DUMP_PARAMS()
 
     SAMPLESHEET_CHECK_FASTQ ( samplesheet, paramsDump )
