@@ -22,16 +22,20 @@ def validate_row(row, params, errors):
     row_errors = [] 
 
     if params["read_modification"]:
+        # Rule 1
         if (row["append_start"] and row["append_end"] and params["append_start"] and params["append_end"]):
             row_errors.append(
                 "'append_start' and 'append_end' are set both globally (in params) and in the samplesheet for this row. "
                 "They should not be set in both places."
             )
+            
+        # Rule 4
         elif not (row["append_start"] and row["append_end"] or params["append_start"] and params["append_end"]):
             row_errors.append(
                 "'read_modification' is set globally, but 'append_start' and 'append_end' is not set either in samplesheet or globally"
             )
     else:
+        # Rule 5
         if (row["append_start"] and row["append_end"]) or (params["append_start"] and params["append_end"]):
             row_errors.append(
                 "'read_modification' is not set globally, but 'append_start' and 'append_end' is set either in samplesheet or globally"
