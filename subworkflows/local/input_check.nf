@@ -17,9 +17,9 @@ workflow INPUT_CHECK_FASTQ {
     //TODO: look into doing this as a single step rather than duplicating check loop
 
     // process to extract necessary parameters for samplesheet validation from params
-    paramsDump = DUMP_PARAMS()
+    output_params = OUTPUT_PARAMS()
 
-    SAMPLESHEET_CHECK_FASTQ ( samplesheet, paramsDump )
+    SAMPLESHEET_CHECK_FASTQ ( samplesheet, output_params )
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channels(it) }
         .set { reads }
@@ -27,10 +27,10 @@ workflow INPUT_CHECK_FASTQ {
         reads // channel: [ val(meta), [ reads ] ]
 }
 
-process DUMP_PARAMS {
+process OUTPUT_PARAMS {
 
     output:
-    path "tempParams.json"
+    path "output_params.json"
 
     script:
     def jsonText = groovy.json.JsonOutput.toJson([
@@ -55,7 +55,7 @@ process DUMP_PARAMS {
             ])
    
     """
-    echo '${jsonText.replace("'", "\\'")}' > tempParams.json
+    echo '${jsonText.replace("'", "\\'")}' > output_params.json
     """
 }
 
@@ -73,8 +73,6 @@ def create_fastq_channels(LinkedHashMap row) {
     meta.append_end                = row.append_end
     meta.oligo_library             = row.oligo_library
 
-    println "row.append_start ==>> ${row.append_start}"
-    println "row.append_end ==>> ${row.append_end}"
 
     def array = []
     if (!file(row.fastq_1).exists()) {

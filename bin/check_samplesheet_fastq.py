@@ -56,7 +56,7 @@ def validate_headers(fieldnames: list, REQUIRED_HEADERS: list, OPTIONAL_HEADERS:
     missing_optional = [col for col in OPTIONAL_HEADERS if col not in fieldnames]
 
     if missing_optional:
-        msg = "Note: 'adapter_path' will be taken from global params as 'adpater_cutadpat_options'"
+        msg = "Note: 'adapter_path' will be taken from global params as 'adapter_cutadapt_options'"
          
         if not 'adpater_path' in missing_optional:
             print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)} \n"
