@@ -69,7 +69,14 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
             sys.exit(1)
 
         headers_to_check = REQUIRED_HEADERS + OPTIONAL_HEADERS
+        
         if processed_params.read_modification:
+            invalid_headers = [header for header in row_headers if header not in headers_to_check]
+        
+        if processed_params.adapter_trimming:
+            invalid_headers = [header for header in row_headers if header not in headers_to_check]
+        
+        if processed_params.primer_trimming:
             invalid_headers = [header for header in row_headers if header not in headers_to_check]
 
         if invalid_headers:

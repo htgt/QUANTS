@@ -31,9 +31,7 @@ def get_params(params):
         "append_end": params.get('append_end', '') or False,
         "read_modification": params.get('read_modification', '') or False,
         "adapter_trimming": params.get('adapter_trimming', '') or False,
-        "adapter_cutadapt_options": params.get('adapter_cutadapt_options', '') or False,
         "primer_trimming": params.get('primer_trimming', '') or False,
-        "primer_cutadapt_options": params.get('primer_cutadapt_options', '') or False
     }
 
     return SimpleNamespace(**params_obj)
@@ -69,27 +67,53 @@ def validate_row(row={}, params={}, errors=[]):
 
         # Check if string is provided in the samplesheet for append_start or append_end.
         if not row.append_start and not row.append_end:
-            msg = f"If read_modification is set, a string must be provided for either append_start or append_end."
+            msg = "If read_modification is set, a string must be provided for either append_start or append_end."
             row_errors.append(msg)
 
-        # Check if append_start and append_end must be a non-empty string.
+        # Check if append_start and append_end must be a non-empty valid string.
         match_append = lambda seq: seq if not bool(VALID_BASES_PATTERN.match(str(seq))) else ''
 
         if match_append(row.append_start) or match_append(row.append_end):
-            msg = f"If read_modification is set to True, values for append_start and append_end must be valid strings."
+            msg = "If read_modification is set to True, values for append_start and append_end must be valid strings."
             row_errors.append(msg)
 
     # Check if read_modification is False.
     if not params.read_modification:
         # append_start or append_end must not be in the samplesheet.
         if row.append_start or row.append_end:
-            msg = f"If read_modification is set to False, then append_start or append_end should not be in the samplesheet"
+            msg = "If read_modification is set to False, then append_start or append_end should not be in the samplesheet"
             row_errors.append(msg)
 
-    # Temp comment - This rule is not tested yet
-    # if params.adapter_trimming == "cutadapt" and not row.adapter_path:
-    #     msg = f"If adapter_trimming is set globally, then adapter_path must be set in the samplesheet."
-    #     row_errors.append(msg)
+
+    # Check if adapter_trimming set and adapter_path is not empty
+    if params.adapter_trimming == "cutadapt" and not row.adapter_path:
+        msg = "If adapter_trimming is set globally, then adapter_path must be set in the samplesheet."
+        row_errors.append(msg)
+
+    # Check if adapter_trimming set and adapter_path is not empty
+    if not params.adapter_trimming and row.adapter_path:
+        msg = "If adapter_trimming is not set globally, then adpater_path must be kept empty."
+        row_errors.append(msg)
+    
+    # Check if primer_trimming set, then both primer_start and primer_end must in the samplesheet
+    if params.primer_trimming == "cutadapt":
+        if not (row.primer_start and row.primer_end):
+            msg = "If primer_trimming is set globally, then both primer_start and primer_end must be in the samplesheet."
+            row_errors.append(msg)
+        
+        # Check if primer_start and primer_end must be a non-empty valid string.
+        match_primer = lambda seq: seq if not bool(VALID_BASES_PATTERN.match(str(seq))) else ''
+
+        if match_primer(row.primer_start) or match_primer(row.primer_end):
+            msg = "Values for primer_start and primer_end must be valid strings."
+            row_errors.append(msg)
+    
+    # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplehseet.
+    if not params.primer_trimming:
+        if row.primer_start or row.primer_end:
+            msg = "If primer_trimming is not set globally, then both primer_start and primer_end must be kept empty."
+            row_errors.append(msg)
+    
 
     if row_errors:
         errors.extend([f"Row{row.row_identifier} : Sample-{row.sample} : {err}" for err in row_errors])
