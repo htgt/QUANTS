@@ -144,9 +144,18 @@ if (params.read_modification && (!params.append_quality || params.append_quality
     exit 1
 }
 
-// Check quantification is set if library is provided
-if (params.oligo_library && !params.quantification) {
-    printErr("If a library file is provided by oligo_library, quantification must be set to true.")
+if (params.oligo_library) {
+    printErr("A library file must be provided by oligo_library in the samplesheet.")
+    exit 1
+}
+
+if (params.quantification && !params.pyquest_library_converter_options) {
+    printErr("If quantification is set, then pyquest_library_converter_options must be set.")
+    exit 1
+}
+
+if (!params.quantification && params.pyquest_library_converter_options) {
+    printErr("If quantification is not set, then pyquest_library_converter_options must not be set.")
     exit 1
 }
 

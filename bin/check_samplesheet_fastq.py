@@ -44,7 +44,7 @@ def print_error(error, context="Line", context_str=""):
 def validate_headers(fieldnames: list = [], row_headers: list = [], processed_params: dict = {}, is_params: bool = False) -> list:
 
     HEADERS = []
-    
+
     REQUIRED_HEADERS = [
             "sample",
             "fastq_1",
@@ -69,15 +69,23 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
             sys.exit(1)
 
         headers_to_check = REQUIRED_HEADERS + OPTIONAL_HEADERS
-        
+
+        filter_headers = lambda row_headers, headers_to_check: [
+                                        header for header in row_headers if header not in headers_to_check
+                                        ]
+
         if processed_params.read_modification:
-            invalid_headers = [header for header in row_headers if header not in headers_to_check]
-        
+            invalid_headers = filter_headers(row_headers, headers_to_check)
+
         if processed_params.adapter_trimming:
-            invalid_headers = [header for header in row_headers if header not in headers_to_check]
-        
+            invalid_headers = filter_headers(row_headers, headers_to_check)
+
         if processed_params.primer_trimming:
-            invalid_headers = [header for header in row_headers if header not in headers_to_check]
+            invalid_headers = filter_headers(row_headers, headers_to_check)
+
+        if processed_params.quantification:
+            invalid_headers = filter_headers(row_headers, headers_to_check)
+
 
         if invalid_headers:
             raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
@@ -97,14 +105,12 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
 
         if missing_optional:
             msg = "Note: 'adapter_path' will be taken from global params as 'adapter_cutadapt_options'"
-            
+
             if not 'adpater_path' in missing_optional:
-                print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)} \n"
-                    "These will be taken from global params.\n" + msg)
+                print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)} \n" + msg)
             else:
-                print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)} \n"
-                    "These will be taken from global params")
-                
+                print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)}")
+
 
         HEADERS = list(filter(lambda item: item not in missing_optional, HEADERS))
 

@@ -32,6 +32,8 @@ def get_params(params):
         "read_modification": params.get('read_modification', '') or False,
         "adapter_trimming": params.get('adapter_trimming', '') or False,
         "primer_trimming": params.get('primer_trimming', '') or False,
+        "quantification": params.get('quantification', '') or False,
+
     }
 
     return SimpleNamespace(**params_obj)
@@ -46,7 +48,9 @@ def get_row(row):
         "append_end": row.get('append_end', '') or False,
         "adapter_path": row.get('adapter_path', '') or False,
         "primer_start": row.get('primer_start', '') or False,
-        "primer_end": row.get('primer_end', '') or False
+        "primer_end": row.get('primer_end', '') or False,
+        "oligo_library": row.get('oligo_library', '') or False,
+        "read_transform": row.get('read_transform', ''),
     }
 
     return SimpleNamespace(**row_obj)
@@ -56,7 +60,7 @@ def validate_row(row={}, params={}, errors=[]):
     """
     Validates a single row of the samplesheet and appends any error messages to the errors list.
     """
-    row_errors = [] 
+    row_errors = []
 
     if not row:
         print_error("No row found to validate.")
@@ -94,26 +98,42 @@ def validate_row(row={}, params={}, errors=[]):
     if not params.adapter_trimming and row.adapter_path:
         msg = "If adapter_trimming is not set globally, then adpater_path must be kept empty."
         row_errors.append(msg)
-    
+
     # Check if primer_trimming set, then both primer_start and primer_end must in the samplesheet
     if params.primer_trimming == "cutadapt":
         if not (row.primer_start and row.primer_end):
             msg = "If primer_trimming is set globally, then both primer_start and primer_end must be in the samplesheet."
             row_errors.append(msg)
-        
+
         # Check if primer_start and primer_end must be a non-empty valid string.
         match_primer = lambda seq: seq if not bool(VALID_BASES_PATTERN.match(str(seq))) else ''
 
         if match_primer(row.primer_start) or match_primer(row.primer_end):
             msg = "Values for primer_start and primer_end must be valid strings."
             row_errors.append(msg)
-    
+
     # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplehseet.
     if not params.primer_trimming:
         if row.primer_start or row.primer_end:
             msg = "If primer_trimming is not set globally, then both primer_start and primer_end must be kept empty."
             row_errors.append(msg)
-    
+
+    # Check if quantification is set, then oligo_library must be in the samplesheet.
+    if params.quantification == 'pyquest' and not row.oligo_library:
+        msg = "If quantification is set globally, then oligo_library must be set in the samplesheet."
+        row_errors.append(msg)
+
+    # Check if quantification is not set, then oligo_library must not be in the samplesheet.
+    if not params.quantification and row.oligo_library:
+        msg = "If quantification is not set globally, then oligo_library must not be set in the samplesheet."
+        row_errors.append(msg)
+
+    # Check if read_transform is set in the samplesheet with valid value.
+    read_transformation_options = ['reverse', 'complement', 'reverse_complement']
+    if row.read_transform:
+        if row.read_transform not in read_transformation_options and row.read_transform:
+            msg = f"If read_transform is set, options must be one of: {', '.join(read_transformation_options)}."
+            row_errors.append(msg)
 
     if row_errors:
         errors.extend([f"Row{row.row_identifier} : Sample-{row.sample} : {err}" for err in row_errors])
@@ -129,26 +149,26 @@ def validate_all_samples(samplesheet_data, params):
     processed_params = get_params(params)
 
     for i, row in enumerate(samplesheet_data, start=1):
-        
+
         from check_samplesheet_fastq import validate_headers
-        
+
         validate_headers(
-                            row_headers = list(row.keys()), 
-                            processed_params = processed_params, 
+                            row_headers = list(row.keys()),
+                            processed_params = processed_params,
                             is_params = True
                         )
 
         if 'row_identifier' not in row:
             row['row_identifier'] = i
-        
+
         processed_row = get_row(row)
         valid_row = validate_row(processed_row, processed_params, all_validation_errors)
 
     if not valid_row and all_validation_errors:
         display_validation_report(all_validation_errors)
     else:
-        print_success("\nSamplesheet validated successfully!.")
-        return True 
+        print_success("\nSamplesheet validated successfully!")
+        return True
 
 
 def display_validation_report(all_validation_errors):
@@ -156,4 +176,4 @@ def display_validation_report(all_validation_errors):
     for error_msg in all_validation_errors:
         print_error(f"ERROR: {error_msg}")
 
-    sys.exit(1) 
+    sys.exit(1)
