@@ -50,7 +50,7 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
             "fastq_1",
             "fastq_2"
         ]
-    
+
     OPTIONAL_HEADERS = [
             "oligo_library",
             "adapter_path",
@@ -60,21 +60,21 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
             "append_end",
             "read_transform"
         ]
-    
+
     invalid_headers = []
-    
+
     if is_params:
         if not row_headers:
             print("No row to validate headers.")
             sys.exit(1)
-            
+
         headers_to_check = REQUIRED_HEADERS + OPTIONAL_HEADERS
         if processed_params.read_modification:
             invalid_headers = [header for header in row_headers if header not in headers_to_check]
-        
+
         if invalid_headers:
             raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
-            
+
     else:
         if not fieldnames:
             raise ValueError("ERROR: samplesheet file doesn't contain any fields.")
@@ -113,7 +113,7 @@ def check_samplesheet(file_in, params_in, file_out):
     SAMPLE_PE,SAMPLE_PE_RUN2_1.fastq.gz,SAMPLE_PE_RUN2_2.fastq.gz,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
     SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
     """
-    
+
     with open(params_in) as f:
         params = json.load(f)
 
@@ -130,14 +130,14 @@ def check_samplesheet(file_in, params_in, file_out):
         headers = [header for header in f_reads.fieldnames if header.strip()]
 
         HEADERS = validate_headers(fieldnames = headers)
-        
+
         validating_samples = copy.deepcopy(f_reads_ln)
-        
+
         validate_all_samples(validating_samples, params)
-        
+
         # Check sample entries
         for line in f_reads_ln:
-            
+
             lspl = [val for val in line.values() if val and val.strip()]
 
             for val in line.values():

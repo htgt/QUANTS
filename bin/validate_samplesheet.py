@@ -73,10 +73,9 @@ def validate_row(row={}, params={}, errors=[]):
             row_errors.append(msg)
 
         # Check if append_start and append_end must be a non-empty string.
-        match_append_start = lambda seq: not bool(VALID_BASES_PATTERN.match(str(seq)))
-        match_append_end = lambda seq: not bool(VALID_BASES_PATTERN.match(str(seq)))
+        match_append = lambda seq: seq if not bool(VALID_BASES_PATTERN.match(str(seq))) else ''
 
-        if match_append_start(row.append_start) or match_append_end(row.append_end):
+        if match_append(row.append_start) or match_append(row.append_end):
             msg = f"If read_modification is set to True, values for append_start and append_end must be valid strings."
             row_errors.append(msg)
 
@@ -133,5 +132,4 @@ def display_validation_report(all_validation_errors):
     for error_msg in all_validation_errors:
         print_error(f"ERROR: {error_msg}")
 
-    print_info("\nWarnings were found. Please review them, as changes will be required to proceed successfully.")
     sys.exit(1) 
