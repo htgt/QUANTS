@@ -279,6 +279,7 @@ workflow SGE {
 
     //
     // SUBWORKFLOW: Downsample input files
+    //
     if (params.downsampling) {
         SEQTK_SAMPLE ( ch_raw_reads )
 
@@ -403,6 +404,7 @@ workflow SGE {
 
     //
     // SUBWORKFLOW: Run read modification (data must be SE by this stage)
+    //    
     // Purpose of this process is to add string (e.g. primer sequence without errors) and quality value to start and/or end of reads
     if (params.read_modification) {
         READ_MODIFICATION ( ch_reads_to_modify )
