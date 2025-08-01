@@ -8,6 +8,8 @@ import sys
 import errno
 import argparse
 from validate_samplesheet import validate_all_samples
+from difflib import get_close_matches as gcm
+
 
 def parse_args(args=None):
     Description = "Reformat QUANTS samplesheet file and check its contents."
@@ -39,36 +41,67 @@ def print_error(error, context="Line", context_str=""):
     sys.exit(1)
 
 
-def validate_headers(fieldnames: list, REQUIRED_HEADERS: list, OPTIONAL_HEADERS: list) -> list:
+def validate_headers(fieldnames: list = [], row_headers: list = [], processed_params: dict = {}, is_params: bool = False) -> list:
 
     HEADERS = []
-
-    if not fieldnames:
-        raise ValueError("ERROR: samplesheet file doesn't contain any fields.")
-
-    # Check required headers
-    missing_required = [col for col in REQUIRED_HEADERS if col not in fieldnames]
-    if missing_required:
-        raise ValueError(f"ERROR: samplesheet missing required headers: {', '.join(missing_required)}")
-
-    HEADERS = REQUIRED_HEADERS + OPTIONAL_HEADERS
-    # Check if all optional headers are present
-    missing_optional = [col for col in OPTIONAL_HEADERS if col not in fieldnames]
-
-    if missing_optional:
-        msg = "Note: 'adapter_path' will be taken from global params as 'adapter_cutadapt_options'"
-         
-        if not 'adpater_path' in missing_optional:
-            print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)} \n"
-                "These will be taken from global params.\n" + msg)
-        else:
-            print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)} \n"
-                "These will be taken from global params")
+    
+    REQUIRED_HEADERS = [
+            "sample",
+            "fastq_1",
+            "fastq_2"
+        ]
+    
+    OPTIONAL_HEADERS = [
+            "oligo_library",
+            "adapter_path",
+            "primer_start",
+            "primer_end",
+            "append_start",
+            "append_end",
+            "read_transform"
+        ]
+    
+    invalid_headers = []
+    
+    if is_params:
+        if not row_headers:
+            print("No row to validate headers.")
+            sys.exit(1)
             
+        headers_to_check = REQUIRED_HEADERS + OPTIONAL_HEADERS
+        if processed_params.read_modification:
+            invalid_headers = [header for header in row_headers if header not in headers_to_check]
+        
+        if invalid_headers:
+            raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
+            
+    else:
+        if not fieldnames:
+            raise ValueError("ERROR: samplesheet file doesn't contain any fields.")
 
-    HEADERS = list(filter(lambda item: item not in missing_optional, HEADERS))
+        # Check required headers
+        missing_required = [col for col in REQUIRED_HEADERS if col not in fieldnames]
+        if missing_required:
+            raise ValueError(f"ERROR: samplesheet missing required headers: {', '.join(missing_required)}")
 
-    return HEADERS
+        HEADERS = REQUIRED_HEADERS + OPTIONAL_HEADERS
+        # Check if all optional headers are present
+        missing_optional = [col for col in OPTIONAL_HEADERS if col not in fieldnames]
+
+        if missing_optional:
+            msg = "Note: 'adapter_path' will be taken from global params as 'adapter_cutadapt_options'"
+            
+            if not 'adpater_path' in missing_optional:
+                print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)} \n"
+                    "These will be taken from global params.\n" + msg)
+            else:
+                print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)} \n"
+                    "These will be taken from global params")
+                
+
+        HEADERS = list(filter(lambda item: item not in missing_optional, HEADERS))
+
+        return HEADERS
 
 
 def check_samplesheet(file_in, params_in, file_out):
@@ -94,25 +127,9 @@ def check_samplesheet(file_in, params_in, file_out):
         # Check headers
         MIN_COLS = 2
 
-        REQUIRED_HEADERS = [
-            "sample",
-            "fastq_1",
-            "fastq_2"
-        ]
-
-        OPTIONAL_HEADERS = [
-            "oligo_library",
-            "adapter_path",
-            "primer_start",
-            "primer_end",
-            "append_start",
-            "append_end",
-            "read_transform"
-        ]
-
         headers = [header for header in f_reads.fieldnames if header.strip()]
 
-        HEADERS = validate_headers(headers, REQUIRED_HEADERS, OPTIONAL_HEADERS)
+        HEADERS = validate_headers(fieldnames = headers)
         
         validating_samples = copy.deepcopy(f_reads_ln)
         

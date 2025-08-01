@@ -50,6 +50,13 @@ if (params.adapter_trimming) {
         exit 1
     }
 }
+
+if (params.adapter_cutadapt_options) {
+    msg = "adapter_cutadapt_options can no longer be set globally. set adapter_cutadapt_options as adapter_path in the samplesheet."
+    printErr(msg)
+    exit 1
+}
+
 if (params.primer_trimming) {
     if ( read_trimming_software.contains( params.primer_trimming ) == false ) {
         printErr("If primer_trimming is set, software must be one of: " + read_trimming_software.join(',') + ".")
@@ -57,11 +64,19 @@ if (params.primer_trimming) {
     }
 }
 
+if (params.primer_cutadapt_options) {
+        msg = "primer_cutadapt_options can no longer be set globally. set primer_cutadapt_options as primer_start and primer_end in the samplesheet."
+        printErr(msg)
+        exit 1
+    }
+
 // Check adapter and primer trimming QC (if read trimming set)
 if (params.adapter_trimming_qc && !params.adapter_trimming) {
     printErr("Adapter trimming QC cannot be run when adapter_trimming is set to false.")
     exit 1
 }
+
+
 if (params.primer_trimming_qc && !params.primer_trimming) {
     printErr("Primer trimming QC cannot be run when primer_trimming is set to false.")
     exit 1
@@ -115,6 +130,14 @@ if (!params.read_modification && params.append_quality) {
 //     exit 1
 // }
 
+if (params.append_start || params.append_end) {
+    sub_str = params.append_start ? 
+                    'append_start can no longer be set globally, it should be set in the samplesheet.' : 
+                    (params.append_end ? 'append_end can no longer be set globally, it should be set in the samplesheet.' : "")
+    printErr(sub_str)
+    exit 1
+}
+
 // Check append_quality provided when read_modification is set
 if (params.read_modification && (!params.append_quality || params.append_quality.length() > 1)) {
     printErr("If read_modification is set, a single quality character must be provided for append_quality.")
@@ -137,10 +160,10 @@ if (params.quantification) {
 }
 
 // Check that quantification is set if transform_library is enabled
-// if (params.transform_library && !params.quantification ) {
-//     printErr("If transform_library is set to true, quantification must also be set to true.")
-//     exit 1
-// }
+if (params.transform_library && !params.quantification ) {
+    printErr("If transform_library is set to true, quantification must also be set to true.")
+    exit 1
+}
 
 // Check that read merging is enabled if quantification is set and data is PE
 if (((params.quantification || params.quantification ) && !params.single_end) && !params.read_merging) {
@@ -248,7 +271,7 @@ workflow SGE {
 
     //
     // SUBWORKFLOW: Downsample input files
-    //
+    
     if (params.downsampling) {
         SEQTK_SAMPLE ( ch_raw_reads )
 
