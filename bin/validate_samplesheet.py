@@ -27,12 +27,12 @@ def print_success(message):
 def get_params(params):
 
     params_obj = {
-        "append_start": params.get('append_start', '') or False,
-        "append_end": params.get('append_end', '') or False,
-        "read_modification": params.get('read_modification', '') or False,
-        "adapter_trimming": params.get('adapter_trimming', '') or False,
-        "primer_trimming": params.get('primer_trimming', '') or False,
-        "quantification": params.get('quantification', '') or False,
+        "append_start"       : params.get('append_start', '') or False,
+        "append_end"         : params.get('append_end', '') or False,
+        "read_modification"  : params.get('read_modification', '') or False,
+        "adapter_trimming"   : params.get('adapter_trimming', '') or False,
+        "primer_trimming"    : params.get('primer_trimming', '') or False,
+        "quantification"     : params.get('quantification', '') or False,
 
     }
 
@@ -42,15 +42,15 @@ def get_params(params):
 def get_row(row):
 
     row_obj = {
-        "row_identifier":  row.get('row_identifier', 'N/A'),
-        "sample": row.get('sample', 'Unknown Sample'),
-        "append_start": row.get('append_start', '') or False,
-        "append_end": row.get('append_end', '') or False,
-        "adapter_path": row.get('adapter_path', '') or False,
-        "primer_start": row.get('primer_start', '') or False,
-        "primer_end": row.get('primer_end', '') or False,
-        "oligo_library": row.get('oligo_library', '') or False,
-        "read_transform": row.get('read_transform', ''),
+        "row_identifier"     :  row.get('row_identifier', 'N/A'),
+        "sample"             : row.get('sample', 'Unknown Sample'),
+        "append_start"       : row.get('append_start', '') or False,
+        "append_end"         : row.get('append_end', '') or False,
+        "adapter_path"       : row.get('adapter_path', '') or False,
+        "primer_start"       : row.get('primer_start', '') or False,
+        "primer_end"         : row.get('primer_end', '') or False,
+        "oligo_library"      : row.get('oligo_library', '') or False,
+        "read_transform"     : row.get('read_transform', ''),
     }
 
     return SimpleNamespace(**row_obj)
@@ -85,8 +85,9 @@ def validate_row(row={}, params={}, errors=[]):
     if not params.read_modification:
         # append_start or append_end must not be in the samplesheet.
         if row.append_start or row.append_end:
-            msg = "If read_modification is set to False, then append_start or append_end should not be in the samplesheet"
-            row_errors.append(msg)
+            msg = "If read_modification is set to False, then columns append_start or append_end should not be in the samplesheet"
+            print_error(f"ERROR: {msg}")
+            sys.exit(1)
 
 
     # Check if adapter_trimming set and adapter_path is not empty
@@ -94,7 +95,7 @@ def validate_row(row={}, params={}, errors=[]):
         msg = "If adapter_trimming is set globally, then adapter_path must be set in the samplesheet."
         row_errors.append(msg)
 
-    # Check if adapter_trimming set and adapter_path is not empty
+    # Check if adapter_trimming is not set and adapter_path must be empty
     if not params.adapter_trimming and row.adapter_path:
         msg = "If adapter_trimming is not set globally, then adpater_path must be kept empty."
         row_errors.append(msg)
@@ -114,9 +115,10 @@ def validate_row(row={}, params={}, errors=[]):
 
     # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplehseet.
     if not params.primer_trimming:
-        if row.primer_start or row.primer_end:
-            msg = "If primer_trimming is not set globally, then both primer_start and primer_end must be kept empty."
-            row_errors.append(msg)
+        if not row.primer_start or not row.primer_end:
+            msg = "If primer_trimming is not set globally, then columns primer_start and primer_end should not be in the samplesheet."
+            print_error(f"ERROR: {msg}")
+            sys.exit(1)
 
     # Check if quantification is set, then oligo_library must be in the samplesheet.
     if params.quantification == 'pyquest' and not row.oligo_library:

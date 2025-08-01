@@ -16,10 +16,10 @@ workflow INPUT_CHECK_FASTQ {
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
 
-    // process to extract necessary parameters for samplesheet validation from params
-    output_params = OUTPUT_PARAMS()
+    // process to extract necessary parameters for samplesheet validation from global params
+    extracted_params = EXTRACT_PARAMS()
 
-    SAMPLESHEET_CHECK_FASTQ ( samplesheet, output_params )
+    SAMPLESHEET_CHECK_FASTQ ( samplesheet, extracted_params )
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channels(it) }
         .set { reads }
@@ -27,10 +27,10 @@ workflow INPUT_CHECK_FASTQ {
         reads // channel: [ val(meta), [ reads ] ]
 }
 
-process OUTPUT_PARAMS {
+process EXTRACT_PARAMS {
 
     output:
-    path "output_params.json"
+    path "extracted_params.json"
 
     script:
     def jsonText = groovy.json.JsonOutput.toJson([
@@ -53,9 +53,9 @@ process OUTPUT_PARAMS {
                 quantification                      : params.quantification,
                 pyquest_library_converter_options   : params.pyquest_library_converter_options
             ])
-   
+
     """
-    echo '${jsonText.replace("'", "\\'")}' > output_params.json
+    echo '${jsonText.replace("'", "\\'")}' > extracted_params.json
     """
 }
 

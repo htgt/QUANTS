@@ -70,21 +70,16 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
 
         headers_to_check = REQUIRED_HEADERS + OPTIONAL_HEADERS
 
-        filter_headers = lambda row_headers, headers_to_check: [
-                                        header for header in row_headers if header not in headers_to_check
-                                        ]
+        if any(
+                [
+                    processed_params.read_modification,
+                    processed_params.adapter_trimming,
+                    processed_params.primer_trimming,
+                    processed_params.quantification,
+                ]
+            ):
 
-        if processed_params.read_modification:
-            invalid_headers = filter_headers(row_headers, headers_to_check)
-
-        if processed_params.adapter_trimming:
-            invalid_headers = filter_headers(row_headers, headers_to_check)
-
-        if processed_params.primer_trimming:
-            invalid_headers = filter_headers(row_headers, headers_to_check)
-
-        if processed_params.quantification:
-            invalid_headers = filter_headers(row_headers, headers_to_check)
+            invalid_headers = [header for header in row_headers if header not in headers_to_check]
 
 
         if invalid_headers:
