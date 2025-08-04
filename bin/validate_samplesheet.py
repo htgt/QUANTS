@@ -40,6 +40,8 @@ def get_params(params):
 
 
 def get_row(row):
+    
+    print(f"row.get('append_end', '') -->> {row.get('append_end', '') or False}")
 
     row_obj = {
         "row_identifier"     : row.get('row_identifier', 'N/A'),
@@ -84,7 +86,7 @@ def validate_row(row={}, params={}, errors=[]):
     # Check if read_modification is False.
     if not params.read_modification:
         # append_start or append_end must not be in the samplesheet.
-        if not row.append_start or not row.append_end:
+        if row.append_start or row.append_end:
             msg = "If read_modification is set to False, then columns append_start or append_end should not be in the samplesheet"
             print_error(f"ERROR: {msg}")
             sys.exit(1)
