@@ -42,7 +42,7 @@ def get_params(params):
 def get_row(row):
 
     row_obj = {
-        "row_identifier"     :  row.get('row_identifier', 'N/A'),
+        "row_identifier"     : row.get('row_identifier', 'N/A'),
         "sample"             : row.get('sample', 'Unknown Sample'),
         "append_start"       : row.get('append_start', '') or False,
         "append_end"         : row.get('append_end', '') or False,
@@ -84,7 +84,7 @@ def validate_row(row={}, params={}, errors=[]):
     # Check if read_modification is False.
     if not params.read_modification:
         # append_start or append_end must not be in the samplesheet.
-        if row.append_start or row.append_end:
+        if not row.append_start or not row.append_end:
             msg = "If read_modification is set to False, then columns append_start or append_end should not be in the samplesheet"
             print_error(f"ERROR: {msg}")
             sys.exit(1)
@@ -115,10 +115,9 @@ def validate_row(row={}, params={}, errors=[]):
 
     # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplehseet.
     if not params.primer_trimming:
-        if not row.primer_start or not row.primer_end:
+        if row.primer_start or row.primer_end:
             msg = "If primer_trimming is not set globally, then columns primer_start and primer_end should not be in the samplesheet."
-            print_error(f"ERROR: {msg}")
-            sys.exit(1)
+            row_errors.append(msg)
 
     # Check if quantification is set, then oligo_library must be in the samplesheet.
     if params.quantification == 'pyquest' and not row.oligo_library:

@@ -148,6 +148,12 @@ if (params.oligo_library) {
     exit 1
 }
 
+if (params.read_transform) {
+    printErr("read_transform can no longer be set globally, must be set in the samplesheet.")
+    exit 1
+}
+
+
 if (params.quantification && !params.pyquest_library_converter_options) {
     printErr("If quantification is set, then pyquest_library_converter_options must be set.")
     exit 1
@@ -375,6 +381,7 @@ workflow SGE {
                             to_transform: meta?.read_transform || (!meta?.read_transform && params.read_transform)
                             no_transform: true
                     }
+    sample_select.to_transform.view()
     READ_TRANSFORM(sample_select.to_transform)
     ch_transformed = READ_TRANSFORM.out.reads
     ch_software_versions = ch_software_versions.mix(READ_TRANSFORM.out.versions)
