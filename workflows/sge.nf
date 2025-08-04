@@ -381,7 +381,7 @@ workflow SGE {
                             to_transform: meta?.read_transform || (!meta?.read_transform && params.read_transform)
                             no_transform: true
                     }
-    sample_select.to_transform.view()
+
     READ_TRANSFORM(sample_select.to_transform)
     ch_transformed = READ_TRANSFORM.out.reads
     ch_software_versions = ch_software_versions.mix(READ_TRANSFORM.out.versions)
@@ -411,7 +411,7 @@ workflow SGE {
 
     //
     // SUBWORKFLOW: Run read modification (data must be SE by this stage)
-    //    
+    //
     // Purpose of this process is to add string (e.g. primer sequence without errors) and quality value to start and/or end of reads
     if (params.read_modification) {
         READ_MODIFICATION ( ch_reads_to_modify )
