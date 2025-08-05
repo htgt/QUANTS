@@ -40,8 +40,6 @@ def get_params(params):
 
 
 def get_row(row):
-    
-    print(f"row.get('append_end', '') -->> {row.get('append_end', '') or False}")
 
     row_obj = {
         "row_identifier"     : row.get('row_identifier', 'N/A'),
@@ -73,8 +71,9 @@ def validate_row(row={}, params={}, errors=[]):
 
         # Check if string is provided in the samplesheet for append_start or append_end.
         if not row.append_start and not row.append_end:
-            msg = "If read_modification is set, a string must be provided for either append_start or append_end."
-            row_errors.append(msg)
+            msg = "If read_modification is set, a valid string must be provided for either append_start or append_end."
+            print_error(f"ERROR: {msg}")
+            sys.exit(1)
 
         # Check if append_start and append_end must be a non-empty valid string.
         match_append = lambda seq: seq if not bool(VALID_BASES_PATTERN.match(str(seq))) else ''
@@ -87,7 +86,7 @@ def validate_row(row={}, params={}, errors=[]):
     if not params.read_modification:
         # append_start or append_end must not be in the samplesheet.
         if row.append_start or row.append_end:
-            msg = "If read_modification is set to False, then columns append_start or append_end should not be in the samplesheet"
+            msg = "If read_modification is set to False, then columns append_start and append_end should not be in the samplesheet"
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
