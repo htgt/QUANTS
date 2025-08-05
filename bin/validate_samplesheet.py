@@ -72,27 +72,27 @@ def validate_row(row={}, params={}, errors=[]):
     if params.read_modification:
         # Check if string is provided in the samplesheet for append_start or append_end.
         if row.append_start == "noCol" and row.append_end == "noCol":
-            msg = "If read_modification is set, columns must be provided with append_start or append_end with a valid string in the samplesheet."
+            msg = "If read_modification is set globally, columns must be provided with append_start or append_end with a valid string in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
         # Check if valid not-empty string is provided in the samplesheet for append_start or append_end.
         if len(row.append_start) == 0 and len(row.append_end) == 0:
-            msg = "If read_modification is set, append_start or append_end should not be empty in the samplesheet"
+            msg = "If read_modification is set globally, append_start or append_end must be set in the samplesheet."
             row_errors.append(msg)
 
         # Check if append_start and append_end must be a non-empty valid string.
         match_append = lambda seq: seq if not bool(VALID_BASES_PATTERN.match(str(seq))) else ''
 
         if match_append(row.append_start) and match_append(row.append_end):
-            msg = "If read_modification is set to True, values for append_start and append_end must be valid strings in the samplesheet."
+            msg = "If read_modification is set globally to True, values for append_start and append_end must be valid strings in the samplesheet."
             row_errors.append(msg)
 
     # Check if read_modification is False.
     if not params.read_modification:
         # append_start or append_end must not be in the samplesheet.
         if row.append_start or row.append_end:
-            msg = "If read_modification is set to False, then columns append_start and append_end should not be in the samplesheet or kept empty."
+            msg = "If read_modification is set globally to False, then columns append_start and append_end should not be in the samplesheet or kept empty."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
@@ -124,7 +124,7 @@ def validate_row(row={}, params={}, errors=[]):
             sys.exit(1)
 
         if (len(row.primer_start) == 0 or len(row.primer_end) == 0):
-            msg = "If read_modification is set, primer_start or primer_end should not be empty in the samplesheet."
+            msg = "If primer_trimming is set globally, primer_start or primer_end should not be empty in the samplesheet."
             row_errors.append(msg)
 
         # Check if primer_start and primer_end must be a non-empty valid string.
