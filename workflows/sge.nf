@@ -52,7 +52,7 @@ if (params.adapter_trimming) {
 }
 
 if (params.adapter_cutadapt_options) {
-    msg = "adapter_cutadapt_options can no longer be set globally. set adapter_cutadapt_options as adapter_path in the samplesheet."
+    msg = "adapter_cutadapt_options can no longer be set globally. Set adapter_cutadapt_options as adapter_path in the samplesheet."
     printErr(msg)
     exit 1
 }
@@ -65,7 +65,7 @@ if (params.primer_trimming) {
 }
 
 if (params.primer_cutadapt_options) {
-        msg = "primer_cutadapt_options can no longer be set globally. set primer_cutadapt_options as primer_start and primer_end in the samplesheet."
+        msg = "primer_cutadapt_options can no longer be set globally. Set primer_cutadapt_options as primer_start and primer_end in the samplesheet."
         printErr(msg)
         exit 1
     }
@@ -144,7 +144,7 @@ if (params.read_modification && (!params.append_quality || params.append_quality
 }
 
 if (params.oligo_library) {
-    printErr("A library file must be provided by oligo_library in the samplesheet.")
+    printErr("oligo_library can no longer be set globally. Set oligo_library in the samplesheet.")
     exit 1
 }
 
@@ -160,7 +160,7 @@ if (params.quantification && !params.pyquest_library_converter_options) {
 }
 
 if (!params.quantification && params.pyquest_library_converter_options) {
-    printErr("If quantification is not set, then pyquest_library_converter_options must not be set.")
+    printErr("If pyquest_library_converter_options is set, then quantification must also be set.")
     exit 1
 }
 
