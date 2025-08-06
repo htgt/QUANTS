@@ -73,7 +73,7 @@ def create_fastq_channels(LinkedHashMap row) {
     meta.append_start              = row.append_start
     meta.append_end                = row.append_end
     meta.oligo_library             = row.oligo_library
-
+    
     def array = []
     if (!file(row.fastq_1).exists()) {
         exit 1, "ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!\n${row.fastq_1}"

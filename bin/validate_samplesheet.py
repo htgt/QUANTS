@@ -51,6 +51,7 @@ def get_row(row):
         "primer_end"         : row.get('primer_end', 'noCol'),
         "oligo_library"      : row.get('oligo_library', 'noCol'),
         "read_transform"     : row.get('read_transform', ''),
+        "group_id"           : row.get('group_id', ''),
     }
 
     return SimpleNamespace(**row_obj)
@@ -213,8 +214,12 @@ def validate_row(row={}, params={}, errors=[]):
             msg = f"If read_transform is set, options must be one of: {', '.join(read_transformation_options)}."
             row_errors.append(msg)
 
+    if row.group_id and not row.group_id.isalnum():
+        msg = "group_id must be alphanumeric!"
+        row_errors.append(msg)
+
     if row_errors:
-        errors.extend([f"Row{row.row_identifier} : Sample-{row.sample} : {err}" for err in row_errors])
+        errors.extend([f"Row {row.row_identifier} : Sample-{row.sample} : {err}" for err in row_errors])
         return False
 
 
@@ -226,7 +231,7 @@ def validate_all_samples(samplesheet_data, params):
 
     processed_params = get_params(params)
 
-    for i, row in enumerate(samplesheet_data, start=1):
+    for i, row in enumerate(samplesheet_data, start=2):
 
         from check_samplesheet_fastq import validate_headers
 

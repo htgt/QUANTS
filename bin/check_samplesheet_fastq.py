@@ -145,7 +145,7 @@ def check_samplesheet(file_in, params_in, file_out):
 
         validate_all_samples(validating_samples, params)
 
-        group_ids = []
+        group_id = []
 
         # Check sample entries
         for line in f_reads_ln:
@@ -181,13 +181,7 @@ def check_samplesheet(file_in, params_in, file_out):
                      ",".join(str(v) if v is not None else "" for v in line.values())
                 )
 
-            grp_id = line.get("group_id")
-            if grp_id and not grp_id.isalnum():
-                print_error("group_id must be alphanumeric!",
-                            "Line",
-                            ",".join(str(v) if v is not None else "" for v in line.values())
-                                )
-            group_ids += [grp_id]
+            group_id += [line.get("group_id")]
 
             # Check FastQ file extension
             for fastq in [line.get("fastq_1"), line.get("fastq_2")]:
@@ -237,9 +231,9 @@ def check_samplesheet(file_in, params_in, file_out):
                     sample_mapping_dict[sample].append(sample_info)
 
     # Check group_id column
-    if not any(group_ids):
+    if not any(group_id):
         print(f"WARNING: Samplesheet group_id column not found or entirely empty. Results will not be grouped in the output directory")
-    elif not all(group_ids):
+    elif not all(group_id):
         raise ValueError(f"ERROR: Please ensure that all samples have values for group_id in the samplesheet, or remove the group_id column")
 
     # Write validated samplesheet with appropriate columns
