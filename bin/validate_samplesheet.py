@@ -74,7 +74,7 @@ def validate_row(row={}, params={}, errors=[]):
         # Check if string is provided in the samplesheet for append_start or append_end.
         if row.append_start == "noCol" and row.append_end == "noCol":
             msg = "If read_modification is set globally, append_start or append_end columns must exist in the samplesheet."
-            print_error(f"ERROR: {msg}")
+            print_error(f"Row {row.row_identifier} : Sample-{row.sample} : {msg}")
             sys.exit(1)
 
         # Check if append_start and append_end must be a non-empty valid string.
@@ -147,13 +147,8 @@ def validate_row(row={}, params={}, errors=[]):
     # Check if primer_trimming set, then both primer_start and primer_end must in the samplesheet
     if params.primer_trimming == "cutadapt":
 
-        if row.primer_start == "noCol":
-            msg = "If primer_trimming is set globally, primer_start column must exist in the samplesheet."
-            print_error(f"ERROR: {msg}")
-            sys.exit(1)
-
-        if row.primer_end == "noCol":
-            msg = "If primer_trimming is set globally, primer_end column must exist in the samplesheet."
+        if row.primer_start == "noCol" or row.primer_end == "noCol":
+            msg = "If primer_trimming is set globally, primer_start and primer_end both the columns must exist in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
