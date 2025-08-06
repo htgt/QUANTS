@@ -63,11 +63,10 @@ def validate_headers(fieldnames: list, REQUIRED_HEADERS: list, OPTIONAL_HEADERS:
 def check_samplesheet(file_in, file_out):
     """
     This function checks that the samplesheet follows the following structure:
-
-    sample,fastq_1,fastq_2,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform
-    SAMPLE_PE,SAMPLE_PE_RUN1_1.fastq.gz,SAMPLE_PE_RUN1_2.fastq.gz,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
-    SAMPLE_PE,SAMPLE_PE_RUN2_1.fastq.gz,SAMPLE_PE_RUN2_2.fastq.gz,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
-    SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
+    sample,fastq_1,fastq_2,group_id,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform
+    SAMPLE_PE,SAMPLE_PE_RUN1_1.fastq.gz,SAMPLE_PE_RUN1_2.fastq.gz,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
+    SAMPLE_PE,SAMPLE_PE_RUN2_1.fastq.gz,SAMPLE_PE_RUN2_2.fastq.gz,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
+    SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,,BBBB,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
     """
 
     sample_mapping_dict = {}
@@ -87,6 +86,7 @@ def check_samplesheet(file_in, file_out):
         ]
 
         OPTIONAL_HEADERS = [
+            "group_id",
             "oligo_library",
             "adapter_path",
             "primer_start",
@@ -99,6 +99,8 @@ def check_samplesheet(file_in, file_out):
         headers = [header for header in f_reads.fieldnames if header.strip()]
 
         HEADERS = validate_headers(headers, REQUIRED_HEADERS, OPTIONAL_HEADERS)
+
+        group_ids = []
 
         # Check sample entries
         for line in f_reads_ln:
@@ -132,6 +134,14 @@ def check_samplesheet(file_in, file_out):
                     "Line",
                      ",".join(str(v) if v is not None else "" for v in line.values())
                 )
+
+            grp_id = line.get("group_id")
+            if grp_id and not grp_id.isalnum():
+                print_error("group_id must be alphanumeric!",
+                            "Line",
+                            ",".join(str(v) if v is not None else "" for v in line.values())
+                                )
+            group_ids += [grp_id]
 
             # Check FastQ file extension
             for fastq in [line.get("fastq_1"), line.get("fastq_2")]:
@@ -179,6 +189,12 @@ def check_samplesheet(file_in, file_out):
                             )
                 else:
                     sample_mapping_dict[sample].append(sample_info)
+
+    # Check group_id column
+    if not any(group_ids):
+        print(f"WARNING: Samplesheet group_id column not found or entirely empty. Results will not be grouped in the output directory")
+    elif not all(group_ids):
+        raise ValueError(f"ERROR: Please ensure that all samples have values for group_id in the samplesheet, or remove the group_id column")
 
     # Write validated samplesheet with appropriate columns
     if len(sample_mapping_dict) > 0:
