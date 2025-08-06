@@ -148,7 +148,7 @@ def validate_row(row={}, params={}, errors=[]):
     if params.primer_trimming == "cutadapt":
 
         if row.primer_start == "noCol" or row.primer_end == "noCol":
-            msg = "If primer_trimming is set globally, primer_start and primer_end both the columns must exist in the samplesheet."
+            msg = "If primer_trimming is set globally, both primer_start and primer_end columns must exist in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
