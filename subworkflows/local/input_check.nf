@@ -34,24 +34,14 @@ process EXTRACT_PARAMS {
 
     script:
     def jsonText = groovy.json.JsonOutput.toJson([
-                single_end                          : params.single_end,
-                adapter_cutadapt_options            : params.adapter_cutadapt_options,
-                primer_cutadapt_options             : params.primer_cutadapt_options,
                 append_start                        : params.append_start,
                 append_end                          : params.append_end,
                 oligo_library                       : params.oligo_library,
-                input_type                          : params.input_type,
-                raw_sequencing_qc                   : params.raw_sequencing_qc,
                 adapter_trimming                    : params.adapter_trimming,
-                adapter_trimming_qc                 : params.adapter_trimming_qc,
                 primer_trimming                     : params.primer_trimming,
-                primer_trimming_qc                  : params.primer_trimming_qc,
                 read_modification                   : params.read_modification,
-                append_quality                      : params.append_quality,
-                transform_library                   : params.transform_library,
                 read_transform                      : params.read_transform,
                 quantification                      : params.quantification,
-                pyquest_library_converter_options   : params.pyquest_library_converter_options
             ])
 
     """
@@ -73,7 +63,7 @@ def create_fastq_channels(LinkedHashMap row) {
     meta.append_start              = row.append_start
     meta.append_end                = row.append_end
     meta.oligo_library             = row.oligo_library
-    
+
     def array = []
     if (!file(row.fastq_1).exists()) {
         exit 1, "ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!\n${row.fastq_1}"
