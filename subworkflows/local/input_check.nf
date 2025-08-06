@@ -65,6 +65,7 @@ def create_fastq_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id                        = row.sample
     meta.single_end                = row.single_end.toBoolean()
+    meta.group_id                  = row.group_id
     meta.read_transform            = row.read_transform
     meta.adapter_path              = row.adapter_path
     meta.primer_start              = row.primer_start
