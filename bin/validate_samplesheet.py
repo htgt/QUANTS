@@ -63,14 +63,13 @@ def validate_row(row={}, params={}, errors=[]):
     """
     row_errors = []
 
-
     if not row:
         print_error("No row found to validate.")
         sys.exit(1)
 
-
     # When read_modification is True
     if params.read_modification:
+
         # Check if string is provided in the samplesheet for append_start or append_end.
         if row.append_start == "noCol" and row.append_end == "noCol":
             msg = "If read_modification is set globally, append_start or append_end columns must exist in the samplesheet."
@@ -81,6 +80,7 @@ def validate_row(row={}, params={}, errors=[]):
         match_append = lambda seq: seq if bool(VALID_BASES_PATTERN.match(str(seq))) else False
 
         if row.append_end == "noCol":
+
             if len(row.append_start) == 0:
                 msg = "append_start must be set in the samplesheet."
                 row_errors.append(msg)
@@ -89,6 +89,7 @@ def validate_row(row={}, params={}, errors=[]):
                 row_errors.append(msg)
 
         elif row.append_start == "noCol":
+
             if len(row.append_end) == 0:
                 msg = "append_end must be set in the samplesheet."
                 row_errors.append(msg)
@@ -97,6 +98,7 @@ def validate_row(row={}, params={}, errors=[]):
                 row_errors.append(msg)
 
         else:
+
             if (row.append_start and not match_append(row.append_start)):
                 msg = "Value for append_start must be valid strings in the samplesheet."
                 row_errors.append(msg)
@@ -110,9 +112,9 @@ def validate_row(row={}, params={}, errors=[]):
                 msg = "append_start or append_end must be set in the samplesheet."
                 row_errors.append(msg)
 
-
     # Check if read_modification is False.
     if not params.read_modification:
+
         # append_start or append_end must not be in the samplesheet.
         if (row.append_start != "noCol" and not len(row.append_start) == 0):
             msg = "If read_modification is set globally to False, append_start column should not be in the samplesheet or be empty."
@@ -123,7 +125,6 @@ def validate_row(row={}, params={}, errors=[]):
             msg = "If read_modification is set globally to False, append_end column should not be in the samplesheet or be empty."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
-
 
     # Check if adapter_trimming set and adapter_path is not empty or no column.
     if params.adapter_trimming == "cutadapt":
@@ -142,7 +143,6 @@ def validate_row(row={}, params={}, errors=[]):
         msg = "If adapter_trimming is not set globally, then adpater_path column must not exist in the samplesheet or be empty."
         print_error(f"ERROR: {msg}")
         sys.exit(1)
-
 
     # Check if primer_trimming set, then both primer_start and primer_end must in the samplesheet
     if params.primer_trimming == "cutadapt":
@@ -167,7 +167,6 @@ def validate_row(row={}, params={}, errors=[]):
             msg = "Values for primer_start and primer_end must be provided with a valid strings in the samplesheet."
             row_errors.append(msg)
 
-
     # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplehseet.
     if not params.primer_trimming:
 
@@ -180,7 +179,6 @@ def validate_row(row={}, params={}, errors=[]):
             msg = "If primer_trimming is not set globally, then primer_end column must not exist in the samplesheet or be empty."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
-
 
     # Check if quantification is set, then oligo_library must be in the samplesheet.
     if params.quantification == 'pyquest':
@@ -196,15 +194,16 @@ def validate_row(row={}, params={}, errors=[]):
 
     # Check if quantification is not set, then oligo_library must not be in the samplesheet.
     if not params.quantification:
+
         if row.oligo_library != "noCol" and not len(row.oligo_library) == 0:
             msg = "If quantification is not set globally, then oligo_library must not exist in the samplesheet or be empty."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
-
     # Check if read_transform is set in the samplesheet with valid value.
     read_transformation_options = ['reverse', 'complement', 'reverse_complement']
     if row.read_transform:
+
         if row.read_transform not in read_transformation_options and row.read_transform:
             msg = f"If read_transform is set, options must be one of: {', '.join(read_transformation_options)}."
             row_errors.append(msg)

@@ -89,7 +89,6 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
 
             invalid_headers = [header for header in row_headers if header not in headers_to_check]
 
-
         if invalid_headers:
             raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
 
@@ -108,7 +107,6 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
 
         if missing_optional:
             print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)}")
-
 
         HEADERS = list(filter(lambda item: item not in missing_optional, HEADERS))
 
