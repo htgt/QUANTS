@@ -244,9 +244,6 @@ def validate_all_samples(samplesheet_data, params):
 
     if not valid_row and all_validation_errors:
         display_validation_report(all_validation_errors)
-    else:
-        print_success("\nSamplesheet validated successfully!")
-        return True
 
 
 def display_validation_report(all_validation_errors):
