@@ -52,7 +52,7 @@ if (params.adapter_trimming) {
 }
 
 if (params.adapter_cutadapt_options) {
-    msg = "adapter_cutadapt_options can no longer be set globally. Set adapter_cutadapt_options as adapter_path in the samplesheet."
+    msg = "adapter_cutadapt_options can no longer be set globally, it should be set in the samplesheet."
     printErr(msg)
     exit 1
 }
@@ -65,7 +65,7 @@ if (params.primer_trimming) {
 }
 
 if (params.primer_cutadapt_options) {
-        msg = "primer_cutadapt_options can no longer be set globally. Set primer_cutadapt_options as primer_start and primer_end in the samplesheet."
+        msg = "primer_cutadapt_options can no longer be set globally, it should be set as primer_start and primer_end in the samplesheet."
         printErr(msg)
         exit 1
     }
@@ -96,15 +96,6 @@ if (params.read_merging_qc && !params.read_merging) {
     exit 1
 }
 
-// Check transformation (if set)
-def read_transformation_options = ['reverse', 'complement', 'reverse_complement']
-if (params.read_transform) {
-    if ( read_transformation_options.contains( params.read_transform ) == false ) {
-        printErr("If read_transform is set, value must be one of: " + read_transformation_options.join(',') + ".")
-        exit 1
-    }
-}
-
 // Check read fitering is valid (if set)
 if (params.read_filtering && (!params.single_end && !params.read_merging)) {
     printErr("Read filtering cannot be run when data is paired end or single end, but read merging is set to false.")
@@ -123,12 +114,6 @@ if (!params.read_modification && params.append_quality) {
     exit 1
 }
 
-// // Check either append_start or append_end provided when read_modification is set
-// if (params.read_modification && !params.append_start && !params.append_end) {
-//     printErr("If read_modification is set, a string must be provided for either append_start or append_end.")
-//     exit 1
-// }
-
 if (params.append_start || params.append_end) {
     sub_str = params.append_start ?
                     'append_start can no longer be set globally, it should be set in the samplesheet.' :
@@ -144,12 +129,12 @@ if (params.read_modification && (!params.append_quality || params.append_quality
 }
 
 if (params.oligo_library) {
-    printErr("oligo_library can no longer be set globally. Set oligo_library in the samplesheet.")
+    printErr("oligo_library can no longer be set globally, it must be set in the samplesheet.")
     exit 1
 }
 
 if (params.read_transform) {
-    printErr("read_transform can no longer be set globally, must be set in the samplesheet.")
+    printErr("read_transform can no longer be set globally, it must be set in the samplesheet.")
     exit 1
 }
 
@@ -160,7 +145,7 @@ if (params.quantification && !params.pyquest_library_converter_options) {
 }
 
 if (!params.quantification && params.pyquest_library_converter_options) {
-    printErr("If pyquest_library_converter_options is set, then quantification must also be set.")
+    printErr("pyquest_library_converter_options cannot be set when quantification is not set.")
     exit 1
 }
 
@@ -175,7 +160,7 @@ if (params.quantification) {
 
 // Check that quantification is set if transform_library is enabled
 if (params.transform_library && !params.quantification ) {
-    printErr("If transform_library is set to true, quantification must also be set to true.")
+    printErr("transform_library cannot be set to true when quantification is not set.")
     exit 1
 }
 

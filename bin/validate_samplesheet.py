@@ -50,7 +50,7 @@ def get_row(row):
         "primer_start"       : row.get('primer_start', 'noCol'),
         "primer_end"         : row.get('primer_end', 'noCol'),
         "oligo_library"      : row.get('oligo_library', 'noCol'),
-        "read_transform"     : row.get('read_transform', 'noCol'),
+        "read_transform"     : row.get('read_transform', ''),
     }
 
     return SimpleNamespace(**row_obj)
@@ -75,10 +75,10 @@ def validate_row(row={}, params={}, errors=[]):
             msg = "If read_modification is set globally, append_start or append_end columns must exist in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
-            
+
         # Check if append_start and append_end must be a non-empty valid string.
         match_append = lambda seq: seq if bool(VALID_BASES_PATTERN.match(str(seq))) else False
-        
+
         if row.append_end == "noCol":
             if len(row.append_start) == 0:
                 msg = "append_start must be set in the samplesheet."
@@ -86,7 +86,7 @@ def validate_row(row={}, params={}, errors=[]):
             elif row.append_start != "noCol" and not match_append(row.append_start):
                 msg = "append_start must be a valid string in the samplesheet."
                 row_errors.append(msg)
-        
+
         elif row.append_start == "noCol":
             if len(row.append_end) == 0:
                 msg = "append_end must be set in the samplesheet."
@@ -94,27 +94,32 @@ def validate_row(row={}, params={}, errors=[]):
             elif row.append_end != "noCol" and not match_append(row.append_end):
                 msg = "append_end must be a valid string in the samplesheet."
                 row_errors.append(msg)
-        
-        else:        
+
+        else:
             if (row.append_start and not match_append(row.append_start)):
                 msg = "Value for append_start must be valid strings in the samplesheet."
                 row_errors.append(msg)
-            
+
             if (row.append_end and not (match_append(row.append_end))):
                 msg = "Value for append_end must be valid strings in the samplesheet."
                 row_errors.append(msg)
-            
+
             # Check if valid not-empty string is provided in the samplesheet for append_start or append_end.
             if len(row.append_start) == 0 and len(row.append_end) == 0:
                 msg = "append_start or append_end must be set in the samplesheet."
                 row_errors.append(msg)
-        
+
 
     # Check if read_modification is False.
     if not params.read_modification:
         # append_start or append_end must not be in the samplesheet.
-        if row.append_start or row.append_end:
-            msg = "If read_modification is set globally to False, columns append_start and append_end should not be in the samplesheet or be empty."
+        if (row.append_start != "noCol" and not len(row.append_start) == 0):
+            msg = "If read_modification is set globally to False, append_start column should not be in the samplesheet or be empty."
+            print_error(f"ERROR: {msg}")
+            sys.exit(1)
+
+        if (row.append_end != "noCol" and not len(row.append_end) == 0):
+            msg = "If read_modification is set globally to False, append_end column should not be in the samplesheet or be empty."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
@@ -123,7 +128,7 @@ def validate_row(row={}, params={}, errors=[]):
     if params.adapter_trimming == "cutadapt":
 
         if row.adapter_path == "noCol":
-            msg = "If adapter_trimming is set globally, then column adapter_path must exist in the samplesheet."
+            msg = "If adapter_trimming is set globally, then adapter_path column must exist in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
@@ -132,7 +137,7 @@ def validate_row(row={}, params={}, errors=[]):
             row_errors.append(msg)
 
     # Check if adapter_trimming is not set and adapter_path must be empty
-    if not params.adapter_trimming and row.adapter_path:
+    if not params.adapter_trimming and row.adapter_path != "noCol" and not len(row.adapter_path) == 0:
         msg = "If adapter_trimming is not set globally, then adpater_path column must not exist in the samplesheet or be empty."
         print_error(f"ERROR: {msg}")
         sys.exit(1)
@@ -141,13 +146,22 @@ def validate_row(row={}, params={}, errors=[]):
     # Check if primer_trimming set, then both primer_start and primer_end must in the samplesheet
     if params.primer_trimming == "cutadapt":
 
-        if (row.primer_start == "noCol" or row.primer_end == "noCol"):
-            msg = "If primer_trimming is set globally, primer_start and primer_end both the columns must be in the samplesheet."
+        if row.primer_start == "noCol":
+            msg = "If primer_trimming is set globally, primer_start column must exist in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
-        if (len(row.primer_start) == 0 or len(row.primer_end) == 0):
-            msg = "If primer_trimming is set globally, primer_start or primer_end should not be empty in the samplesheet."
+        if row.primer_end == "noCol":
+            msg = "If primer_trimming is set globally, primer_end column must exist in the samplesheet."
+            print_error(f"ERROR: {msg}")
+            sys.exit(1)
+
+        if len(row.primer_start) == 0:
+            msg = "primer_start should not be empty in the samplesheet."
+            row_errors.append(msg)
+
+        if len(row.primer_end) == 0:
+            msg = "primer_end should not be empty in the samplesheet."
             row_errors.append(msg)
 
         # Check if primer_start and primer_end must be a non-empty valid string.
@@ -156,13 +170,18 @@ def validate_row(row={}, params={}, errors=[]):
         if (match_primer(row.primer_start) or match_primer(row.primer_end)):
             msg = "Values for primer_start and primer_end must be provided with a valid strings in the samplesheet."
             row_errors.append(msg)
-        
+
 
     # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplehseet.
     if not params.primer_trimming:
 
-        if row.primer_start or row.primer_end:
-            msg = "If primer_trimming is not set globally, primer_start and primer_end columns must be exist in the samplesheet."
+        if row.primer_start != "noCol" and not len(row.primer_start) == 0:
+            msg = "If primer_trimming is not set globally, then primer_start column must not exist in the samplesheet or be empty."
+            print_error(f"ERROR: {msg}")
+            sys.exit(1)
+
+        if row.primer_end != "noCol" and not len(row.primer_end) == 0:
+            msg = "If primer_trimming is not set globally, then primer_end column must not exist in the samplesheet or be empty."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
@@ -171,19 +190,20 @@ def validate_row(row={}, params={}, errors=[]):
     if params.quantification == 'pyquest':
 
         if row.oligo_library == "noCol":
-            msg = "If quantification is set globally, then column oligo_library must exist in the samplesheet."
+            msg = "If quantification is set globally, then oligo_library column must exist in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
         if len(row.oligo_library) == 0:
-            msg = "If quantification is set globally, then valid path must be provided for oligo_library in the samplesheet."
+            msg = "If quantification is set globally, then oligo_library must be set in the samplesheet."
             row_errors.append(msg)
 
     # Check if quantification is not set, then oligo_library must not be in the samplesheet.
-    if not params.quantification and row.oligo_library:
-        msg = "If quantification is not set globally, then oligo_library must not be set in the samplesheet or kept empty."
-        print_error(f"ERROR: {msg}")
-        sys.exit(1)
+    if not params.quantification:
+        if row.oligo_library != "noCol" and not len(row.oligo_library) == 0:
+            msg = "If quantification is not set globally, then oligo_library must not exist in the samplesheet or be empty."
+            print_error(f"ERROR: {msg}")
+            sys.exit(1)
 
 
     # Check if read_transform is set in the samplesheet with valid value.
