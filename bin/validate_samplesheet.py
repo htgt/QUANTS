@@ -123,7 +123,7 @@ def validate_row(row={}, params={}, errors=[]):
     if params.adapter_trimming == "cutadapt":
 
         if row.adapter_path == "noCol":
-            msg = "If adapter_trimming is set globally, then column adapter_path must be set in the samplesheet."
+            msg = "If adapter_trimming is set globally, then column adapter_path must exist in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
@@ -133,15 +133,16 @@ def validate_row(row={}, params={}, errors=[]):
 
     # Check if adapter_trimming is not set and adapter_path must be empty
     if not params.adapter_trimming and row.adapter_path:
-        msg = "If adapter_trimming is not set globally, then adpater_path must be kept empty in the samplesheet."
-        row_errors.append(msg)
+        msg = "If adapter_trimming is not set globally, then adpater_path column must not exist in the samplesheet or be empty."
+        print_error(f"ERROR: {msg}")
+        sys.exit(1)
 
 
     # Check if primer_trimming set, then both primer_start and primer_end must in the samplesheet
     if params.primer_trimming == "cutadapt":
 
-        if row.primer_start == "noCol" and row.primer_end == "noCol":
-            msg = "If primer_trimming is set globally, then both the columns primer_start and primer_end must be in the samplesheet."
+        if (row.primer_start == "noCol" or row.primer_end == "noCol"):
+            msg = "If primer_trimming is set globally, primer_start and primer_end both the columns must be in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
@@ -155,12 +156,13 @@ def validate_row(row={}, params={}, errors=[]):
         if (match_primer(row.primer_start) or match_primer(row.primer_end)):
             msg = "Values for primer_start and primer_end must be provided with a valid strings in the samplesheet."
             row_errors.append(msg)
+        
 
     # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplehseet.
     if not params.primer_trimming:
 
         if row.primer_start or row.primer_end:
-            msg = "If primer_trimming is not set globally, then columns primer_start and primer_end should not be in the samplesheet or kept empty."
+            msg = "If primer_trimming is not set globally, primer_start and primer_end columns must be exist in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
@@ -169,7 +171,7 @@ def validate_row(row={}, params={}, errors=[]):
     if params.quantification == 'pyquest':
 
         if row.oligo_library == "noCol":
-            msg = "If quantification is set globally, then column oligo_library must be set in the samplesheet."
+            msg = "If quantification is set globally, then column oligo_library must exist in the samplesheet."
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
