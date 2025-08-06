@@ -104,7 +104,9 @@ def check_samplesheet(file_in, file_out):
 
         # Check sample entries
         for line in f_reads_ln:
-            lspl = [val for val in line.values() if val and val.strip()]
+
+            filtered_line = { key: value for key, value in line.items() if key is not None }
+            lspl = [val for val in filtered_line.values() if val and val.strip()]
 
             for val in line.values():
                 if val is None:
