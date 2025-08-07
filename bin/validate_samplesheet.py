@@ -73,7 +73,7 @@ def validate_row(row={}, params={}, errors=[]):
         # Check if string is provided in the samplesheet for append_start or append_end.
         if row.append_start == "noCol" and row.append_end == "noCol":
             msg = "If read_modification is set globally, append_start or append_end columns must exist in the samplesheet."
-            print_error(f"Row {row.row_identifier} : Sample-{row.sample} : {msg}")
+            print_error(f"ERROR: {msg}")
             sys.exit(1)
 
         # Check if append_start and append_end must be a non-empty valid string.
