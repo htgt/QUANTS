@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
+import copy
+import json
 import os
 import csv
 import sys
 import errno
 import argparse
+from validate_samplesheet import validate_all_samples
+from difflib import get_close_matches as gcm
+
 
 def parse_args(args=None):
     Description = "Reformat QUANTS samplesheet file and check its contents."
@@ -12,6 +17,7 @@ def parse_args(args=None):
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument("FILE_IN", help="Input samplesheet file.")
+    parser.add_argument("PARAMS_IN", help="Input Params file.")
     parser.add_argument("FILE_OUT", help="Output file.")
     return parser.parse_args(args)
 
@@ -35,32 +41,79 @@ def print_error(error, context="Line", context_str=""):
     sys.exit(1)
 
 
-def validate_headers(fieldnames: list, REQUIRED_HEADERS: list, OPTIONAL_HEADERS: list) -> list:
+def validate_headers(fieldnames: list = [], row_headers: list = [], processed_params: dict = {}, is_params: bool = False) -> list:
 
     HEADERS = []
 
-    if not fieldnames:
-        raise ValueError("ERROR: samplesheet file doesn't contain any fields.")
+    REQUIRED_HEADERS = [
+            "sample",
+            "fastq_1",
+            "fastq_2"
+        ]
 
-    # Check required headers
-    missing_required = [col for col in REQUIRED_HEADERS if col not in fieldnames]
-    if missing_required:
-        raise ValueError(f"ERROR: samplesheet missing required headers: {', '.join(missing_required)}")
+    OPTIONAL_HEADERS = [
+            "group_id",
+            "oligo_library",
+            "adapter_path",
+            "primer_start",
+            "primer_end",
+            "append_start",
+            "append_end",
+            "read_transform"
+        ]
 
-    HEADERS = REQUIRED_HEADERS + OPTIONAL_HEADERS
-    # Check if all optional headers are present
-    missing_optional = [col for col in OPTIONAL_HEADERS if col not in fieldnames]
+    invalid_headers = []
 
-    if missing_optional:
-        print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)} \n"
-                "These will be taken from params.json file")
+    if is_params:
+        if not row_headers:
+            print("No row to validate headers.")
+            sys.exit(1)
 
-    HEADERS = list(filter(lambda item: item not in missing_optional, HEADERS))
+        headers_to_check = REQUIRED_HEADERS + OPTIONAL_HEADERS
 
-    return HEADERS
+        if any(
+                [
+                    processed_params.read_modification,
+                    processed_params.adapter_trimming,
+                    processed_params.primer_trimming,
+                    processed_params.quantification,
+                ]
+            ) or not any(
+                [
+                    processed_params.read_modification,
+                    processed_params.adapter_trimming,
+                    processed_params.primer_trimming,
+                    processed_params.quantification,
+                ]
+            ):
+
+            invalid_headers = [header for header in row_headers if header not in headers_to_check]
+
+        if invalid_headers:
+            raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
+
+    else:
+        if not fieldnames:
+            raise ValueError("ERROR: samplesheet file doesn't contain any fields.")
+
+        # Check required headers
+        missing_required = [col for col in REQUIRED_HEADERS if col not in fieldnames]
+        if missing_required:
+            raise ValueError(f"ERROR: samplesheet missing required headers: {', '.join(missing_required)}")
+
+        HEADERS = REQUIRED_HEADERS + OPTIONAL_HEADERS
+        # Check if all optional headers are present
+        missing_optional = [col for col in OPTIONAL_HEADERS if col not in fieldnames]
+
+        if missing_optional:
+            print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)}")
+
+        HEADERS = list(filter(lambda item: item not in missing_optional, HEADERS))
+
+        return HEADERS
 
 
-def check_samplesheet(file_in, file_out):
+def check_samplesheet(file_in, params_in, file_out):
     """
     This function checks that the samplesheet follows the following structure:
     sample,fastq_1,fastq_2,group_id,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform
@@ -68,6 +121,9 @@ def check_samplesheet(file_in, file_out):
     SAMPLE_PE,SAMPLE_PE_RUN2_1.fastq.gz,SAMPLE_PE_RUN2_2.fastq.gz,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
     SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,,BBBB,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
     """
+
+    with open(params_in) as f:
+        params = json.load(f)
 
     sample_mapping_dict = {}
 
@@ -79,31 +135,19 @@ def check_samplesheet(file_in, file_out):
         # Check headers
         MIN_COLS = 2
 
-        REQUIRED_HEADERS = [
-            "sample",
-            "fastq_1",
-            "fastq_2"
-        ]
-
-        OPTIONAL_HEADERS = [
-            "group_id",
-            "oligo_library",
-            "adapter_path",
-            "primer_start",
-            "primer_end",
-            "append_start",
-            "append_end",
-            "read_transform"
-        ]
-
         headers = [header for header in f_reads.fieldnames if header.strip()]
 
-        HEADERS = validate_headers(headers, REQUIRED_HEADERS, OPTIONAL_HEADERS)
+        HEADERS = validate_headers(fieldnames = headers)
 
-        group_ids = []
+        validating_samples = copy.deepcopy(f_reads_ln)
+
+        validate_all_samples(validating_samples, params)
+
+        group_id = []
 
         # Check sample entries
         for line in f_reads_ln:
+
             lspl = [val for val in line.values() if val and val.strip()]
 
             for val in line.values():
@@ -135,13 +179,7 @@ def check_samplesheet(file_in, file_out):
                      ",".join(str(v) if v is not None else "" for v in line.values())
                 )
 
-            grp_id = line.get("group_id")
-            if grp_id and not grp_id.isalnum():
-                print_error("group_id must be alphanumeric!",
-                            "Line",
-                            ",".join(str(v) if v is not None else "" for v in line.values())
-                                )
-            group_ids += [grp_id]
+            group_id += [line.get("group_id")]
 
             # Check FastQ file extension
             for fastq in [line.get("fastq_1"), line.get("fastq_2")]:
@@ -191,9 +229,9 @@ def check_samplesheet(file_in, file_out):
                     sample_mapping_dict[sample].append(sample_info)
 
     # Check group_id column
-    if not any(group_ids):
+    if not any(group_id):
         print(f"WARNING: Samplesheet group_id column not found or entirely empty. Results will not be grouped in the output directory")
-    elif not all(group_ids):
+    elif not all(group_id):
         raise ValueError(f"ERROR: Please ensure that all samples have values for group_id in the samplesheet, or remove the group_id column")
 
     # Write validated samplesheet with appropriate columns
@@ -228,7 +266,7 @@ def check_samplesheet(file_in, file_out):
 
 def main(args=None):
     args = parse_args(args)
-    check_samplesheet(args.FILE_IN, args.FILE_OUT)
+    check_samplesheet(args.FILE_IN, args.PARAMS_IN, args.FILE_OUT)
 
 
 if __name__ == "__main__":

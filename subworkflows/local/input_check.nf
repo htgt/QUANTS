@@ -15,13 +15,40 @@ workflow INPUT_CHECK_FASTQ {
 
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
-    SAMPLESHEET_CHECK_FASTQ ( samplesheet )
+
+    // process to extract necessary parameters for samplesheet validation from global params
+    extracted_params = EXTRACT_PARAMS()
+
+    SAMPLESHEET_CHECK_FASTQ ( samplesheet, extracted_params )
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channels(it) }
         .set { reads }
     emit:
         reads // channel: [ val(meta), [ reads ] ]
 }
+
+process EXTRACT_PARAMS {
+
+    output:
+    path "extracted_params.json"
+
+    script:
+    def jsonText = groovy.json.JsonOutput.toJson([
+                append_start                        : params.append_start,
+                append_end                          : params.append_end,
+                oligo_library                       : params.oligo_library,
+                adapter_trimming                    : params.adapter_trimming,
+                primer_trimming                     : params.primer_trimming,
+                read_modification                   : params.read_modification,
+                read_transform                      : params.read_transform,
+                quantification                      : params.quantification,
+            ])
+
+    """
+    echo '${jsonText.replace("'", "\\'")}' > extracted_params.json
+    """
+}
+
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_fastq_channels(LinkedHashMap row) {
