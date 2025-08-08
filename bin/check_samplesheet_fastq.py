@@ -87,7 +87,9 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
                 ]
             ):
 
-            invalid_headers = [header for header in row_headers if header not in headers_to_check]
+
+            invalid_headers = [header for header in row_headers if header and header not in headers_to_check]
+
 
         if invalid_headers:
             raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
@@ -153,7 +155,7 @@ def check_samplesheet(file_in, params_in, file_out):
                 print_error(
                     "Inconsistent number of columns!",
                     "Line",
-                    ",".join(str(v) if v is not None else "" for v in line.keys()),
+                    ",".join(str(v) if v is not None else "" for v in line.values()),
                 )
 
             lspl = [val for val in line.values() if val and val.strip()]
