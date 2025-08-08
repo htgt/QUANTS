@@ -105,13 +105,29 @@ def check_samplesheet(file_in, file_out):
         # Check sample entries
         for line in f_reads_ln:
 
-            filtered_line = { key: value for key, value in line.items() if key is not None }
-            lspl = [val for val in filtered_line.values() if val and val.strip()]
+           # check if headers and values under headers are consistent or not
+            if len(headers) != len(line.values()):
+                print_error(
+                    "Inconsistent number of columns!",
+                    "Line",
+                    ",".join(str(v) if v is not None else "" for v in line.keys()),
+                )
 
-            for val in line.values():
-                if val is None:
+            lspl = [val for val in line.values() if val and val.strip()]
+
+            for key, val in line.items():
+                # check if header is read as None from samplsheet
+                if key is None:
                     print_error(
                     "Inconsistent number of columns!",
+                    "Line",
+                    ",".join(str(v) if v is not None else "" for v in line.keys()),
+                )
+
+                # check if value for the header is read as None from samplsheet
+                if val is None:
+                    print_error(
+                    "Inconsistent number of rows!",
                     "Line",
                     ",".join(str(v) if v is not None else "" for v in line.values()),
                 )
