@@ -92,7 +92,8 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
 
 
         if invalid_headers:
-            raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
+            raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}\n"
+                             "INFO: Check in the samplesheet if there are any extra commas before or after headers. For example: sample,,fastq_1,fastq_2,")
 
     else:
         if not fieldnames:
@@ -132,50 +133,45 @@ def check_samplesheet(file_in, params_in, file_out):
     with open(file_in, "r") as f_in:
         f_reads = csv.DictReader(f_in)
 
-        f_reads_ln = list(f_reads)
-
         # Check headers
         MIN_COLS = 2
 
-        headers = [header for header in f_reads.fieldnames if header.strip()]
+        f_reads.fieldnames = [
+                    name if name.strip() else f"unnamed_col_{i}"
+                    for i, name in enumerate(f_reads.fieldnames, start=1)
+                ]
+
+        f_reads_ln = list(f_reads)
+
+        headers = [header.strip() for header in f_reads.fieldnames if header]
 
         HEADERS = validate_headers(fieldnames = headers)
 
         validating_samples = copy.deepcopy(f_reads_ln)
-
         validate_all_samples(validating_samples, params)
 
         group_id = []
 
+        flatten_row = lambda values: (
+                str(x) if not isinstance(v, list) else str(x)
+                for v in values
+                for x in (v if isinstance(v, list) else [v])
+            )
+
+        header_len = len(headers)
+
         # Check sample entries
         for line in f_reads_ln:
 
-           # check if headers and values under headers are consistent or not
-            if len(headers) != len(line.values()):
+            # check if headers and values are consistent or not
+            if header_len != len(line.values()):
                 print_error(
-                    "Inconsistent number of columns!",
+                    f"Inconsistent number of columns!",
                     "Line",
-                    ",".join(str(v) if v is not None else "" for v in line.values()),
+                    ",".join(flatten_row(line.values())),
                 )
 
             lspl = [val for val in line.values() if val and val.strip()]
-
-            for key, val in line.items():
-                # check if header is read as None from samplsheet
-                if key is None:
-                    print_error(
-                    "Inconsistent number of columns!",
-                    "Line",
-                    ",".join(str(v) if v is not None else "" for v in line.keys()),
-                )
-
-                # check if value for the header is read as None from samplsheet
-                if val is None:
-                    print_error(
-                    "Inconsistent number of rows!",
-                    "Line",
-                    ",".join(str(v) if v is not None else "" for v in line.values()),
-                )
 
             num_cols = len([x for x in lspl if x])
 
