@@ -90,10 +90,11 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
 
             invalid_headers = [header for header in row_headers if header and header not in headers_to_check]
 
-
         if invalid_headers:
-            raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}\n"
-                             "INFO: Check in the samplesheet if there are any extra commas before or after headers. For example: sample,,fastq_1,fastq_2,")
+            if not [unnamed_col for unnamed_col in invalid_headers if "unnamed_col" in unnamed_col]:
+                raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
+
+            raise ValueError(f"ERROR: Check in the samplesheet if there are any extra commas before or after headers. For example: sample,,fastq_1,fastq_2,")
 
     else:
         if not fieldnames:
@@ -163,10 +164,10 @@ def check_samplesheet(file_in, params_in, file_out):
         # Check sample entries
         for line in f_reads_ln:
 
-            # check if headers and values are consistent or not
+            # check if number of headers matches number of row values
             if header_len != len(line.values()):
                 print_error(
-                    f"Inconsistent number of columns!",
+                    f"Inconsistent number of columns: The header row has {header_len} columns, but a data row has {len(line.values())} columns.",
                     "Line",
                     ",".join(flatten_row(line.values())),
                 )
