@@ -31,7 +31,7 @@ workflow QUANTIFICATION {
 
         // Channel with meta and oligo library outside of it
         ch_oligo_library = reads.map { meta, reads ->
-            def lib = meta.oligo_library ?: params.oligo_library
+            def lib = meta?.oligo_library
             return [meta, lib]
         }
 

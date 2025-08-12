@@ -20,7 +20,7 @@ workflow ADAPTER_TRIMMING {
 
         ch_reads = reads.map { meta, reads ->
             def adapter_option = adapter_options.clone()
-            adapter_option.args += " " + (meta.adapter_path ? "-a \"file:${meta.adapter_path}\"" : params.adapter_cutadapt_options)
+            adapter_option.args += " " + "-a \"file:${meta?.adapter_path}\""
             return [meta, reads, adapter_option]
         }
 

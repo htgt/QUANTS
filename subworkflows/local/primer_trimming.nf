@@ -20,7 +20,7 @@ workflow PRIMER_TRIMMING {
 
         ch_reads = reads.map { meta, reads ->
             def primer_option = primer_options.clone()
-            primer_option.args += " " + ((meta.primer_start && meta.primer_end) ? "-g '${meta.primer_start}...${meta.primer_end}' -m 1" : params.primer_cutadapt_options)
+            primer_option.args += " " + "-g '${meta?.primer_start}...${meta?.primer_end}' -m 1"
             return [meta, reads, primer_option]
         }
 
