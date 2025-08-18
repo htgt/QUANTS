@@ -284,7 +284,12 @@ workflow SGE {
     // SUBWORKFLOW: Run FASTQC on raw reads
     //
     if (params.raw_sequencing_qc) {
-        ch_raw_read_qc = ch_raw_reads.map{it -> [[id: it[0].id + '_raw', single_end: it[0].single_end], it[1]]}
+        ch_raw_read_qc = ch_raw_reads.map{it -> [[ id: it[0].id + '_raw',
+                                                   single_end: it[0].single_end,
+                                                   group_id: it[0].group_id
+                                                 ],
+                                                 it[1]
+                                                ]}
         RAW_SEQUENCING_QC ( ch_raw_read_qc )
         ch_software_versions = ch_software_versions.mix(RAW_SEQUENCING_QC.out.fastqc_version, RAW_SEQUENCING_QC.out.seqkit_version)
         seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, RAW_SEQUENCING_QC, 'seqkit_stats')
@@ -302,7 +307,12 @@ workflow SGE {
         //SUBWORKFLOW: Run FASTQC on adapter trimmed reads
         //
         if (params.adapter_trimming_qc) {
-            ch_adapter_trimming_qc = ADAPTER_TRIMMING.out.reads.map{it -> [[id: it[0].id + '_adapter_trimmed', single_end: it[0].single_end], it[1]]}
+            ch_adapter_trimming_qc = ADAPTER_TRIMMING.out.reads.map{it -> [[id: it[0].id + '_adapter_trimmed',
+                                                                            single_end: it[0].single_end,
+                                                                            group_id: it[0].group_id
+                                                                           ],
+                                                                           it[1]
+                                                                          ]}
             ADAPTER_TRIMMED_SEQUENCING_QC ( ch_adapter_trimming_qc )
             ch_software_versions = ch_software_versions.mix(ADAPTER_TRIMMED_SEQUENCING_QC.out.fastqc_version, ADAPTER_TRIMMED_SEQUENCING_QC.out.seqkit_version)
             seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, ADAPTER_TRIMMED_SEQUENCING_QC, 'seqkit_stats')
@@ -325,7 +335,12 @@ workflow SGE {
         //SUBWORKFLOW: Run FASTQC on primer trimmed reads
         //
         if (params.primer_trimming_qc) {
-            ch_primer_trimming_qc = PRIMER_TRIMMING.out.reads.map{it -> [[id: it[0].id + '_primer_trimmed', single_end: it[0].single_end], it[1]]}
+            ch_primer_trimming_qc = PRIMER_TRIMMING.out.reads.map{it -> [[id: it[0].id + '_primer_trimmed',
+                                                                          single_end: it[0].single_end,
+                                                                          group_id: it[0].group_id
+                                                                         ],
+                                                                         it[1]
+                                                                        ]}
             PRIMER_TRIMMED_SEQUENCING_QC ( ch_primer_trimming_qc )
             ch_software_versions = ch_software_versions.mix(PRIMER_TRIMMED_SEQUENCING_QC.out.fastqc_version, PRIMER_TRIMMED_SEQUENCING_QC.out.seqkit_version)
             seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, PRIMER_TRIMMED_SEQUENCING_QC, 'seqkit_stats')
@@ -341,7 +356,12 @@ workflow SGE {
     //
     if (params.read_merging) {
         READ_MERGING ( ch_read_merge )
-        ch_read_transform = READ_MERGING.out.reads.map{it -> [[id: it[0].id + '_merged', single_end: true], it[1]]}
+        ch_read_transform = READ_MERGING.out.reads.map{it -> [[id: it[0].id + '_merged',
+                                                               single_end: true,
+                                                               group_id: it[0].group_id
+                                                               ],
+                                                               it[1]
+                                                             ]}
         ch_software_versions = ch_software_versions.mix(READ_MERGING.out.versions)
 
         //
@@ -385,7 +405,12 @@ workflow SGE {
         // SUBWORKFLOW: Run FASTQC on filtered reads
         //
         if (params.read_filtering_qc) {
-            ch_filtered_read_qc = READ_FILTERING.out.reads.map{it -> [[id: it[0].id + '_filtered', single_end: true], it[1]]}
+            ch_filtered_read_qc = READ_FILTERING.out.reads.map{it -> [[id: it[0].id + '_filtered',
+                                                                       single_end: true,
+                                                                       group_id: it[0].group_id
+                                                                       ],
+                                                                       it[1]
+                                                                     ]}
             FILTERED_SEQUENCING_QC ( ch_filtered_read_qc )
             ch_software_versions = ch_software_versions.mix(FILTERED_SEQUENCING_QC.out.fastqc_version, FILTERED_SEQUENCING_QC.out.seqkit_version)
             seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, FILTERED_SEQUENCING_QC, 'seqkit_stats')
