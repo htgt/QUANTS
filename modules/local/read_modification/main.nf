@@ -10,7 +10,16 @@ process APPEND_STRINGS_TO_FQ {
 
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:'modified_fastq', meta:meta, publish_by_meta:['id']) }
+        saveAs: { filename ->
+                    saveFiles(
+                        filename:filename,
+                        options:params.options,
+                        publish_dir: meta.group_id ? "${meta.group_id}/modified_fastq"
+                                                   : "modified_fastq",
+                        meta:meta,
+                        publish_by_meta:['id']
+                    )
+                }
 
     input:
         tuple val(meta), path(reads)
