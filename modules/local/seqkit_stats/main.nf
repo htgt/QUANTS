@@ -10,7 +10,16 @@ process SEQKIT_STATS {
 
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process)+'_stats', meta:meta, publish_by_meta:['id']) }
+        saveAs: { filename ->
+                    saveFiles(
+                        filename:filename,
+                        options:params.options,
+                        publish_dir: meta.group_id ? "${meta.group_id}/${getSoftwareName(task.process)}_stats"
+                                                   : getSoftwareName(task.process)+"_stats",
+                        meta:meta,
+                        publish_by_meta:['id']
+                    )
+                }
 
     conda (params.enable_conda ? "bioconda::seqkit=0.15.0" : null)
     container "quay.io/biocontainers/seqkit:0.15.0--0"
