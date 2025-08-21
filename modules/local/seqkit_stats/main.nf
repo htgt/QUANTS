@@ -8,6 +8,7 @@ process SEQKIT_STATS {
     tag "$meta.id"
     label 'process_medium'
 
+    // NOTE: If the software is changed the custom named directory needs to be updated
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
         saveAs: { filename ->
