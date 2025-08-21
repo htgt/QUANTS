@@ -356,6 +356,7 @@ workflow SGE {
     //
     if (params.read_merging) {
         READ_MERGING ( ch_read_merge )
+        // TODO: Review why single_end is hardcoded to true
         ch_read_transform = READ_MERGING.out.reads.map{it -> [[id: it[0].id + '_merged',
                                                                single_end: true,
                                                                group_id: it[0].group_id
@@ -405,6 +406,7 @@ workflow SGE {
         // SUBWORKFLOW: Run FASTQC on filtered reads
         //
         if (params.read_filtering_qc) {
+            // TODO: Review why single_end is hardcoded to true
             ch_filtered_read_qc = READ_FILTERING.out.reads.map{it -> [[id: it[0].id + '_filtered',
                                                                        single_end: true,
                                                                        group_id: it[0].group_id
