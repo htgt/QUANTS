@@ -6,6 +6,10 @@ options        = initOptions(params.options)
 
 process TRANSFORM_LIBRARY_FOR_PYQUEST {
     label 'process_medium'
+
+    // TODO: Review using getSoftwareName(task.process) instead of 'pyquest'
+    //      in saveAs for consistency with other modules.
+    //      getSoftwareName(task.process) currently returns 'transform'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
         saveAs: { filename ->

@@ -8,6 +8,9 @@ process APPEND_STRINGS_TO_FQ {
     tag "$meta.id"
     label 'process_low'
 
+    // TODO: Review using getSoftwareName(task.process) instead of 'modified_fastq'
+    //      in saveAs for consistency with other modules.
+    //      getSoftwareName(task.process) currently returns 'append'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
         saveAs: { filename ->
