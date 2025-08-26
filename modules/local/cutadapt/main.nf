@@ -9,7 +9,16 @@ process CUTADAPT {
     label 'process_medium'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
+        saveAs: { filename ->
+                    saveFiles(
+                        filename:filename,
+                        options:params.options,
+                        publish_dir: meta.group_id ? "${meta.group_id}/${getSoftwareName(task.process)}"
+                                                   : getSoftwareName(task.process),
+                        meta:meta,
+                        publish_by_meta:['id']
+                    )
+                }
 
     conda (params.enable_conda ? 'bioconda::cutadapt=4.4' : null)
     container 'quay.io/biocontainers/cutadapt:4.4--py39hf95cd2a_1'
