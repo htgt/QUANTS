@@ -24,7 +24,7 @@ workflow READ_TRANSFORM {
         // MODULE: Run SeqKit seq
         //
         ch_transform_reads = reads.map { meta, reads ->
-            def transform_type = meta.read_transform ?: params.read_transform
+            def transform_type = meta?.read_transform
             def suffix = transform_type
             def seqkit_seq_option = seqkit_seq_options.clone()
 

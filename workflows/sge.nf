@@ -384,7 +384,7 @@ workflow SGE {
     // Select samples for read transformation
     sample_select = ch_read_transform
                         .branch { meta, file ->
-                            to_transform: meta?.read_transform || (!meta?.read_transform && params.read_transform)
+                            to_transform: meta?.read_transform
                             no_transform: true
                     }
 
