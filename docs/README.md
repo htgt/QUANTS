@@ -2,6 +2,10 @@
 
 The QUANTS documentation is split into the following pages:
 
+* [Input](input.md)
+    * Information about the input files required to run the pipeline.
+* [Configuration](configuration.md)
+    * A list of all of the different configuration options available for the pipeline.
 * [Usage](usage.md)
     * An overview of how the pipeline works, how to run it and a description of all of the different command-line flags.
 * [Output](output.md)
