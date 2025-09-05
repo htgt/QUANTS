@@ -1,6 +1,6 @@
 process SEQTK_SAMPLE {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_single_seqtk'
 
     container "quay.io/biocontainers/seqtk:1.4--he4a0461_1"
 
