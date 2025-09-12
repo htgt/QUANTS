@@ -8,16 +8,23 @@ process SEQKIT_SEQ {
     tag "$meta.id"
     label 'process_medium'
 
+    // NOTE: If the software is changed the custom named directory needs to be updated
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process)+'_seq', meta:meta, publish_by_meta:['id']) }
+        saveAs: { filename ->
+                    saveFiles(
+                        filename:filename,
+                        options:params.options,
+                        publish_dir: meta.group_id ? "${meta.group_id}/${getSoftwareName(task.process)}_seq"
+                                                   : getSoftwareName(task.process)+"_seq",
+                        meta:meta,
+                        publish_by_meta:['id']) }
 
     conda (params.enable_conda ? "bioconda::seqkit=0.15.0" : null)
     container "quay.io/biocontainers/seqkit:0.15.0--0"
 
     input:
-        tuple val(meta), path(reads)
-        val(suffix)
+        tuple val(meta), path(reads), val(suffix), val(seqkit_seq_option)
 
     output:
         tuple val(meta), path("*.fq.gz"), emit: reads
@@ -30,7 +37,7 @@ process SEQKIT_SEQ {
     """
     seqkit \
         seq \
-        $options.args \
+        ${seqkit_seq_option.args} \
         --threads $task.cpus \
         ${reads[0]} > ${prefix}.${suffix}.fq
 

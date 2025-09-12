@@ -66,3 +66,13 @@ Initial release of QUANTS, created with the [nf-core](https://nf-co.re/) templat
 
 * Add downsampling step using modified seqtk/sample module
 * Replace Python containers which use licensed conda packages
+
+## 4.0.0.0 - [11th August 2025]
+
+* Sample-specific parameter options deprecated from global params
+* Read sample-specific parameters from samplesheet and pass to downstream processes
+* Extend samplesheet validation in bin/check_samplesheet_fastq.py, and add bin/validate_samplesheet.py script
+* Add grouping column group_id to samplesheet
+* Aggregate output directories by group_id
+* Add memory scaling and error strategy for downsampling
+* Extend error codes for overall error strategy

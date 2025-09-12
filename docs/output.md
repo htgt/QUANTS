@@ -1,5 +1,33 @@
 # QUANTS: Output
 
+
+## Grouping of Results
+
+When `group_id` is specified in the samplesheet, the output files will be grouped into subdirectories named after the unique `group_id` values. Each subdirectory will contain the results for all samples that share the same `group_id`. See example below:
+
+```console
+    ├── cutadapt       # These are run-level results
+    ├── fastqc         # These are run-level results
+    ├── multiqc        # These are run-level results
+    ├── pipeline_info  # These are run-level results
+    ├── seqkit_stats   # These are run-level results
+    └── <group_id_1>   # These are group-specific results
+        ├── cutadapt
+        ├── modified_fastq
+        ├── pyquest
+        ├── seqkit_seq
+        └── seqkit_stats
+    └── <group_id_2>   # These are group-specific results
+        ├── cutadapt
+        ├── modified_fastq
+        ├── pyquest
+        ├── seqkit_seq
+        └── seqkit_stats
+    └── etc.
+```
+
+**Note** If `group_id` is not specified in the samplesheet, results will not be aggregated by group in the output directory.
+
 ## Read trimming
 
 ### cutadapt

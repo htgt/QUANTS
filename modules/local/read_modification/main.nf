@@ -8,9 +8,21 @@ process APPEND_STRINGS_TO_FQ {
     tag "$meta.id"
     label 'process_low'
 
+    // TODO: Review using getSoftwareName(task.process) instead of 'modified_fastq'
+    //      in saveAs for consistency with other modules.
+    //      getSoftwareName(task.process) currently returns 'append'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:'modified_fastq', meta:meta, publish_by_meta:['id']) }
+        saveAs: { filename ->
+                    saveFiles(
+                        filename:filename,
+                        options:params.options,
+                        publish_dir: meta.group_id ? "${meta.group_id}/modified_fastq"
+                                                   : "modified_fastq",
+                        meta:meta,
+                        publish_by_meta:['id']
+                    )
+                }
 
     input:
         tuple val(meta), path(reads)
@@ -22,10 +34,10 @@ process APPEND_STRINGS_TO_FQ {
     def software = getSoftwareName(task.process)
     def prefix = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     def input = reads
-    def append_start = params.append_start ? params.append_start : ""
-    def append_end = params.append_end ? params.append_end : ""
-    def append_quality_start = params.append_start ? params.append_quality*append_start.length() : ""
-    def append_quality_end = params.append_end ? params.append_quality*append_end.length() : ""
+    def append_start = meta?.append_start
+    def append_end = meta?.append_end
+    def append_quality_start = append_start ? params.append_quality*append_start.length() : ""
+    def append_quality_end = append_end ? params.append_quality*append_end.length() : ""
     def output = "${prefix}.modified.fq.gz"
     """
     zcat ${input} | awk -v append_start="${append_start}" -v append_end="${append_end}" -v append_quality_start="${append_quality_start}" -v append_quality_end="${append_quality_end}" '

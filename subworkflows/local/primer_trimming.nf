@@ -3,16 +3,10 @@
 //
 
 params.options = [:]
-def modules = params.modules.clone()
-
 //
 // MODULE: cutadapt
 //
-def primer_cutadapt_options  = modules['cutadapt_primer']
-if (params.primer_cutadapt_options) {
-    primer_cutadapt_options.args += " " + params.primer_cutadapt_options
-}
-include { CUTADAPT as CUTADAPT_PRIMER  } from '../../modules/local/cutadapt/main' addParams( options: primer_cutadapt_options )
+include { CUTADAPT as CUTADAPT_PRIMER  } from '../../modules/local/cutadapt/main'
 
 workflow PRIMER_TRIMMING {
     take:
@@ -20,12 +14,22 @@ workflow PRIMER_TRIMMING {
 
     main:
         ch_trimmed_reads = Channel.empty()
+
+        def modules = params.modules.clone()
+        def primer_options = modules['cutadapt_primer']
+
+        ch_reads = reads.map { meta, reads ->
+            def primer_option = primer_options.clone()
+            primer_option.args += " " + "-g '${meta.primer_start}...${meta.primer_end}' -m 1"
+            return [meta, reads, primer_option]
+        }
+
         if (params.primer_trimming == "cutadapt") {
             //
             // MODULE: Run cutadapt
             //
 
-            CUTADAPT_PRIMER ( reads )
+            CUTADAPT_PRIMER ( ch_reads )
             ch_trimmed_reads = CUTADAPT_PRIMER.out.reads
             ch_trimmed_stats = CUTADAPT_PRIMER.out.json
         }
