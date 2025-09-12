@@ -60,4 +60,4 @@ Available samplesheet fields are in the table below:
 Other input files also needed to run QUANTS are:
 - FASTQ files specified in the samplesheet.
 - FASTA file with adapters, if `adapter_path` set in samplesheet.
-- Oligo library file if `oligo_library` set in samplesheet. Note that Information on the required library format for pyQUEST can be found here along with other usage details.
+- Oligo library file if `oligo_library` set in samplesheet. Note that information on the required library format for [pyQUEST](https://github.com/cancerit/pyQUEST) can be found [here](https://github.com/cancerit/pyQUEST#library) along with other usage details.
