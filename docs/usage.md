@@ -18,25 +18,13 @@ For parameter descriptions, please see [configuration](assets/configuration) doc
 
 ## Running the pipeline
 
-### With library-dependent quantification enabled
-
-The typical command for running the pipeline when library-dependent quantification is enabled is as follows:
-
-```console
-nextflow run QUANTS --input samplesheet.csv --oligo_library library.tsv -profile <docker|singlularity>
+The typical command for running the pipeline is as follows (assuming you are in the QUANTS pipeline directory):
+```bash
+nextflow run . --input samplesheet.csv -params-file path/to/params.json –outdir path/to/dir -profile <docker|singularity>
 ```
 
-*Note: library-dependent quantification requires the `library_dependent_quantification` parameter to be set and the path to the library file to be provided with the `oligo_library` parameter.*
+See [input](input.md) and [configuration](configuration.md) for more information on parameters.
 
-### With library-dependent quantification disabled
-
-The typical command for running the pipeline when library-dependent quantification is enabled is as follows:
-
-```console
-nextflow run QUANTS --input samplesheet.csv --oligo_library library.tsv -profile <docker|singlularity>
-```
-
-*Note: The `oligo_library` parameter is not required when `library_dependent_quantification` is `false`.*
 
 ## Core Nextflow arguments
 
@@ -71,11 +59,13 @@ Specify the path to a specific config file (this is a core Nextflow command). Se
 Below is a basic example:
 
 ```nextflow
-params {
-    single_end: true
-    "cutadapt_options": "-a 'AGATCGGAAGAGCGGTTCAGCAGGAATGCCG' -A 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'",
+{
+    single_end: true,
+    "input_type": "fastq",
+    ...
 }
 ```
+
 
 ### `-params-file`
 

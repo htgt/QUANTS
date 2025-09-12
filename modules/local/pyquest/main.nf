@@ -8,7 +8,17 @@ process PYQUEST {
     label 'process_medium'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }    conda (params.enable_conda ? null : null)
+        saveAs: { filename ->
+                    saveFiles(
+                        filename:filename,
+                        options:params.options,
+                        publish_dir: meta.group_id ? "${meta.group_id}/${getSoftwareName(task.process)}"
+                                                   : getSoftwareName(task.process),
+                        meta:meta,
+                        publish_by_meta:['id']
+                    )
+                }
+
 
     // Keep for when container is public
     /*
@@ -17,8 +27,7 @@ process PYQUEST {
     container "quay.io/wtsicgp/pyquest:1.1.0"
 
     input:
-        tuple val(meta), path(reads)
-        path(oligo_library)
+        tuple val(meta), path(reads), path(oligo_library)
 
     output:
         tuple val(meta), path("*query_counts.tsv.gz")       , emit: read_counts

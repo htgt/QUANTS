@@ -1,14 +1,18 @@
 # QUANTS: Configuration
 
-**Note**: use full paths where file paths are required
+**Note:**
+- Use full paths where file paths are required
+- Check for deprecated parameters before configuring [here](#deprecated-parameters).
+- All of these parameters can be fed through a params.json file instead, using `-params-file params.json`.
 
 ## Input/output options
 
 ```console
 --input                               [string]  Path to comma-separated file containing information about the samples in the experiment.
---single_end                          [boolean] If data is single-ended reads instead of paired-end.
+--single_end                          [boolean] Define whether data is single-end instead of paired-end.
 --outdir                              [string]  Path to the output directory where the results will be saved. [default: ./results]
 --multiqc_title                       [string]  MultiQC report title. Printed as page header, used for filename if not otherwise specified.
+--input_type                          [string]  Type of input data. Options are `fastq` (default) or `bam`.
 ```
 
 ## Quality control
@@ -34,9 +38,7 @@
 
 ```console
 --adapter_trimming                    [string]  Define whether the pipeline should trim adapters from reads.
---adapter_cutadapt_options            [string]  Define options for cutadapt (only suitable when cutadapt enabled for adapter trimming).
 --primer_trimming                     [string]  Define whether the pipeline should trim primers from reads.
---primer_cutadapt_options             [string]  Define options for cutadapt (only suitable when cutadapt enabled for primer trimming).
 ```
 
 ## Read filtering options
@@ -46,10 +48,19 @@
 --seqkit_seq_options                  [string]  Define options for SeqKit seq (only suitable when read_filtering enabled).
 ```
 
-## Library-dependent quantification options
+## Read modification options
 
 ```console
---oligo_library                       [string]  Path to tab-delimited file containing information about the oligos in the experiment (only suitable when library-dependent quantification enabled).
+--read_modification                   [boolean] Define whether to add string and qualities to read (e.g. adding a perfect primer to the read).
+--append_quality                      [integer] Define quality value to read quality (this should be a single character), else set to null.
+```
+
+## Quantification options
+
+```console   
+--quantification                      [string]  Define whether the pipeline should run quantification.
+--transform_library                   [boolean] Define whether the pipeline should transform the oligo library (only suitable when quantification is enabled).  
+--pyquest_library_convertor_options   [string]  Define options for pyquest library convertor.
 ```
 
 ## Downsampling options
@@ -76,3 +87,17 @@
 -w, -work-dir
     Directory where intermediate result files are stored
 ```
+
+## Deprecated Parameters
+
+With the release of QUANTS version 4.0.0.0, the following parameters can no longer be set globally and must now be specified in the samplesheet for each individual sample:
+
+| Column         | Description                                                                                                                |
+|----------------|----------------------------------------------------------------------------------------------------------------------------|
+| `adapter_cutadapt_options` | Now set as `adapter_path` in samplesheet. |
+| `primer_cutadapt_options`  | Now set as `primer_start` and `primer_end` in samplesheet. |
+| `append_start`             | Set as `append_start` in samplesheet. |
+| `append_end`               | Set as `append_end` in samplesheet. |
+| `oligo_library`            | Set as `oligo_library` in samplesheet. |
+| `read_transform`           | Set as `read_transform` in samplesheet. |
+

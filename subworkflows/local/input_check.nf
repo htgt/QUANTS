@@ -15,7 +15,11 @@ workflow INPUT_CHECK_FASTQ {
 
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
-    SAMPLESHEET_CHECK_FASTQ ( samplesheet )
+
+    // process to extract necessary parameters for samplesheet validation from global params
+    extracted_params = EXTRACT_PARAMS()
+
+    SAMPLESHEET_CHECK_FASTQ ( samplesheet, extracted_params )
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channels(it) }
         .set { reads }
@@ -23,11 +27,42 @@ workflow INPUT_CHECK_FASTQ {
         reads // channel: [ val(meta), [ reads ] ]
 }
 
+process EXTRACT_PARAMS {
+
+    output:
+    path "extracted_params.json"
+
+    script:
+    def jsonText = groovy.json.JsonOutput.toJson([
+                append_start                        : params.append_start,
+                append_end                          : params.append_end,
+                oligo_library                       : params.oligo_library,
+                adapter_trimming                    : params.adapter_trimming,
+                primer_trimming                     : params.primer_trimming,
+                read_modification                   : params.read_modification,
+                read_transform                      : params.read_transform,
+                quantification                      : params.quantification,
+            ])
+
+    """
+    echo '${jsonText.replace("'", "\\'")}' > extracted_params.json
+    """
+}
+
+
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_fastq_channels(LinkedHashMap row) {
     def meta = [:]
-    meta.id           = row.sample
-    meta.single_end   = row.single_end.toBoolean()
+    meta.id                        = row.sample
+    meta.single_end                = row.single_end.toBoolean()
+    meta.group_id                  = row.group_id
+    meta.read_transform            = row.read_transform
+    meta.adapter_path              = row.adapter_path
+    meta.primer_start              = row.primer_start
+    meta.primer_end                = row.primer_end
+    meta.append_start              = row.append_start
+    meta.append_end                = row.append_end
+    meta.oligo_library             = row.oligo_library
 
     def array = []
     if (!file(row.fastq_1).exists()) {
