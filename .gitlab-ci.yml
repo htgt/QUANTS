@@ -1,0 +1,22 @@
+# GitLab CI/CD Pipeline for Nextflow Project
+# This pipeline runs linting checks using nf-core tools
+
+stages:
+  - lint
+
+
+lint-check:
+  stage: lint
+  tags:
+    - autoscale
+  image: 
+    name: nfcore/tools:latest
+    entrypoint: [""]
+  script:
+    - nf-core pipelines lint
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: always
+  allow_failure: true
