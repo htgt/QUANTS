@@ -6,7 +6,8 @@ params.options = [:]
 //
 // MODULE: cutadapt
 //
-include { CUTADAPT as CUTADAPT_PRIMER  } from '../../modules/local/cutadapt/main'
+//include { CUTADAPT as CUTADAPT_PRIMER  } from '../../modules/local/cutadapt/main'
+include { CUTADAPT as CUTADAPT_PRIMER  } from '../../modules/nf-core/cutadapt/main'
 
 workflow PRIMER_TRIMMING {
     take:

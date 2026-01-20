@@ -5,6 +5,13 @@
         "https://github.com/nf-core/modules.git": {
             "modules": {
                 "nf-core": {
+                    "cutadapt": {
+                        "branch": "master",
+                        "git_sha": "624977dfaf562211e68a8a868ca80acc8461f1ac",
+                        "installed_by": [
+                            "modules"
+                        ]
+                    },
                     "fastqc": {
                         "branch": "master",
                         "git_sha": "dc94b6ee04a05ddb9f7ae050712ff30a13149164",
