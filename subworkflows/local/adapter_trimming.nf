@@ -6,8 +6,10 @@ params.options = [:]
 //
 // MODULE: cutadapt
 //
-//include { CUTADAPT as CUTADAPT_ADAPTER  } from '../../modules/local/cutadapt/main'
-include { CUTADAPT as CUTADAPT_ADAPTER  } from '../../modules/nf-core/cutadapt/main'
+include { CUTADAPT as CUTADAPT_ADAPTER  } from '../../modules/local/cutadapt/main'
+
+// For switching to the nf-core Cutadapt module
+// include { CUTADAPT as CUTADAPT_ADAPTER  } from '../../modules/nf-core/cutadapt/main'
 
 workflow ADAPTER_TRIMMING {
     take:
