@@ -1,3 +1,6 @@
+// NOTE: params.irods_iget_cmd is intended for testing only (nf-test).
+// In production, leave unset to use the real `iget`.
+
 process IRODS_IGET_FILE {
     tag "$meta.id"
     label 'process_low'
@@ -29,7 +32,7 @@ process IRODS_IGET_FILE {
 
 cat <<-END_VERSIONS > versions.yml
 "${task.process}":
-    iget: "mock_or_unknown"
+    iget: "unknown"
 END_VERSIONS
 
     """
