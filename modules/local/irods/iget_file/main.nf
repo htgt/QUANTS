@@ -1,0 +1,36 @@
+process IRODS_IGET_FILE {
+    tag "$meta.id"
+    label 'process_low'
+
+    input:
+        tuple val(meta), val(irods_path)
+
+    output:
+        tuple val(meta), path("*"), emit: file
+        path "versions.yml", emit: versions
+
+    when:
+        task.ext.when == null || task.ext.when
+
+    script:
+    def iget_cmd = params.irods_iget_cmd ?: 'iget'
+
+    """
+    set -euo pipefail
+    
+    command -v ${iget_cmd} >/dev/null 2>&1 || { echo "ERROR: ${iget_cmd} not found (iRODS iCommands required)"; exit 127; }
+    local_filename=\$(basename "${irods_path}")
+    
+    echo "IRODS path: ${irods_path}"
+    echo "Downloading to: \${local_filename}"
+    
+    ${iget_cmd} -K -f -v "${irods_path}" "\${local_filename}"
+    md5sum "\${local_filename}" > "\${local_filename}.md5"
+
+cat <<-END_VERSIONS > versions.yml
+"${task.process}":
+    iget: "mock_or_unknown"
+END_VERSIONS
+
+    """
+}

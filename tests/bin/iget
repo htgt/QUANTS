@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Fake iget for tests.
+# Accepts: iget [flags] <remote_path> <local_target>
+# Creates <local_target> containing dummy content.
+
+args=()
+for a in "$@"; do
+  if [[ "$a" == -* ]]; then
+    continue
+  fi
+  args+=("$a")
+done
+
+if (( ${#args[@]} < 1 )); then
+  echo "fake iget: missing remote path" >&2
+  exit 2
+fi
+
+remote="${args[0]}"
+if (( ${#args[@]} >= 2 )); then
+  local_target="${args[1]}"
+else
+  local_target="$(basename "$remote")"
+fi
+
+echo "Fake iget: $remote -> $local_target" >&2
+echo "fake content from $remote" > "$local_target"
