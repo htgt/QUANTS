@@ -1,0 +1,17 @@
+{
+    "Should run without failures and produce the downloaded file and md5": {
+        "content": [
+            {
+                "id": "dummy_sample",
+                "file": "10754_1#20.cram",
+                "md5": "10754_1#20.cram.md5",
+                "versions": "versions.yml"
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.3"
+        },
+        "timestamp": "2026-02-05T11:20:19.477009442"
+    }
+}
