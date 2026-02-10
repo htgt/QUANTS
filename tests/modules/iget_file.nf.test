@@ -1,6 +1,6 @@
-//Test cases for IRODS_IGET_FILE process
-//- Test 1: Successful download when iRODS module is loaded
-//- Test 2: Graceful failure when iget command is not available
+// Test cases for IRODS_IGET_FILE process
+// - Test 1: Successful download using stub (no iget required)
+// - Test 2: Graceful failure when iget command is not available
 
 nextflow_process {
 
@@ -8,7 +8,9 @@ nextflow_process {
     script "modules/local/irods/iget_file/main.nf"
     process "IRODS_IGET_FILE"
 
-    test("Should successfully download file from iRODS") {
+    test("Should successfully download file from iRODS (stubbed)") {
+
+        options "-stub-run"
 
         when {
             process {
@@ -33,6 +35,24 @@ nextflow_process {
                 md5:  new File(md5_out[1].toString()).getName(),
                 versions: new File(ver_out.toString()).getName()
             ]).match()
+        }
+    }
+
+    test("Should fail when iget command is not available") {
+
+        options "-c ${baseDir}/tests/modules/iget_file.missing_iget.config"
+
+        when {
+            process {
+                """
+                input[0] = tuple([id:'dummy_sample'], '/seq/10754/10754_1#20.cram')
+                """
+            }
+        }
+
+        then {
+            assert process.failed
+            assert process.errorMessage.contains("ERROR: iget not found (iRODS iCommands required)")
         }
     }
 }

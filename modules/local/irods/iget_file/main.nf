@@ -1,10 +1,7 @@
 include { local_file_name } from './functions'
 
-// NOTE: params.irods_iget_cmd is intended for testing only (nf-test).
-// In production, leave unset to use the real `iget`.
-
 process IRODS_IGET_FILE {
-    tag "$meta.id"
+    tag "${meta.id}"
     label 'process_low'
 
     input:
@@ -35,6 +32,18 @@ process IRODS_IGET_FILE {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             irods_client: \$(iget -h 2>&1 | grep "Version" | awk '{print \$3}')
+        END_VERSIONS
+        """
+    stub:
+        def local_filename  = local_file_name(irods_path)
+
+        """
+        touch "${local_filename}"
+        echo "d41d8cd98f00b204e9800998ecf8427e  ${local_filename}" > "${local_filename}.md5"
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            irods_client: stub
         END_VERSIONS
         """
 }
