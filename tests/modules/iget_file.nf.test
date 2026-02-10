@@ -1,18 +1,19 @@
+//Test cases for IRODS_IGET_FILE process
+//- Test 1: Successful download when iRODS module is loaded
+//- Test 2: Graceful failure when iget command is not available
+
 nextflow_process {
 
     name "Test Process IRODS_IGET_FILE"
     script "modules/local/irods/iget_file/main.nf"
     process "IRODS_IGET_FILE"
 
-    test("Should run without failures and produce the downloaded file and md5") {
+    test("Should successfully download file from iRODS") {
 
         when {
-            params {
-                irods_iget_cmd = "${System.getProperty('user.dir')}/tests/bin/iget"
-            }
             process {
                 """
-                input[0] = tuple([id: 'dummy_sample'], '/seq/10754/10754_1#20.cram')
+                input[0] = tuple([id:'dummy_sample'], '/seq/10754/10754_1#20.cram')
                 """
             }
         }
