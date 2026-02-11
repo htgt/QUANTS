@@ -1,5 +1,5 @@
 {
-    "Should successfully download file from iRODS": {
+    "Should successfully download file from iRODS (stubbed)": {
         "content": [
             {
                 "id": "dummy_sample",
@@ -10,8 +10,21 @@
         ],
         "meta": {
             "nf-test": "0.9.3",
-            "nextflow": "25.10.3"
+            "nextflow": "25.10.2"
         },
-        "timestamp": "2026-02-10T11:40:23.476365146"
+        "timestamp": "2026-02-11T09:40:34.675509"
+    },
+    "Should fail when iget command is not available": {
+        "content": [
+            {
+                "status": "failed",
+                "message": "ERROR: iget not found (iRODS iCommands required)"
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.2"
+        },
+        "timestamp": "2026-02-11T09:46:01.052304"
     }
 }

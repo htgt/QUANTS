@@ -53,6 +53,13 @@ nextflow_process {
         then {
             assert process.failed
             assert process.errorMessage.contains("ERROR: iget not found (iRODS iCommands required)")
+
+            def firstLine = (process.errorMessage ?: "").readLines().find { it } ?: ""
+
+            assert snapshot([
+                status: "failed",
+                message: firstLine
+            ]).match()
         }
     }
 }
