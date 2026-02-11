@@ -10,10 +10,7 @@ process IRODS_IGET_FILE {
     output:
         tuple val(meta), path("${local_file_name(irods_path)}")        , emit: file
         tuple val(meta), path("${local_file_name(irods_path)}.md5")    , emit: md5
-        path "versions.yml"                                         , emit: versions
-
-    when:
-        task.ext.when == null || task.ext.when
+        path "versions.yml"                                            , emit: versions
 
     script:
         def local_filename  = local_file_name(irods_path)
