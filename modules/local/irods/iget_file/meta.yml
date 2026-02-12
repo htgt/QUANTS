@@ -1,0 +1,31 @@
+name: "irods_iget_file"
+description: "Download a single file from iRODS given an iRODS path"
+keywords:
+  - irods
+  - iget
+  - download
+
+tools:
+  - iget:
+      description: "iRODS data management command-line client"
+      homepage: "https://irods.org"
+      documentation: "https://docs.irods.org"
+
+input:
+  - meta:
+      type: map
+      description: "Sample metadata"
+  - irods_path:
+      type: string
+      description: "Full path to a file in iRODS"
+
+output:
+  - file:
+      type: file
+      description: "File downloaded from iRODS"
+  - versions:
+      type: file
+      description: "YAML file containing software versions"
+
+authors:
+  - zz6@sanger.ac.uk
