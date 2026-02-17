@@ -8,7 +8,6 @@ import sys
 import errno
 import argparse
 from validate_samplesheet import validate_all_samples
-from difflib import get_close_matches as gcm
 
 
 def parse_args(args=None):
@@ -41,7 +40,9 @@ def print_error(error, context="Line", context_str=""):
     sys.exit(1)
 
 
-def validate_headers(fieldnames: list = [], row_headers: list = [], processed_params: dict = {}, is_params: bool = False) -> list:
+def validate_headers(fieldnames: list = [],
+                     row_headers: list = [],
+                     is_params: bool = False) -> list:
 
     HEADERS = []
 
@@ -71,27 +72,10 @@ def validate_headers(fieldnames: list = [], row_headers: list = [], processed_pa
 
         headers_to_check = REQUIRED_HEADERS + OPTIONAL_HEADERS
 
-        if any(
-                [
-                    processed_params.read_modification,
-                    processed_params.adapter_trimming,
-                    processed_params.primer_trimming,
-                    processed_params.quantification,
-                ]
-            ) or not any(
-                [
-                    processed_params.read_modification,
-                    processed_params.adapter_trimming,
-                    processed_params.primer_trimming,
-                    processed_params.quantification,
-                ]
-            ):
-
-
-            invalid_headers = [header for header in row_headers if header and header not in headers_to_check]
+        invalid_headers = [header for header in row_headers if header and header not in headers_to_check]
 
         if invalid_headers:
-            if not [unnamed_col for unnamed_col in invalid_headers if "unnamed_col" in unnamed_col]:
+            if any("unnamed_col" in header for header in invalid_headers):
                 raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
 
             raise ValueError(f"ERROR: Check in the samplesheet if there are any extra commas before or after headers. For example: sample,,fastq_1,fastq_2,")
@@ -149,7 +133,7 @@ def check_samplesheet(file_in, params_in, file_out):
         HEADERS = validate_headers(fieldnames = headers)
 
         validating_samples = copy.deepcopy(f_reads_ln)
-        validate_all_samples(validating_samples, params)
+        validate_all_samples(validating_samples, params, file_type = params['input_type'])
 
         group_id = []
 
