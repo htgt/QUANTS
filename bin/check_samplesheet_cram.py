@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 
+import copy
+import json
 import os
+import csv
 import sys
 import errno
 import argparse
+from validate_samplesheet import validate_all_samples
 
 
 def parse_args(args=None):
@@ -11,8 +15,8 @@ def parse_args(args=None):
     Epilog = "Example usage: python check_samplesheet.py <FILE_IN> <FILE_OUT>"
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
-    parser.add_argument("SINGLE_END", help="Whether input data is single-end (true) or paired-end (false).")
     parser.add_argument("FILE_IN", help="Input samplesheet file.")
+    parser.add_argument("PARAMS_IN", help="Input Params file.")
     parser.add_argument("FILE_OUT", help="Output file.")
     return parser.parse_args(args)
 
@@ -36,101 +40,211 @@ def print_error(error, context="Line", context_str=""):
     sys.exit(1)
 
 
-def check_samplesheet(single_end, file_in, file_out):
-    """
-    This function checks that the samplesheet follows the following structure:
+def validate_headers_cram(fieldnames: list = [],
+                          row_headers: list = [],
+                          is_params: bool = False) -> list:
 
-    sample,cram_file
-    SAMPLE_SE,SAMPLE_SE_RUN1_1.cram
-    """
+    HEADERS = []
 
-    sample_mapping_dict = {}
-    with open(file_in, "r") as fin:
+    REQUIRED_HEADERS = [
+            "sample",
+            "cram_file",
+        ]
 
-        ## Check header
-        MIN_COLS = 2
-        HEADER = ["sample", "cram_file"]
-        header = [x.strip('"') for x in fin.readline().strip().split(",")]
-        if header[: len(HEADER)] != HEADER:
-            print("ERROR: Please check samplesheet header -> {} != {}".format(",".join(header), ",".join(HEADER)))
+    OPTIONAL_HEADERS = [
+            "group_id",
+            "oligo_library",
+            "adapter_path",
+            "primer_start",
+            "primer_end",
+            "append_start",
+            "append_end",
+            "read_transform"
+        ]
+
+    if is_params:
+        if not row_headers:
+            print("No row to validate headers.")
             sys.exit(1)
 
-        ## Check sample entries
-        for line in fin:
-            lspl = [x.strip().strip('"') for x in line.strip().split(",")]
+        headers_to_check = REQUIRED_HEADERS + OPTIONAL_HEADERS
 
-            # Check valid number of columns per row
-            if len(lspl) < len(HEADER):
-                print_error(
-                    "Invalid number of columns (minimum = {})!".format(len(HEADER)),
+        invalid_headers = [header for header in row_headers if header and header not in headers_to_check]
+
+        if invalid_headers:
+            if any("unnamed_col" in header for header in invalid_headers):
+                raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
+
+            raise ValueError("ERROR: Check in the samplesheet if there are any extra commas before or after headers. "
+                             "For example: sample,,fastq_1,fastq_2,")
+
+    else:
+        if not fieldnames:
+            raise ValueError("ERROR: samplesheet file doesn't contain any fields.")
+
+        # Check required headers
+        missing_required = [col for col in REQUIRED_HEADERS if col not in fieldnames]
+        if missing_required:
+            raise ValueError(f"ERROR: samplesheet missing required headers: {', '.join(missing_required)}")
+
+        # Check if all optional headers are present
+        missing_optional = [col for col in OPTIONAL_HEADERS if col not in fieldnames]
+
+        if missing_optional:
+            print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)}")
+
+        HEADERS = REQUIRED_HEADERS + OPTIONAL_HEADERS
+        HEADERS = list(filter(lambda item: item not in missing_optional, HEADERS))
+
+        return HEADERS
+
+
+def check_samplesheet(file_in, params_in, file_out):
+    """
+    This function checks that the samplesheet follows the following structure:
+    sample,cram_file,group_id,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform
+    SAMPLE_PE,SAMPLE_SE_RUN1_1.cram,,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
+    SAMPLE_PE,SAMPLE_SE_RUN2_1.cram,,SAMPLE_PE_RUN2_2.fastq.gz,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
+    SAMPLE_SE,SAMPLE_SE_RUN3_1.cram,,BBBB,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
+    """
+
+    with open(params_in) as f:
+        params = json.load(f)
+
+    sample_mapping_dict = {}
+
+    with open(file_in, "r") as f_in:
+        f_reads = csv.DictReader(f_in)
+
+        # Check headers
+        MIN_COLS = 2
+
+        f_reads.fieldnames = [
+                    name if name.strip() else f"unnamed_col_{i}"
+                    for i, name in enumerate(f_reads.fieldnames, start=1)
+                ]
+
+        f_reads_ln = list(f_reads)
+
+        headers = [header.strip() for header in f_reads.fieldnames if header]
+
+        HEADERS = validate_headers_cram(fieldnames = headers)
+
+        validating_samples = copy.deepcopy(f_reads_ln)
+        validate_all_samples(validating_samples, params, file_type = params['input_type'])
+
+        group_id = []
+
+        header_len = len(headers)
+
+        # Check sample entries
+        for line in f_reads_ln:
+
+            # check if number of headers matches number of row values
+            if header_len != len(line.values()):
+                print(
+                    f"Inconsistent number of columns: The header row has {header_len} columns, "
+                    f"but a data row has {len(line.values())} columns.",
                     "Line",
-                    line,
+                    ",".join(line.values()),
                 )
+
+            lspl = [val for val in line.values() if val and val.strip()]
+
             num_cols = len([x for x in lspl if x])
+
             if num_cols < MIN_COLS:
                 print_error(
-                    "Invalid number of populated columns (minimum = {})!".format(MIN_COLS),
+                    "Invalid number of populated columns (minimum = {})!".format(
+                        MIN_COLS
+                    ),
                     "Line",
-                    line,
+                    ",".join(str(v) if v is not None else "" for v in line.values()),
                 )
 
-            ## Check sample name entries
-            sample, cram_file = lspl[: len(HEADER)]
+            # Check sample name entries
+            sample = line.get("sample")
             sample = sample.replace(" ", "_")
             if not sample:
-                print_error("Sample entry has not been specified!", "Line", line)
+                print_error(
+                    "Sample entry has not been specified!",
+                    "Line",
+                     ",".join(str(v) if v is not None else "" for v in line.values())
+                )
 
-            ## Check CRAM file extension
-            for cram in [cram_file]:
-                if cram:
-                    if cram.find(" ") != -1:
-                        print_error("CRAM file contains spaces!", "Line", line)
-                    if not cram.endswith(".cram"):
-                        print_error(
-                            "CRAM file does not have extension '.cram'!",
+            group_id += [line.get("group_id")]
+
+            # Auto-detect paired-end/single-end
+            sample_info = []
+
+            # Get rest of the info from file read line and skip sample to avoid duplication in the file out.
+            # Example: [cram_file, oligo_library, adapter_path, read_transform]
+            rest_info = [line.get(h) for h in HEADERS if h != "sample"]
+
+            if sample:
+                if not params['single_end']:   ## Paired-end
+                    sample_info = ["0", *rest_info]
+                else:                          ## Single-end
+                    sample_info = ["1", *rest_info]
+            else:
+                print_error("Invalid combination of columns provided!",
                             "Line",
-                            line,
+                            ",".join(str(v) if v is not None else "" for v in line.values())
                         )
 
-            ## Auto-detect paired-end/single-end
-            sample_info = []  ## [single_end, cram_file]
-            if single_end == "false":  ## Paired-end short reads
-                sample_info = ["0", cram_file]
-            elif single_end == "true":  ## Single-end short reads
-                sample_info = ["1", cram_file]
-            else:
-                print_error("Invalid data type (single_end) provided!", "Line", line)
-
-            ## Create sample mapping dictionary = { sample: [ single_end, cram_file ] }
+            # Create sample mapping dictionary = { sample: [ single_end, cram_file ] }
             if sample not in sample_mapping_dict:
                 sample_mapping_dict[sample] = [sample_info]
             else:
                 if sample_info in sample_mapping_dict[sample]:
-                    print_error("Samplesheet contains duplicate rows!", "Line", line)
+                    print_error("Samplesheet contains duplicate rows!",
+                                "Line",
+                                ",".join(str(v) if v is not None else "" for v in line.values())
+                            )
                 else:
                     sample_mapping_dict[sample].append(sample_info)
 
-    ## Write validated samplesheet with appropriate columns
+    # Check group_id column
+    if not any(group_id):
+        print(f"WARNING: Samplesheet group_id column not found or entirely empty. ",
+              "Results will not be grouped in the output directory")
+    elif not all(group_id):
+        raise ValueError(f"ERROR: Please ensure that all samples have values for group_id in the samplesheet, ",
+                         "or remove the group_id column")
+
+    # Write validated samplesheet with appropriate columns
     if len(sample_mapping_dict) > 0:
         out_dir = os.path.dirname(file_out)
         make_dir(out_dir)
-        with open(file_out, "w") as fout:
-            fout.write(",".join(["sample", "single_end", "cram_file"]) + "\n")
+        with open(file_out, "w") as f_out:
+            csv_writer = csv.writer(f_out)
+
+            # Add column "single_end" in output csv file headers
+            HEADERS.insert(1, "single_end")
+            csv_writer.writerow(HEADERS)
+
             for sample in sorted(sample_mapping_dict.keys()):
 
-                ## Check that multiple runs of the same sample are of the same datatype
-                if not all(x[0] == sample_mapping_dict[sample][0][0] for x in sample_mapping_dict[sample]):
-                    print_error("Multiple runs of a sample must be of the same datatype!", "Sample: {}".format(sample))
+                # Check that multiple runs of the same sample are of the same datatype
+                if not all(
+                    x[0] == sample_mapping_dict[sample][0][0]
+                    for x in sample_mapping_dict[sample]
+                ):
+                    print_error(
+                        "Multiple runs of a sample must be of the same datatype!",
+                        "Sample: {}".format(sample),
+                    )
                 ## VAOFFORD: Removed _T1 suffix to sample name
-                for idx, val in enumerate(sample_mapping_dict[sample]):
-                    fout.write(",".join(["{}".format(sample, idx + 1)] + val) + "\n")
+                for idx,val in enumerate(sample_mapping_dict[sample]):
+                    row_to_write = [sample] + val
+                    csv_writer.writerow(row_to_write)
     else:
         print_error("No entries to process!", "Samplesheet: {}".format(file_in))
 
 
 def main(args=None):
     args = parse_args(args)
-    check_samplesheet(args.SINGLE_END, args.FILE_IN, args.FILE_OUT)
+    check_samplesheet(args.FILE_IN, args.PARAMS_IN, args.FILE_OUT)
 
 
 if __name__ == "__main__":
