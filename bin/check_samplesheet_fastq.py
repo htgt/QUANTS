@@ -40,9 +40,9 @@ def print_error(error, context="Line", context_str=""):
     sys.exit(1)
 
 
-def validate_headers(fieldnames: list = [],
-                     row_headers: list = [],
-                     is_params: bool = False) -> list:
+def validate_headers_fastq(fieldnames: list = [],
+                           row_headers: list = [],
+                           is_params: bool = False) -> list:
 
     HEADERS = []
 
@@ -130,7 +130,7 @@ def check_samplesheet(file_in, params_in, file_out):
 
         headers = [header.strip() for header in f_reads.fieldnames if header]
 
-        HEADERS = validate_headers(fieldnames = headers)
+        HEADERS = validate_headers_fastq(fieldnames = headers)
 
         validating_samples = copy.deepcopy(f_reads_ln)
         validate_all_samples(validating_samples, params, file_type = params['input_type'])
