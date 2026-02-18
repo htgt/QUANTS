@@ -250,7 +250,6 @@ workflow SGE {
         // SUBWORKFLOW: Read in samplesheet, validate and stage input files
         //
         INPUT_CHECK ( ch_input )
-        INPUT_CHECK.out.view()
 
         //
         // SUBWORKFLOW: Convert CRAM to FASTQ
