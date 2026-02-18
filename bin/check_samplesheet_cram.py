@@ -174,6 +174,16 @@ def check_samplesheet(file_in, params_in, file_out):
 
             group_id += [line.get("group_id")]
 
+            # Check CRAM file extension
+            for cram in [line.get("cram_file")]:
+                if cram:
+                    if not cram.endswith(".cram"):
+                        print_error(
+                            "CRAM file does not have extension '.cram'!",
+                            "Line",
+                            ",".join(str(v) if v is not None else "" for v in line.values()),
+                        )
+
             # Auto-detect paired-end/single-end
             sample_info = []
 
