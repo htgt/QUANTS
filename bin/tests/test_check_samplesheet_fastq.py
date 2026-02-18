@@ -96,6 +96,7 @@ def test_check_samplesheet_command_runs_as_expected(tmp_path):
     
     input_json.write_text(
         '{\n'
+        # NB, '"single_end": true' works for testing purposes, but second sample in samplesheet is actually paired-end
         '"single_end": true,\n'
         '"input_type": "fastq",\n'
         '"raw_sequencing_qc": true,\n'
@@ -173,8 +174,7 @@ def test_check_samplesheet_inconsistent_number_of_columns(tmp_path):
         '"read_modification": false,\n'
         '"transform_library": false,\n'
         '"quantification": "pyquest",\n'
-        '"downsampling": true,\n'
-        '"downsampling_size": 12000000\n'
+        '"downsampling": true\n'
         '}\n'
     )
 
@@ -207,7 +207,7 @@ def test_check_samplesheet_extra_column(tmp_path):
     input_csv.write_text(
         "sample,fastq_1,fastq_2,oligo_library,var1\n"
         "SAMPLE_PE,SAMPLE_PE_RUN1_1.fastq.gz,,SAMPLE_PE_meta.csv,var1\n"
-        "SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,SAMPLE_SE_RUN1_2.fastq.gz,SAMPLE_SE_meta.csv,var1\n"
+        "SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,,SAMPLE_SE_meta.csv,var1\n"
     )
 
     input_json.write_text(
@@ -220,8 +220,7 @@ def test_check_samplesheet_extra_column(tmp_path):
         '"read_modification": false,\n'
         '"transform_library": false,\n'
         '"quantification": "pyquest",\n'
-        '"downsampling": true,\n'
-        '"downsampling_size": 12000000\n'
+        '"downsampling": false\n'
         '}\n'
     )
 
@@ -277,8 +276,7 @@ def test_check_samplesheet_multiple_rows_same_sample(tmp_path):
         '"read_modification": false,\n'
         '"transform_library": false,\n'
         '"quantification": "pyquest",\n'
-        '"downsampling": true,\n'
-        '"downsampling_size": 12000000\n'
+        '"downsampling": false\n'
         '}\n'
     )
 
@@ -319,3 +317,50 @@ def test_check_samplesheet_multiple_rows_same_sample(tmp_path):
         output_content = f_out.read().strip()
 
     assert expected_output_csv == output_content, "Input and output samplesheet contents do not match."
+
+
+def test_check_samplesheet_wrong_file_extension(tmp_path):
+    # Prepare a minimal valid samplesheet
+    input_csv = tmp_path / "samplesheet.csv"
+    input_json = tmp_path / "params.json"
+    output_csv = tmp_path / "samplesheet.valid.csv"
+
+    input_csv.write_text(
+        "sample,fastq_1,fastq_2\n"
+        "SAMPLE_PE,SAMPLE_PE_RUN1_1.fastq.gz,\n"
+        "SAMPLE_SE,SAMPLE_PE_RUN1_2.cram,\n"
+    )
+
+    input_json.write_text(
+        '{\n'
+        '"single_end": true,\n'
+        '"input_type": "fastq",\n'
+        '"raw_sequencing_qc": false,\n'
+        '"adapter_trimming": "",\n'
+        '"primer_trimming": "",\n'
+        '"read_modification": false,\n'
+        '"transform_library": false,\n'
+        '"quantification": "",\n'
+        '"downsampling": false\n'
+        '}\n'
+    )
+
+    # Run the command to check the samplesheet
+    process_out = subprocess.run(
+        [
+            "python3",
+            "bin/check_samplesheet_fastq.py",
+            str(input_csv),
+            str(input_json),
+            str(output_csv)
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    # Assert that sys.exit(1) was called
+    assert process_out.returncode == 1
+
+    # Check error message in stdout or stderr
+
+    assert "FastQ file does not have extension" in process_out.stdout
