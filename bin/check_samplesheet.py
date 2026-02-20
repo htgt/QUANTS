@@ -12,7 +12,7 @@ from validate_samplesheet import validate_all_samples
 
 def parse_args(args=None):
     Description = "Reformat QUANTS samplesheet file and check its contents."
-    Epilog = "Example usage: python check_samplesheet.py <FILE_IN> <FILE_OUT>"
+    Epilog = "Example usage: python check_samplesheet.py <FILE_IN> <PARAMS_IN> <FILE_OUT>"
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument("FILE_IN", help="Input samplesheet file.")
@@ -40,17 +40,18 @@ def print_error(error, context="Line", context_str=""):
     sys.exit(1)
 
 
-def validate_headers_fastq(fieldnames: list = [],
-                           row_headers: list = [],
-                           is_params: bool = False) -> list:
+def validate_headers(fieldnames: list = [],
+                     file_type: str = "",
+                     row_headers: list = [],
+                     is_params: bool = False) -> list:
 
     HEADERS = []
 
-    REQUIRED_HEADERS = [
-            "sample",
-            "fastq_1",
-            "fastq_2"
-        ]
+    REQUIRED_HEADERS = ["sample"]
+    if file_type == "fastq":
+        REQUIRED_HEADERS.extend(["fastq_1", "fastq_2"])
+    elif file_type == "cram":
+        REQUIRED_HEADERS.extend(["cram_file"])
 
     OPTIONAL_HEADERS = [
             "group_id",
@@ -75,10 +76,10 @@ def validate_headers_fastq(fieldnames: list = [],
         invalid_headers = [header for header in row_headers if header and header not in headers_to_check]
 
         if invalid_headers:
-            if any("unnamed_col" in header for header in invalid_headers):
-                raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
-
-            raise ValueError(f"ERROR: Check in the samplesheet if there are any extra commas before or after headers. For example: sample,,fastq_1,fastq_2,")
+            # if any("unnamed_col" in header for header in invalid_headers):
+                # raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
+            raise ValueError(f"ERROR: Check for invalid names or extra commas in the samplesheet header")
+            # raise ValueError(f"ERROR: Check in the samplesheet if there are any extra commas before or after headers. For example: sample,,fastq_1,fastq_2,")
 
     else:
         if not fieldnames:
@@ -89,16 +90,47 @@ def validate_headers_fastq(fieldnames: list = [],
         if missing_required:
             raise ValueError(f"ERROR: samplesheet missing required headers: {', '.join(missing_required)}")
 
-        HEADERS = REQUIRED_HEADERS + OPTIONAL_HEADERS
         # Check if all optional headers are present
+        HEADERS = REQUIRED_HEADERS + OPTIONAL_HEADERS
         missing_optional = [col for col in OPTIONAL_HEADERS if col not in fieldnames]
-
         if missing_optional:
             print(f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional)}")
 
         HEADERS = list(filter(lambda item: item not in missing_optional, HEADERS))
 
         return HEADERS
+
+
+def check_file_extension(input_type: str,
+                          line: dict) -> None:
+    """
+    Validate file extensions for FASTQ or CRAM inputs.
+    """
+
+    if input_type == "fastq":
+        for fastq in [line.get("fastq_1"), line.get("fastq_2")]:
+            if fastq:
+                if " " in fastq:
+                    print_error("FASTQ file contains spaces!",
+                                "Line",
+                                ",".join(str(v) if v is not None else "" for v in line.values()),
+                            )
+
+                if not fastq.endswith((".fastq.gz", ".fq.gz")):
+                    print_error(
+                        "FASTQ file does not have extension '.fastq.gz' or '.fq.gz'!",
+                        "Line",
+                        ",".join(str(v) if v is not None else "" for v in line.values()),
+                    )
+
+    elif input_type == "cram":
+        cram = line.get("cram_file")
+        if cram and not cram.endswith(".cram"):
+            print_error(
+                "CRAM file does not have extension '.cram'!",
+                "Line",
+                ",".join(str(v) if v is not None else "" for v in line.values()),
+            )
 
 
 def check_samplesheet(file_in, params_in, file_out):
@@ -130,28 +162,33 @@ def check_samplesheet(file_in, params_in, file_out):
 
         headers = [header.strip() for header in f_reads.fieldnames if header]
 
-        HEADERS = validate_headers_fastq(fieldnames = headers)
+        HEADERS = validate_headers(fieldnames = headers, file_type = params['input_type'])
 
         validating_samples = copy.deepcopy(f_reads_ln)
-        validate_all_samples(validating_samples, params, file_type = params['input_type'])
+        validate_all_samples(samplesheet_data = validating_samples,
+                             params = params,
+                             file_type = params['input_type'])
 
         group_id = []
 
+        # For dealing with printed message if header row contains fewer columns than the other rows
         flatten_row = lambda values: (
-                str(x) if not isinstance(v, list) else str(x)
+                str(x)
                 for v in values
                 for x in (v if isinstance(v, list) else [v])
+                if x is not None
             )
 
         header_len = len(headers)
 
         # Check sample entries
         for line in f_reads_ln:
+            line_len = len([v for v in line.values() if v is not None])
 
             # check if number of headers matches number of row values
-            if header_len != len(line.values()):
+            if header_len != line_len:
                 print_error(
-                    f"Inconsistent number of columns: The header row has {header_len} columns, but a data row has {len(line.values())} columns.",
+                    f"Inconsistent number of columns: The header row has {header_len} columns, but a data row has {line_len} columns.",
                     "Line",
                     ",".join(flatten_row(line.values())),
                 )
@@ -176,45 +213,45 @@ def check_samplesheet(file_in, params_in, file_out):
                 print_error(
                     "Sample entry has not been specified!",
                     "Line",
-                     ",".join(str(v) if v is not None else "" for v in line.values())
+                    ",".join(str(v) if v is not None else "" for v in line.values())
                 )
 
             group_id += [line.get("group_id")]
+                                
+            # Check file extension
+            check_file_extension(input_type = params['input_type'],
+                                 line = line)
 
-            # Check FastQ file extension
-            for fastq in [line.get("fastq_1"), line.get("fastq_2")]:
-                if fastq:
-                    if fastq.find(" ") != -1:
-                        print_error("FastQ file contains spaces!",
-                                    "Line",
-                                     ",".join(str(v) if v is not None else "" for v in line.values())
-                                )
-                    if not fastq.endswith(".fastq.gz") and not fastq.endswith(".fq.gz"):
-                        print_error(
-                            "FastQ file does not have extension '.fastq.gz' or '.fq.gz'!",
-                            "Line",
-                            ",".join(str(v) if v is not None else "" for v in line.values()),
-                        )
-
-            # Auto-detect paired-end/single-end
-            sample_info = []  ## [single_end, fastq_1, fastq_2]
-
-            fastq_1 = line.get("fastq_1")
-            fastq_2 = line.get("fastq_2")
+            # Extract paired-end/single-end info
+            sample_info = []
 
             # Get rest of the info from file read line and skip sample to avoid duplication in the file out.
             # Example: [fastq_1,fastq_2,oligo_library,adapter_path,LibAmpF,LibAmpR,read_transform]
             rest_info = [line.get(h) for h in HEADERS if h != "sample"]
-
-            if sample and fastq_1 and fastq_2:  ## Paired-end short reads
-                sample_info = ["0", *rest_info]
-            elif sample and fastq_1 and not fastq_2:  ## Single-end short reads
-                sample_info = ["1", *rest_info]
-            else:
-                print_error("Invalid combination of columns provided!",
+            
+            # First field: 0 paired-end, 1 single-end
+            single_end = int(params['single_end'])
+            sample_info = [single_end, *rest_info]
+            
+            # Check sample and sequencing data present
+            if not sample:
+                print_error("sample data missing!",
                             "Line",
-                            ",".join(str(v) if v is not None else "" for v in line.values())
-                        )
+                            ",".join(str(v) if v is not None else "" for v in line.values()))
+            if params['input_type'] == "fastq":
+                if not (line.get("fastq_1")):
+                    print_error("fastq_1 data missing!",
+                                "Line",
+                                ",".join(str(v) if v is not None else "" for v in line.values()))
+                if not single_end and not line.get("fastq_2"):
+                    print_error("fastq_2 data missing!",
+                                "Line",
+                                ",".join(str(v) if v is not None else "" for v in line.values()))
+            elif params['input_type'] == "cram":
+                if not (line.get("cram_file")):
+                    print_error("cram_file data missing!",
+                                "Line",
+                                ",".join(str(v) if v is not None else "" for v in line.values()))
 
             # Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2 ] }
             if sample not in sample_mapping_dict:
@@ -223,8 +260,7 @@ def check_samplesheet(file_in, params_in, file_out):
                 if sample_info in sample_mapping_dict[sample]:
                     print_error("Samplesheet contains duplicate rows!",
                                 "Line",
-                                ",".join(str(v) if v is not None else "" for v in line.values())
-                            )
+                                ",".join(str(v) if v is not None else "" for v in line.values()))
                 else:
                     sample_mapping_dict[sample].append(sample_info)
 
