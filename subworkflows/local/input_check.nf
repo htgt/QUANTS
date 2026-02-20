@@ -7,7 +7,7 @@
 
 params.options = [:]
 
-include { SAMPLESHEET_CHECK_FASTQ; SAMPLESHEET_CHECK_CRAM; EXTRACT_PARAMS } from '../../modules/local/samplesheet_check' addParams( options: params.options )
+include { SAMPLESHEET_CHECK; EXTRACT_PARAMS } from '../../modules/local/samplesheet_check' addParams( options: params.options )
 
 workflow INPUT_CHECK {
     take:
@@ -37,7 +37,7 @@ workflow INPUT_CHECK_FASTQ {
 
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
-    SAMPLESHEET_CHECK_FASTQ ( samplesheet, extracted_params )
+    SAMPLESHEET_CHECK ( samplesheet, extracted_params )
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channels(it) }
         .set { reads }
@@ -82,7 +82,7 @@ workflow INPUT_CHECK_CRAM {
 
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
-    SAMPLESHEET_CHECK_CRAM ( samplesheet, extracted_params )
+    SAMPLESHEET_CHECK ( samplesheet, extracted_params )
         .splitCsv ( header:true, sep:',' )
         .map { create_cram_channels(it) }
         .set { crams }
