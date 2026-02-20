@@ -135,11 +135,16 @@ def check_file_extension(input_type: str,
 
 def check_samplesheet(file_in, params_in, file_out):
     """
-    This function checks that the samplesheet follows the following structure:
+    This function checks that the samplesheet follows the following structure (with FASTQ as file type):
     sample,fastq_1,fastq_2,group_id,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform
     SAMPLE_PE,SAMPLE_PE_RUN1_1.fastq.gz,SAMPLE_PE_RUN1_2.fastq.gz,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
     SAMPLE_PE,SAMPLE_PE_RUN2_1.fastq.gz,SAMPLE_PE_RUN2_2.fastq.gz,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
     SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,,BBBB,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
+    Or, alternatively (with CRAM as file type):
+    sample,cram_file,group_id,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform
+    SAMPLE_PE,SAMPLE_PE_RUN1_1.cram,SAMPLE_PE_RUN1_2.fastq.gz,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
+    SAMPLE_PE,SAMPLE_PE_RUN2_1.cram,,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
+    SAMPLE_SE,SAMPLE_SE_RUN1_1.cram,,BBBB,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
     """
 
     with open(params_in) as f:
@@ -253,7 +258,7 @@ def check_samplesheet(file_in, params_in, file_out):
                                 "Line",
                                 ",".join(str(v) if v is not None else "" for v in line.values()))
 
-            # Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2 ] }
+            # Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2 ] } or { sample: [ single_end, cram_file ] }
             if sample not in sample_mapping_dict:
                 sample_mapping_dict[sample] = [sample_info]
             else:
