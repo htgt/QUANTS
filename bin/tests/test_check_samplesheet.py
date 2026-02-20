@@ -82,7 +82,7 @@ def test_validate_headers_missing_optional_headers():
     assert mock_print.call_count == 1
 
 
-def test_check_samplesheet_command_runs_as_expected(tmp_path):
+def test_check_samplesheet_command_runs_as_expected_fastq(tmp_path):
     # Prepare a minimal valid samplesheet
     input_csv = tmp_path / "samplesheet.csv"
     input_json = tmp_path / "params.json"
@@ -142,6 +142,76 @@ def test_check_samplesheet_command_runs_as_expected(tmp_path):
     with open(output_csv) as f:
         header = f.readline().strip()
     expected_header = "sample,single_end,fastq_1,fastq_2,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform"
+    assert header == expected_header, "Header does not match expected output."
+
+    # Check if input csv is same as expected output csv
+    with open(expected_output_csv) as f_in, open(output_csv) as f_out:
+        expected_output_csv = f_in.read().strip()
+        output_content = f_out.read().strip()
+
+    assert expected_output_csv == output_content, "Input and output samplesheet contents do not match."
+
+
+def test_check_samplesheet_command_runs_as_expected_cram(tmp_path):
+    # Prepare a minimal valid samplesheet
+    input_csv = tmp_path / "samplesheet.csv"
+    input_json = tmp_path / "params.json"
+    output_csv = tmp_path / "samplesheet.valid.csv"
+
+    input_csv.write_text(
+        "sample,cram_file,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform\n"
+        "SAMPLE_PE,SAMPLE_PE_RUN1_1.cram,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement\n"
+        "SAMPLE_SE,SAMPLE_SE_RUN1_1.cram,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,\n"
+    )
+    
+    input_json.write_text(
+        '{\n'
+        # NB, '"single_end": true' works for testing purposes, but second sample in samplesheet is actually paired-end
+        '"single_end": true,\n'
+        '"input_type": "cram",\n'
+        '"raw_sequencing_qc": true,\n'
+        '"adapter_trimming": "cutadapt",\n'
+        '"adapter_trimming_qc": true,\n'
+        '"primer_trimming": "cutadapt",\n'
+        '"primer_trimming_qc": true,\n'
+        '"read_modification": true,\n'
+        '"append_quality": "?",\n'
+        '"transform_library": true,\n'
+        '"quantification": "pyquest",\n'
+        '"pyquest_library_converter_options": "-N 1 -S 24",\n'
+        '"downsampling": true,\n'
+        '"downsampling_size": 12000000\n'
+        '}\n'
+    )
+
+    expected_output_csv = tmp_path / "expected_output.csv"
+
+    expected_output_csv.write_text(
+        "sample,single_end,cram_file,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform\n"
+        "SAMPLE_PE,1,SAMPLE_PE_RUN1_1.cram,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement\n"
+        "SAMPLE_SE,1,SAMPLE_SE_RUN1_1.cram,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,\n"
+    )
+
+    # Run the command to check the samplesheet
+    _ = subprocess.run(
+        [
+            "python3",
+            "bin/check_samplesheet.py",
+            str(input_csv),
+            str(input_json),
+            str(output_csv)
+        ],
+        capture_output=True,
+        text=True
+        # check=True
+    )
+
+    # Check that the output file exists and has the expected header
+    assert output_csv.exists()
+
+    with open(output_csv) as f:
+        header = f.readline().strip()
+    expected_header = "sample,single_end,cram_file,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform"
     assert header == expected_header, "Header does not match expected output."
 
     # Check if input csv is same as expected output csv
