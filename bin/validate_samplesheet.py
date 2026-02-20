@@ -223,22 +223,16 @@ def validate_all_samples(samplesheet_data: list[dict],
     """
     Processes all rows in the samplesheet, collecting all validation errors.
     """
-    from check_samplesheet_fastq import validate_headers_fastq
-    from check_samplesheet_cram import validate_headers_cram
+    from check_samplesheet import validate_headers
 
     all_validation_errors = []
 
     processed_params = get_params(params)
 
     for i, row in enumerate(samplesheet_data, start=2):
-        if file_type == "fastq":
-            validate_headers_fastq(row_headers = list(row.keys()),
-                                   is_params = True)
-        elif file_type == "cram":
-            validate_headers_cram(row_headers = list(row.keys()),
-                                   is_params = True)
-        else:
-            raise ValueError(f"ERROR: invalid file_type {file_type} provided, must be one of fastq, cram")
+        validate_headers(row_headers = list(row.keys()),
+                         file_type = file_type,
+                          is_params = True)
 
         if 'row_identifier' not in row:
             row['row_identifier'] = i
