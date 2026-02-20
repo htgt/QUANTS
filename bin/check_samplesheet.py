@@ -76,10 +76,9 @@ def validate_headers(fieldnames: list = [],
         invalid_headers = [header for header in row_headers if header and header not in headers_to_check]
 
         if invalid_headers:
-            # if any("unnamed_col" in header for header in invalid_headers):
-                # raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
-            raise ValueError(f"ERROR: Check for invalid names or extra commas in the samplesheet header")
-            # raise ValueError(f"ERROR: Check in the samplesheet if there are any extra commas before or after headers. For example: sample,,fastq_1,fastq_2,")
+            if not [unnamed_col for unnamed_col in invalid_headers if "unnamed_col" in unnamed_col]:
+                raise ValueError(f"ERROR: Check for invalid headers in the samplesheet: {', '.join(invalid_headers)}")
+            raise ValueError(f"ERROR: Check in the samplesheet if there are any extra commas before or after headers. For example: sample,,fastq_1,fastq_2,")
 
     else:
         if not fieldnames:
