@@ -110,7 +110,7 @@ def check_file_extension(input_type: str,
         for fastq in [line.get("fastq_1"), line.get("fastq_2")]:
             if fastq:
                 if " " in fastq:
-                    print_error("FASTQ file contains spaces!",
+                    print_error("FASTQ file name contains spaces!",
                                 "Line",
                                 ",".join(str(v) if v is not None else "" for v in line.values()),
                             )
@@ -124,12 +124,18 @@ def check_file_extension(input_type: str,
 
     elif input_type == "cram":
         cram = line.get("cram_file")
-        if cram and not cram.endswith(".cram"):
-            print_error(
-                "CRAM file does not have extension '.cram'!",
-                "Line",
-                ",".join(str(v) if v is not None else "" for v in line.values()),
-            )
+        if cram:
+            if " " in cram:
+                    print_error("CRAM file name contains spaces!",
+                                "Line",
+                                ",".join(str(v) if v is not None else "" for v in line.values()),
+                            )
+            if not cram.endswith(".cram"):
+                print_error(
+                    "CRAM file does not have extension '.cram'!",
+                    "Line",
+                    ",".join(str(v) if v is not None else "" for v in line.values()),
+                )
 
 
 def check_samplesheet(file_in, params_in, file_out):
