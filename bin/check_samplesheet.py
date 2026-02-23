@@ -7,7 +7,8 @@ import csv
 import sys
 import errno
 import argparse
-from validate_samplesheet import validate_all_samples
+
+from validate_samplesheet import get_params, get_row, validate_row
 
 
 def parse_args(args=None):
@@ -98,6 +99,32 @@ def validate_headers(fieldnames: list = [],
         HEADERS = list(filter(lambda item: item not in missing_optional, HEADERS))
 
         return HEADERS
+
+
+def validate_all_samples(samplesheet_data: list[dict],
+                         params: dict,
+                         file_type: str):
+    """
+    Processes all rows in the samplesheet, collecting all validation errors.
+    """
+
+    all_validation_errors = []
+
+    processed_params = get_params(params)
+
+    for i, row in enumerate(samplesheet_data, start=2):
+        validate_headers(row_headers = list(row.keys()),
+                         file_type = file_type,
+                          is_params = True)
+
+        if 'row_identifier' not in row:
+            row['row_identifier'] = i
+
+        processed_row = get_row(row)
+        valid_row = validate_row(processed_row, processed_params, all_validation_errors)
+
+    if not valid_row and all_validation_errors:
+        display_validation_report(all_validation_errors)
 
 
 def check_file_extension(input_type: str,

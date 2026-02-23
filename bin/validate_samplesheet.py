@@ -217,33 +217,6 @@ def validate_row(row={}, params={}, errors=[]):
         return False
 
 
-def validate_all_samples(samplesheet_data: list[dict],
-                         params: dict,
-                         file_type: str):
-    """
-    Processes all rows in the samplesheet, collecting all validation errors.
-    """
-    from check_samplesheet import validate_headers
-
-    all_validation_errors = []
-
-    processed_params = get_params(params)
-
-    for i, row in enumerate(samplesheet_data, start=2):
-        validate_headers(row_headers = list(row.keys()),
-                         file_type = file_type,
-                          is_params = True)
-
-        if 'row_identifier' not in row:
-            row['row_identifier'] = i
-
-        processed_row = get_row(row)
-        valid_row = validate_row(processed_row, processed_params, all_validation_errors)
-
-    if not valid_row and all_validation_errors:
-        display_validation_report(all_validation_errors)
-
-
 def display_validation_report(all_validation_errors):
 
     for error_msg in all_validation_errors:
