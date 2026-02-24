@@ -8,7 +8,7 @@ import sys
 import errno
 import argparse
 
-from validate_samplesheet import get_params, get_row, validate_row
+from validate_samplesheet import get_params, get_row, validate_row, display_validation_report
 
 
 def parse_args(args=None):
@@ -133,36 +133,28 @@ def check_file_extension(input_type: str,
     Validate file extensions for FASTQ or CRAM inputs.
     """
 
+    FILE_EXTENSIONS = {
+        "fastq": (".fastq.gz", ".fq.gz"),
+        "cram": (".cram",)
+    }
+    
+    valid_extensions = FILE_EXTENSIONS.get(input_type)
+    
     if input_type == "fastq":
-        for fastq in [line.get("fastq_1"), line.get("fastq_2")]:
-            if fastq:
-                if " " in fastq:
-                    print_error("FASTQ file name contains spaces!",
-                                "Line",
-                                ",".join(str(v) if v is not None else "" for v in line.values()),
-                            )
-
-                if not fastq.endswith((".fastq.gz", ".fq.gz")):
-                    print_error(
-                        "FASTQ file does not have extension '.fastq.gz' or '.fq.gz'!",
-                        "Line",
-                        ",".join(str(v) if v is not None else "" for v in line.values()),
-                    )
-
+        files_to_check = [line.get("fastq_1"), line.get("fastq_2")]
     elif input_type == "cram":
-        cram = line.get("cram_file")
-        if cram:
-            if " " in cram:
-                    print_error("CRAM file name contains spaces!",
-                                "Line",
-                                ",".join(str(v) if v is not None else "" for v in line.values()),
-                            )
-            if not cram.endswith(".cram"):
-                print_error(
-                    "CRAM file does not have extension '.cram'!",
-                    "Line",
-                    ",".join(str(v) if v is not None else "" for v in line.values()),
-                )
+        files_to_check = [line.get("cram_file")]
+
+    for file in filter(None, files_to_check):
+        if " " in file:
+            print_error(f"{input_type.upper()} file path contains spaces!",
+                        "Line",
+                        ",".join(str(v) if v is not None else "" for v in line.values()))
+
+        if not file.endswith(valid_extensions):
+            print_error(f"{input_type.upper()} file extension can only be {' or '.join(valid_extensions)}",
+                        "Line",
+                        ",".join(str(v) if v is not None else "" for v in line.values()))
 
 
 def check_samplesheet(file_in, params_in, file_out):
