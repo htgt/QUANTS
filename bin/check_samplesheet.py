@@ -283,7 +283,7 @@ def check_samplesheet(file_in, params_in, file_out):
             single_end = int(params['single_end'])
             check_sequencing_fields(input_type = params['input_type'],
                                     line = line,
-                                    single_end = int(params['single_end']))
+                                    single_end = single_end)
 
             # Get sample info
             # Get rest of the info from file read line and skip sample to avoid duplication in the file out.
