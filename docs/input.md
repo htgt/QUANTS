@@ -11,7 +11,7 @@ Use the `input` parameter to specify its location.
 ```
 
 The samplesheet has to be a **comma-separated** file. 
-If working with FASTQ files, you will need a minimum of three columns with headers `sample,fastq_1,fastq_2`. If working with CRAM files, you will need a minimum of two columns with headers `sample,cram_file`. The samplesheet can also contain sample-specific parameters (see example below).
+If working with FASTQ files, you will need a minimum of three columns with headers `sample,fastq_1,fastq_2`. If working with CRAM files, you will need a minimum of two columns with headers `sample,cram_path`. The samplesheet can also contain sample-specific parameters (see example below).
 
 ### Minimum samplesheet example
 
@@ -28,7 +28,7 @@ S04_D7_R2,S04_D7_R2.fastq.gz,
 Example of a samplesheet with CRAM files:
 
 ```csv
-sample,cram_file
+sample,cram_path
 S01_D4_R1,S01_D4_R1_merged.cram,
 S02_D4_R2,S02_D4_R2_merged.cram,
 S03_D7_R1,S03_D7_R1_merged.cram,
@@ -60,7 +60,7 @@ Available samplesheet fields are in the table below:
 | `sample`       | (Required) Custom sample name. Spaces in sample names are automatically converted to underscores (`_`).        |
 | `fastq_1`      | (Required if using FASTQ as input type) Full path to a FASTQ file. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz". If using FASTQ data, `input_type` must be set as `"fastq"`. |
 | `fastq_2`      | (Required if using FASTQ as input type) Full path to a FASTQ file (for paired-end sequencing). File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz". Note this field can be left empty when data is single-end data. |
-| `cram_file`    | (Required if using CRAM as input type) Full path to a CRAM file for Illumina short reads. File has to have the extension ".cram". If using CRAM data, `input_type` must be set as `"cram"`. |
+| `cram_path`    | (Required if using CRAM as input type) Full path to a CRAM file for Illumina short reads. File has to have the extension ".cram". If using CRAM data, `input_type` must be set as `"cram"`. |
 | `group_id`     | (Optional) Custom group ID to group samples together in the output directory. Note: This currently only works when the data is single-end.                                                 |
 | `oligo_library`| (Optional) Path to an oligo library file. Required if `quantification` is enabled in global parameters.                                   |
 | `append_start` | (Optional) Sequence to append to the start of reads before alignment. Required if `read_modification` is enabled in global parameters.                                     |

@@ -88,10 +88,10 @@ workflow INPUT_CHECK_CRAM {
         .set { crams }
 
     emit:
-        crams // channel: [ val(meta), [ cram_file ] ]
+        crams // channel: [ val(meta), [ cram_path ] ]
 }
 
-// Function to get list of [ meta, [ cram_file ] ]
+// Function to get list of [ meta, [ cram_path ] ]
 def create_cram_channels(LinkedHashMap row) {
     def meta = [:]
     meta.id                        = row.sample
@@ -106,9 +106,9 @@ def create_cram_channels(LinkedHashMap row) {
     meta.oligo_library             = row.oligo_library
 
     def array = []
-    if (!file(row.cram_file).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> CRAM file does not exist!\n${row.cram_file}"
+    if (!file(row.cram_path).exists()) {
+        exit 1, "ERROR: Please check input samplesheet -> CRAM file does not exist!\n${row.cram_path}"
     }
-    array = [ meta, [ file(row.cram_file) ] ]
+    array = [ meta, [ file(row.cram_path) ] ]
     return array
 }

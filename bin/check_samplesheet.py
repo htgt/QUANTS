@@ -52,7 +52,7 @@ def validate_headers(fieldnames: list = [],
     if file_type == "fastq":
         REQUIRED_HEADERS.extend(["fastq_1", "fastq_2"])
     elif file_type == "cram":
-        REQUIRED_HEADERS.extend(["cram_file"])
+        REQUIRED_HEADERS.extend(["cram_path"])
 
     OPTIONAL_HEADERS = [
             "group_id",
@@ -168,14 +168,14 @@ def check_sequencing_fields(input_type: str,
             files_to_check.append(fastq_2)
 
     elif input_type == "cram":
-        cram_file = line.get("cram_file")
+        cram_path = line.get("cram_path")
 
-        if not cram_file:
-                print_error("cram_file file path missing!",
+        if not cram_path:
+                print_error("cram_path file path missing!",
                             "Line",
                             ",".join(str(v) if v is not None else "" for v in line.values()))
 
-        files_to_check.append(cram_file)
+        files_to_check.append(cram_path)
 
     # Check file path contains no spaces and right extension
     valid_extensions = FILE_EXTENSIONS.get(input_type)
@@ -200,7 +200,7 @@ def check_samplesheet(file_in, params_in, file_out):
     SAMPLE_PE,SAMPLE_PE_RUN2_1.fastq.gz,SAMPLE_PE_RUN2_2.fastq.gz,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
     SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,,BBBB,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
     Or, alternatively (with CRAM as file type):
-    sample,cram_file,group_id,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform
+    sample,cram_path,group_id,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform
     SAMPLE_PE,SAMPLE_PE_RUN1_1.cram,SAMPLE_PE_RUN1_2.fastq.gz,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
     SAMPLE_PE,SAMPLE_PE_RUN2_1.cram,,AAAA,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement
     SAMPLE_SE,SAMPLE_SE_RUN1_1.cram,,BBBB,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,
@@ -292,7 +292,7 @@ def check_samplesheet(file_in, params_in, file_out):
             rest_info = [line.get(h) for h in HEADERS if h != "sample"]
             sample_info = [single_end, *rest_info]
 
-            # Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2 ] } or { sample: [ single_end, cram_file ] }
+            # Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2 ] } or { sample: [ single_end, cram_path ] }
             if sample not in sample_mapping_dict:
                 sample_mapping_dict[sample] = [sample_info]
             else:
