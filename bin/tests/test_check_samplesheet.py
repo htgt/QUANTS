@@ -265,7 +265,7 @@ def test_check_samplesheet_inconsistent_number_of_columns(tmp_path):
     assert process_out.returncode == 1
 
     # Check error message in stdout or stderr
-    assert "ERROR: Check in the samplesheet if there are any extra commas before or after headers" in process_out.stderr
+    assert "Inconsistent number of columns" in process_out.stdout
 
 
 def test_check_samplesheet_extra_column(tmp_path):
@@ -433,4 +433,4 @@ def test_check_samplesheet_wrong_file_extension(tmp_path):
 
     # Check error message in stdout or stderr
 
-    assert "FASTQ file does not have extension" in process_out.stdout
+    assert "FASTQ file extension can only be .fastq.gz or .fq.gz" in process_out.stdout
