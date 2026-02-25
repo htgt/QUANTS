@@ -245,12 +245,12 @@ workflow SGE {
     seqkit_stat_ch = Channel.empty()
     cutadapt_jsons_ch = Channel.empty()
 
-    if (params.input_type == 'cram') {
-        //
-        // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-        //
-        INPUT_CHECK ( ch_input )
+    //
+    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+    //
+    INPUT_CHECK ( ch_input )
 
+    if (params.input_type == 'cram') {
         //
         // SUBWORKFLOW: Convert CRAM to FASTQ
         //
@@ -259,10 +259,6 @@ workflow SGE {
         ch_adapter_trim = ch_raw_reads
         ch_software_versions = ch_software_versions.mix(CRAM_TO_FASTQ.out.versions)
     } else {
-        //
-        // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-        //
-        INPUT_CHECK ( ch_input )
         ch_raw_reads = INPUT_CHECK.out.seq_data
         ch_adapter_trim = INPUT_CHECK.out.seq_data
     }
