@@ -127,25 +127,60 @@ def validate_all_samples(samplesheet_data: list[dict],
         display_validation_report(all_validation_errors)
 
 
-def check_file_extension(input_type: str,
-                          line: dict) -> None:
+def check_sequencing_fields(input_type: str,
+                            line: dict,
+                            single_end: bool) -> None:
     """
-    Validate file extensions for FASTQ or CRAM inputs.
+    Validate sequencing input fields and file paths.
     """
 
     FILE_EXTENSIONS = {
         "fastq": (".fastq.gz", ".fq.gz"),
         "cram": (".cram",)
     }
-    
-    valid_extensions = FILE_EXTENSIONS.get(input_type)
-    
-    if input_type == "fastq":
-        files_to_check = [line.get("fastq_1"), line.get("fastq_2")]
-    elif input_type == "cram":
-        files_to_check = [line.get("cram_file")]
 
-    for file in filter(None, files_to_check):
+    files_to_check = []
+
+    # Check file path presence
+    if input_type == "fastq":
+        fastq_1 = line.get("fastq_1")
+        fastq_2 = line.get("fastq_2")
+
+        if not fastq_1:
+            print_error("fastq_1 file path missing!",
+                        "Line",
+                        ",".join(str(v) if v is not None else "" for v in line.values()))
+
+        files_to_check.append(fastq_1)
+        
+        if single_end:
+            if fastq_2:
+                print_error("fastq_2 provided but single_end is set globally to True!",
+                             "Line",
+                             ",".join(str(v) if v is not None else "" for v in line.values()))
+
+        else:
+            if not fastq_2:
+                print_error("fastq_2 file path missing!",
+                            "Line",
+                            ",".join(str(v) if v is not None else "" for v in line.values()))
+
+            files_to_check.append(fastq_2)
+
+    elif input_type == "cram":
+        cram_file = line.get("cram_file")
+
+        if not cram_file:
+                print_error("cram_file file path missing!",
+                            "Line",
+                            ",".join(str(v) if v is not None else "" for v in line.values()))
+
+        files_to_check.append(cram_file)
+
+    # Check file path contains no spaces and right extension
+    valid_extensions = FILE_EXTENSIONS.get(input_type)
+
+    for file in files_to_check:
         if " " in file:
             print_error(f"{input_type.upper()} file path contains spaces!",
                         "Line",
@@ -179,26 +214,17 @@ def check_samplesheet(file_in, params_in, file_out):
     with open(file_in, "r") as f_in:
         f_reads = csv.DictReader(f_in)
 
-        # Check headers
         MIN_COLS = 2
 
+        # Check headers
         f_reads.fieldnames = [
                     name if name.strip() else f"unnamed_col_{i}"
                     for i, name in enumerate(f_reads.fieldnames, start=1)
                 ]
 
-        f_reads_ln = list(f_reads)
-
         headers = [header.strip() for header in f_reads.fieldnames if header]
 
         HEADERS = validate_headers(fieldnames = headers, file_type = params['input_type'])
-
-        validating_samples = copy.deepcopy(f_reads_ln)
-        validate_all_samples(samplesheet_data = validating_samples,
-                             params = params,
-                             file_type = params['input_type'])
-
-        group_id = []
 
         # For dealing with printed message if header row contains fewer columns than the other rows
         flatten_row = lambda values: (
@@ -208,7 +234,11 @@ def check_samplesheet(file_in, params_in, file_out):
                 if x is not None
             )
 
+        group_id = []
+
         header_len = len(headers)
+        
+        f_reads_ln = list(f_reads)
 
         # Check sample entries
         for line in f_reads_ln:
@@ -222,6 +252,7 @@ def check_samplesheet(file_in, params_in, file_out):
                     ",".join(flatten_row(line.values())),
                 )
 
+            # Check number of populated columns
             lspl = [val for val in line.values() if val and val.strip()]
 
             num_cols = len([x for x in lspl if x])
@@ -245,42 +276,21 @@ def check_samplesheet(file_in, params_in, file_out):
                     ",".join(str(v) if v is not None else "" for v in line.values())
                 )
 
+            # Get group_id for later check
             group_id += [line.get("group_id")]
                                 
             # Check file extension
-            check_file_extension(input_type = params['input_type'],
-                                 line = line)
+            single_end = int(params['single_end'])
+            check_sequencing_fields(input_type = params['input_type'],
+                                    line = line,
+                                    single_end = int(params['single_end']))
 
-            # Extract paired-end/single-end info
-            sample_info = []
-
+            # Get sample info
             # Get rest of the info from file read line and skip sample to avoid duplication in the file out.
             # Example: [fastq_1,fastq_2,oligo_library,adapter_path,LibAmpF,LibAmpR,read_transform]
+            sample_info = []
             rest_info = [line.get(h) for h in HEADERS if h != "sample"]
-            
-            # First field: 0 paired-end, 1 single-end
-            single_end = int(params['single_end'])
             sample_info = [single_end, *rest_info]
-            
-            # Check sample and sequencing data present
-            if not sample:
-                print_error("sample data missing!",
-                            "Line",
-                            ",".join(str(v) if v is not None else "" for v in line.values()))
-            if params['input_type'] == "fastq":
-                if not (line.get("fastq_1")):
-                    print_error("fastq_1 data missing!",
-                                "Line",
-                                ",".join(str(v) if v is not None else "" for v in line.values()))
-                if not single_end and not line.get("fastq_2"):
-                    print_error("fastq_2 data missing!",
-                                "Line",
-                                ",".join(str(v) if v is not None else "" for v in line.values()))
-            elif params['input_type'] == "cram":
-                if not (line.get("cram_file")):
-                    print_error("cram_file data missing!",
-                                "Line",
-                                ",".join(str(v) if v is not None else "" for v in line.values()))
 
             # Create sample mapping dictionary = { sample: [ single_end, fastq_1, fastq_2 ] } or { sample: [ single_end, cram_file ] }
             if sample not in sample_mapping_dict:
@@ -292,6 +302,12 @@ def check_samplesheet(file_in, params_in, file_out):
                                 ",".join(str(v) if v is not None else "" for v in line.values()))
                 else:
                     sample_mapping_dict[sample].append(sample_info)
+
+        # Check each sample row in relation to global params
+        validating_samples = copy.deepcopy(f_reads_ln)
+        validate_all_samples(samplesheet_data = validating_samples,
+                             params = params,
+                             file_type = params['input_type'])
 
     # Check group_id column
     if not any(group_id):
