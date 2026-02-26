@@ -101,32 +101,6 @@ def validate_headers(fieldnames: list = [],
         return HEADERS
 
 
-def validate_all_samples(samplesheet_data: list[dict],
-                         params: dict,
-                         file_type: str):
-    """
-    Processes all rows in the samplesheet, collecting all validation errors.
-    """
-
-    all_validation_errors = []
-
-    processed_params = get_params(params)
-
-    for i, row in enumerate(samplesheet_data, start=2):
-        validate_headers(row_headers = list(row.keys()),
-                         file_type = file_type,
-                          is_params = True)
-
-        if 'row_identifier' not in row:
-            row['row_identifier'] = i
-
-        processed_row = get_row(row)
-        valid_row = validate_row(processed_row, processed_params, all_validation_errors)
-
-    if not valid_row and all_validation_errors:
-        display_validation_report(all_validation_errors)
-
-
 def check_sequencing_fields(input_type: str,
                             line: dict,
                             single_end: bool) -> None:
@@ -161,7 +135,7 @@ def check_sequencing_fields(input_type: str,
 
         else:
             if not fastq_2:
-                print_error("fastq_2 file path missing!",
+                print_error("fastq_2 file path missing but single_end is set globally to False!",
                             "Line",
                             ",".join(str(v) if v is not None else "" for v in line.values()))
 
@@ -187,9 +161,35 @@ def check_sequencing_fields(input_type: str,
                         ",".join(str(v) if v is not None else "" for v in line.values()))
 
         if not file.endswith(valid_extensions):
-            print_error(f"{input_type.upper()} file extension can only be {' or '.join(valid_extensions)}",
+            print_error(f"{input_type.upper()} file extension can only be {' or '.join(valid_extensions)}!",
                         "Line",
                         ",".join(str(v) if v is not None else "" for v in line.values()))
+
+
+def validate_all_samples(samplesheet_data: list[dict],
+                         params: dict,
+                         file_type: str):
+    """
+    Processes all rows in the samplesheet, collecting all validation errors.
+    """
+
+    all_validation_errors = []
+
+    processed_params = get_params(params)
+
+    for i, row in enumerate(samplesheet_data, start=2):
+        validate_headers(row_headers = list(row.keys()),
+                         file_type = file_type,
+                          is_params = True)
+
+        if 'row_identifier' not in row:
+            row['row_identifier'] = i
+
+        processed_row = get_row(row)
+        valid_row = validate_row(processed_row, processed_params, all_validation_errors)
+
+    if not valid_row and all_validation_errors:
+        display_validation_report(all_validation_errors)
 
 
 def check_samplesheet(file_in, params_in, file_out):
