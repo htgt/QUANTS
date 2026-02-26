@@ -1,7 +1,7 @@
 import subprocess
 from unittest import mock
 import pytest
-from check_samplesheet import validate_headers
+from check_samplesheet import validate_headers, check_sequencing_fields
 
 
 REQUIRED_HEADERS = [
@@ -82,6 +82,124 @@ def test_validate_headers_missing_optional_headers():
     assert mock_print.call_count == 1
 
 
+def test_check_sequencing_fields_missing_fastq_1():
+    line = {
+        "fastq_1": "",
+        "fastq_2": ""
+    }
+
+    with mock.patch("check_samplesheet.print_error") as mock_error:
+        check_sequencing_fields(
+            input_type="fastq",
+            line=line,
+            single_end=True
+        )
+
+    mock_error.assert_any_call(
+        "fastq_1 file path missing!",
+        "Line",
+        ","
+    )
+
+
+def test_check_sequencing_fields_missing_fastq_2_paired_end():
+    line = {
+        "fastq_1": "s1_1.fastq.gz",
+        "fastq_2": ""
+    }
+
+    with mock.patch("check_samplesheet.print_error") as mock_error:
+        check_sequencing_fields(
+            input_type="fastq",
+            line=line,
+            single_end=False
+        )
+
+    mock_error.assert_any_call(
+        "fastq_2 file path missing but single_end is set globally to False!",
+        "Line",
+        "s1_1.fastq.gz,"
+    )
+
+
+def test_check_sequencing_fields_fastq_2_provided_single_end():
+    line = {
+        "fastq_1": "s1_1.fastq.gz",
+        "fastq_2": "s1_2.fastq.gz"
+    }
+
+    with mock.patch("check_samplesheet.print_error") as mock_error:
+        check_sequencing_fields(
+            input_type="fastq",
+            line=line,
+            single_end=True
+        )
+
+    mock_error.assert_any_call(
+        "fastq_2 provided but single_end is set globally to True!",
+        "Line",
+        "s1_1.fastq.gz,s1_2.fastq.gz"
+    )
+
+
+def test_check_sequencing_fields_missing_cram():
+    line = {
+        "cram_path": ""
+    }
+
+    with mock.patch("check_samplesheet.print_error") as mock_error:
+        check_sequencing_fields(
+            input_type="cram",
+            line=line,
+            single_end=True
+        )
+
+    mock_error.assert_any_call(
+        "cram_path file path missing!",
+        "Line",
+        ""
+    )
+
+
+def test_check_sequencing_fields_fastq_path_with_spaces():
+    line = {
+        "fastq_1": "s1 1.fastq.gz",
+        "fastq_2": ""
+    }
+
+    with mock.patch("check_samplesheet.print_error") as mock_error:
+        check_sequencing_fields(
+            input_type="fastq",
+            line=line,
+            single_end=True
+        )
+
+    mock_error.assert_called_once_with(
+        "FASTQ file path contains spaces!",
+        "Line",
+        "s1 1.fastq.gz,"
+    )
+
+
+def test_check_sequencing_fields_cram_path_wrong_extension():
+    line = {
+        "cram_path": "s1.bam"
+    }
+
+    with mock.patch("check_samplesheet.print_error") as mock_error:
+        check_sequencing_fields(
+            input_type="cram",
+            line=line,
+            single_end=True
+        )
+
+    mock_error.assert_called_once_with(
+        "CRAM file extension can only be .cram!",
+        "Line",
+        "s1.bam"
+    )
+
+
 def test_check_samplesheet_command_runs_as_expected_fastq(tmp_path):
     # Prepare a minimal valid samplesheet
     input_csv = tmp_path / "samplesheet.csv"
@@ -159,7 +277,7 @@ def test_check_samplesheet_command_runs_as_expected_cram(tmp_path):
     output_csv = tmp_path / "samplesheet.valid.csv"
 
     input_csv.write_text(
-        "sample,cram_file,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform\n"
+        "sample,cram_path,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform\n"
         "SAMPLE_PE,SAMPLE_PE_RUN1_1.cram,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement\n"
         "SAMPLE_SE,SAMPLE_SE_RUN1_1.cram,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,\n"
     )
@@ -187,7 +305,7 @@ def test_check_samplesheet_command_runs_as_expected_cram(tmp_path):
     expected_output_csv = tmp_path / "expected_output.csv"
 
     expected_output_csv.write_text(
-        "sample,single_end,cram_file,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform\n"
+        "sample,single_end,cram_path,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform\n"
         "SAMPLE_PE,1,SAMPLE_PE_RUN1_1.cram,SAMPLE_PE_meta.csv,path/to/illumina_adaptors.fa,GAA,AAG,CTT,TTC,reverse_complement\n"
         "SAMPLE_SE,1,SAMPLE_SE_RUN1_1.cram,SAMPLE_SE_meta.csv,path/to/illumina_adaptors.fa,GTT,TAC,GTT,TAC,\n"
     )
@@ -202,8 +320,8 @@ def test_check_samplesheet_command_runs_as_expected_cram(tmp_path):
             str(output_csv)
         ],
         capture_output=True,
-        text=True
-        # check=True
+        text=True,
+        check=True
     )
 
     # Check that the output file exists and has the expected header
@@ -211,7 +329,7 @@ def test_check_samplesheet_command_runs_as_expected_cram(tmp_path):
 
     with open(output_csv) as f:
         header = f.readline().strip()
-    expected_header = "sample,single_end,cram_file,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform"
+    expected_header = "sample,single_end,cram_path,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform"
     assert header == expected_header, "Header does not match expected output."
 
     # Check if input csv is same as expected output csv
@@ -268,6 +386,232 @@ def test_check_samplesheet_inconsistent_number_of_columns(tmp_path):
     assert "Inconsistent number of columns" in process_out.stdout
 
 
+def test_check_samplesheet_invalid_number_columns(tmp_path):
+    # Prepare a minimal valid samplesheet
+    input_csv = tmp_path / "samplesheet.csv"
+    input_json = tmp_path / "params.json"
+    output_csv = tmp_path / "samplesheet.valid.csv"
+
+    input_csv.write_text(
+        "sample,fastq_1,fastq_2\n"
+        "s1,,\n"
+        "s2,,\n"
+    )
+
+    input_json.write_text(
+        '{\n'
+        '"single_end": true,\n'
+        '"input_type": "fastq",\n'
+        '"raw_sequencing_qc": false,\n'
+        '"adapter_trimming": "",\n'
+        '"primer_trimming": "",\n'
+        '"read_modification": false,\n'
+        '"transform_library": false,\n'
+        '"quantification": "",\n'
+        '"downsampling": false\n'
+        '}\n'
+    )
+
+    # Run the command to check the samplesheet
+    process_out = subprocess.run(
+        [
+            "python3",
+            "bin/check_samplesheet.py",
+            str(input_csv),
+            str(input_json),
+            str(output_csv)
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    # Assert that sys.exit(1) was called
+    assert process_out.returncode == 1
+
+    # Check error message in stdout or stderr
+    assert "Invalid number of populated columns" in process_out.stdout
+
+
+def test_check_samplesheet_no_sample_entry(tmp_path):
+    # Prepare a minimal valid samplesheet
+    input_csv = tmp_path / "samplesheet.csv"
+    input_json = tmp_path / "params.json"
+    output_csv = tmp_path / "samplesheet.valid.csv"
+
+    input_csv.write_text(
+        "sample,fastq_1,fastq_2\n"
+        ",s1_1.fq.gz,s1_2.fq.gz\n"
+        ",s2_2.fq.gz,s2_2.fq.gz\n"
+    )
+
+    input_json.write_text(
+        '{\n'
+        '"single_end": false,\n'
+        '"input_type": "fastq",\n'
+        '"raw_sequencing_qc": false,\n'
+        '"adapter_trimming": "",\n'
+        '"primer_trimming": "",\n'
+        '"read_modification": false,\n'
+        '"transform_library": false,\n'
+        '"quantification": "",\n'
+        '"downsampling": false\n'
+        '}\n'
+    )
+
+    # Run the command to check the samplesheet
+    process_out = subprocess.run(
+        [
+            "python3",
+            "bin/check_samplesheet.py",
+            str(input_csv),
+            str(input_json),
+            str(output_csv)
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    # Assert that sys.exit(1) was called
+    assert process_out.returncode == 1
+
+    # Check error message in stdout or stderr
+    assert "Sample entry has not been specified!" in process_out.stdout
+
+
+def test_check_samplesheet_duplicate_rows(tmp_path):
+    # Prepare a minimal valid samplesheet
+    input_csv = tmp_path / "samplesheet.csv"
+    input_json = tmp_path / "params.json"
+    output_csv = tmp_path / "samplesheet.valid.csv"
+
+    input_csv.write_text(
+        "sample,fastq_1,fastq_2\n"
+        "s1,s1.fq.gz,\n"
+        "s1,s1.fq.gz,\n"
+    )
+
+    input_json.write_text(
+        '{\n'
+        '"single_end": true,\n'
+        '"input_type": "fastq",\n'
+        '"raw_sequencing_qc": false,\n'
+        '"adapter_trimming": "",\n'
+        '"primer_trimming": "",\n'
+        '"read_modification": false,\n'
+        '"transform_library": false,\n'
+        '"quantification": "",\n'
+        '"downsampling": false\n'
+        '}\n'
+    )
+
+    # Run the command to check the samplesheet
+    process_out = subprocess.run(
+        [
+            "python3",
+            "bin/check_samplesheet.py",
+            str(input_csv),
+            str(input_json),
+            str(output_csv)
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    # Assert that sys.exit(1) was called
+    assert process_out.returncode == 1
+
+    # Check error message in stdout or stderr
+    assert "Samplesheet contains duplicate rows!" in process_out.stdout
+
+
+def test_check_samplesheet_group_id_missing_all(tmp_path):
+    # Prepare a minimal valid samplesheet
+    input_csv = tmp_path / "samplesheet.csv"
+    input_json = tmp_path / "params.json"
+    output_csv = tmp_path / "samplesheet.valid.csv"
+
+    input_csv.write_text(
+        "sample,fastq_1,fastq_2\n"
+        "s1,s1.fq.gz,\n"
+        "s1,s2.fq.gz,\n"
+    )
+
+    input_json.write_text(
+        '{\n'
+        '"single_end": true,\n'
+        '"input_type": "fastq",\n'
+        '"raw_sequencing_qc": false,\n'
+        '"adapter_trimming": "",\n'
+        '"primer_trimming": "",\n'
+        '"read_modification": false,\n'
+        '"transform_library": false,\n'
+        '"quantification": "",\n'
+        '"downsampling": false\n'
+        '}\n'
+    )
+
+    # Run the command to check the samplesheet
+    process_out = subprocess.run(
+        [
+            "python3",
+            "bin/check_samplesheet.py",
+            str(input_csv),
+            str(input_json),
+            str(output_csv)
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    # Check error message in stdout or stderr
+    assert "Samplesheet group_id column not found or entirely empty" in process_out.stdout
+
+
+def test_check_samplesheet_group_id_missing_some(tmp_path):
+    # Prepare a minimal valid samplesheet
+    input_csv = tmp_path / "samplesheet.csv"
+    input_json = tmp_path / "params.json"
+    output_csv = tmp_path / "samplesheet.valid.csv"
+
+    input_csv.write_text(
+        "group_id,sample,fastq_1,fastq_2\n"
+        "grp1,s1,s1.fq.gz,\n"
+        ",s1,s2.fq.gz,\n"
+    )
+
+    input_json.write_text(
+        '{\n'
+        '"single_end": true,\n'
+        '"input_type": "fastq",\n'
+        '"raw_sequencing_qc": false,\n'
+        '"adapter_trimming": "",\n'
+        '"primer_trimming": "",\n'
+        '"read_modification": false,\n'
+        '"transform_library": false,\n'
+        '"quantification": "",\n'
+        '"downsampling": false\n'
+        '}\n'
+    )
+
+    # Run the command to check the samplesheet
+    process_out = subprocess.run(
+        [
+            "python3",
+            "bin/check_samplesheet.py",
+            str(input_csv),
+            str(input_json),
+            str(output_csv)
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    # Assert that error was raised
+    assert process_out.returncode == 1
+
+    # Check error message in stdout or stderr
+    assert "Please ensure that all samples have values for group_id in the samplesheet" in process_out.stderr
+
 def test_check_samplesheet_extra_column(tmp_path):
     # Prepare a minimal valid samplesheet
     input_csv = tmp_path / "samplesheet.csv"
@@ -292,14 +636,6 @@ def test_check_samplesheet_extra_column(tmp_path):
         '"quantification": "pyquest",\n'
         '"downsampling": false\n'
         '}\n'
-    )
-
-    expected_output_csv = tmp_path / "expected_output.csv"
-
-    expected_output_csv.write_text(
-        "sample,single_end,fastq_1,fastq_2,oligo_library\n"
-        "SAMPLE_PE,1,SAMPLE_PE_RUN1_1.fastq.gz,,SAMPLE_PE_meta.csv\n"
-        "SAMPLE_SE,0,SAMPLE_SE_RUN1_1.fastq.gz,SAMPLE_SE_RUN1_2.fastq.gz,SAMPLE_SE_meta.csv\n"
     )
 
     # Run the command to check the samplesheet
