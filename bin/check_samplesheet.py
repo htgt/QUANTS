@@ -8,7 +8,7 @@ import sys
 import errno
 import argparse
 
-from validate_samplesheet import get_params, get_row, validate_row, display_validation_report
+from validate_samplesheet_rows import get_params, get_row, validate_row, display_validation_report
 
 
 def parse_args(args=None):
