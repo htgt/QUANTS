@@ -658,6 +658,52 @@ def test_check_samplesheet_extra_column(tmp_path):
     assert "ERROR: Check for invalid headers in the samplesheet: var1" in process_out.stderr
 
 
+def test_check_samplesheet_extra_commas(tmp_path):
+    # Prepare a minimal valid samplesheet
+    input_csv = tmp_path / "samplesheet.csv"
+    input_json = tmp_path / "params.json"
+    output_csv = tmp_path / "samplesheet.valid.csv"
+
+    input_csv.write_text(
+        "sample,,fastq_1,fastq_2\n"
+        "sample1,,/path/to/sample1.fastq.gz,\n"
+        "sample2,,/path/to/sample1.fastq.gz,\n"
+    )
+
+    input_json.write_text(
+        '{\n'
+        '"single_end": true,\n'
+        '"input_type": "fastq",\n'
+        '"raw_sequencing_qc": false,\n'
+        '"adapter_trimming": "",\n'
+        '"primer_trimming": "",\n'
+        '"read_modification": false,\n'
+        '"transform_library": false,\n'
+        '"quantification": "",\n'
+        '"downsampling": false\n'
+        '}\n'
+    )
+
+    # Run the command to check the samplesheet
+    process_out = subprocess.run(
+        [
+            "python3",
+            "bin/check_samplesheet.py",
+            str(input_csv),
+            str(input_json),
+            str(output_csv)
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    # Assert that sys.exit(1) was called
+    assert process_out.returncode == 1
+
+    # Check error message in stdout or stderr
+    assert "ERROR: Check in the samplesheet if there are any extra commas" in process_out.stderr
+
+
 def test_check_samplesheet_multiple_rows_same_sample(tmp_path):
     # Prepare a minimal valid samplesheet
     input_csv = tmp_path / "samplesheet.csv"
