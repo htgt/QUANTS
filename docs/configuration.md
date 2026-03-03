@@ -12,7 +12,7 @@
 --single_end                          [boolean] Define whether data is single-end instead of paired-end.
 --outdir                              [string]  Path to the output directory where the results will be saved. [default: ./results]
 --multiqc_title                       [string]  MultiQC report title. Printed as page header, used for filename if not otherwise specified.
---input_type                          [string]  Type of input data. Options are `fastq` (default) or `bam`.
+--input_type                          [string]  Type of input data. Options are `fastq` (default) or `cram`.
 ```
 
 ## Quality control

@@ -197,8 +197,7 @@ multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"
 //
 // editorconfig-checker-disable
 include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' addParams( options: [publish_files : ['tsv':'']] )
-include { INPUT_CHECK_FASTQ;
-          INPUT_CHECK_CRAM } from '../subworkflows/local/input_check' addParams( options: [:] )
+include { INPUT_CHECK } from '../subworkflows/local/input_check' addParams( options: [:] )
 include { CRAM_TO_FASTQ } from '../subworkflows/local/cram_to_fastq' addParams( options: [:] )
 include { READ_TRANSFORM } from '../subworkflows/local/read_transform' addParams( options: [:] )
 include { READ_MERGING } from '../subworkflows/local/read_merging' addParams( options: [:] )
@@ -246,26 +245,22 @@ workflow SGE {
     seqkit_stat_ch = Channel.empty()
     cutadapt_jsons_ch = Channel.empty()
 
-    if (params.input_type == 'cram') {
-        //
-        // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-        //
-        INPUT_CHECK_CRAM ( ch_input )
+    //
+    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+    //
+    INPUT_CHECK ( ch_input )
 
+    if (params.input_type == 'cram') {
         //
         // SUBWORKFLOW: Convert CRAM to FASTQ
         //
-        CRAM_TO_FASTQ(INPUT_CHECK_CRAM.out.crams)
+        CRAM_TO_FASTQ(INPUT_CHECK.out.seq_data)
         ch_raw_reads = CRAM_TO_FASTQ.out.reads
         ch_adapter_trim = ch_raw_reads
         ch_software_versions = ch_software_versions.mix(CRAM_TO_FASTQ.out.versions)
     } else {
-        //
-        // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-        //
-        INPUT_CHECK_FASTQ ( ch_input )
-        ch_raw_reads = INPUT_CHECK_FASTQ.out.reads
-        ch_adapter_trim = INPUT_CHECK_FASTQ.out.reads
+        ch_raw_reads = INPUT_CHECK.out.seq_data
+        ch_adapter_trim = INPUT_CHECK.out.seq_data
     }
 
     //

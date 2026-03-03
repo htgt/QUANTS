@@ -217,34 +217,6 @@ def validate_row(row={}, params={}, errors=[]):
         return False
 
 
-def validate_all_samples(samplesheet_data, params):
-    """
-    Processes all rows in the samplesheet, collecting all validation errors.
-    """
-    all_validation_errors = []
-
-    processed_params = get_params(params)
-
-    for i, row in enumerate(samplesheet_data, start=2):
-
-        from check_samplesheet_fastq import validate_headers
-
-        validate_headers(
-                            row_headers = list(row.keys()),
-                            processed_params = processed_params,
-                            is_params = True
-                        )
-
-        if 'row_identifier' not in row:
-            row['row_identifier'] = i
-
-        processed_row = get_row(row)
-        valid_row = validate_row(processed_row, processed_params, all_validation_errors)
-
-    if not valid_row and all_validation_errors:
-        display_validation_report(all_validation_errors)
-
-
 def display_validation_report(all_validation_errors):
 
     for error_msg in all_validation_errors:
