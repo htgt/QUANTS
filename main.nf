@@ -9,11 +9,17 @@
 
 nextflow.enable.dsl = 2
 
+// Import nf-schema plugin functions for parameter validation
+include { validateParameters; paramsHelp; paramsSummaryLog } from 'plugin/nf-schema'
+
 /*
 ========================================================================================
     VALIDATE & PRINT PARAMETER SUMMARY
 ========================================================================================
 */
+
+// Validate input parameters
+validateParameters()
 
 WorkflowMain.initialise(workflow, params, log)
 

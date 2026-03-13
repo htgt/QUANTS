@@ -54,9 +54,10 @@ class WorkflowMain {
         }
 
         // Validate workflow parameters via the JSON schema
-        if (params.validate_params) {
-            NfcoreSchema.validateParameters(workflow, params, log)
-        }
+        // NOTE: Validation is now handled via nf-schema plugin in main.nf
+        // if (params.validate_params) {
+        //     NfcoreSchema.validateParameters(workflow, params, log)
+        // }
 
         // Print parameter summary log to screen
         log.info paramsSummaryLog(workflow, params, log)
