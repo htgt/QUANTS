@@ -1,10 +1,10 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://gitlab.internal.sanger.ac.uk/team113_nextflow_pipelines/QUANTS/-/blob/master/nextflow_schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://gitlab.internal.sanger.ac.uk/team113_nextflow_pipeline/QUANTS/-/blob/master/nextflow_schema.json",
     "title": "QUANTS pipeline parameters",
     "description": "Analysis pipeline for satutation genome editing screens",
     "type": "object",
-    "definitions": {
+    "$defs": {
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -55,6 +55,11 @@
                     "hidden": true
                 }
             }
+        },
+        "modules": {
+            "type": "object",
+            "description": "Tool-specific options",
+            "help_text": "Nested map of arguments for pipeline modules"
         },
         "quality_control_options": {
             "title": "Quality control options",
@@ -452,40 +457,43 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/quality_control_options"
+            "$ref": "#/$defs/quality_control_options"
         },
         {
-            "$ref": "#/definitions/read_transformation_options"
+            "$ref": "#/$defs/read_transformation_options"
         },
         {
-            "$ref": "#/definitions/read_merging_options"
+            "$ref": "#/$defs/read_merging_options"
         },
         {
-            "$ref": "#/definitions/adapter_trimming_options"
+            "$ref": "#/$defs/adapter_trimming_options"
         },
         {
-            "$ref": "#/definitions/primer_trimming_options"
+            "$ref": "#/$defs/primer_trimming_options"
         },
         {
-            "$ref": "#/definitions/read_filtering_options"
+            "$ref": "#/$defs/read_filtering_options"
         },
         {
-            "$ref": "#/definitions/read_modification_options"
+            "$ref": "#/$defs/read_modification_options"
         },
         {
-            "$ref": "#/definitions/quantification_options"
+            "$ref": "#/$defs/quantification_options"
         },
         {
-            "$ref": "#/definitions/institutional_config_options"
+            "$ref": "#/$defs/institutional_config_options"
         },
         {
-            "$ref": "#/definitions/max_job_request_options"
+            "$ref": "#/$defs/max_job_request_options"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/downsampling_options"
         }
     ]
 }
