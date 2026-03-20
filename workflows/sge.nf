@@ -433,13 +433,7 @@ workflow SGE {
     // Returns the number of reads assigned to each guide from a user-defined library
     //
     if (params.quantification) {
-        if (params.transform_library) {
-            oligo_library = params.oligo_library
-        } else {
-            oligo_library = params.oligo_library
-        }
-
-        QUANTIFICATION ( ch_reads_to_analyse, oligo_library )
+        QUANTIFICATION ( ch_reads_to_analyse )
         ch_software_versions = ch_software_versions.mix(QUANTIFICATION.out.versions)
     }
 

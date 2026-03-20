@@ -24,7 +24,6 @@ include { TRANSFORM_LIBRARY_FOR_PYQUEST  } from '../../modules/local/pyquest_lib
 workflow QUANTIFICATION {
     take:
         reads
-        oligo_library
 
     main:
         ch_sample_counts = Channel.empty()
