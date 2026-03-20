@@ -354,10 +354,11 @@ workflow SGE {
         // TODO: Review why single_end is hardcoded to true
         ch_read_transform = READ_MERGING.out.reads.map{it -> [[id: it[0].id + '_merged',
                                                                single_end: true,
-                                                               group_id: it[0].group_id
+                                                               group_id: it[0].group_id,
+                                                               oligo_library: it[0].oligo_library
                                                                ],
                                                                it[1]
-                                                             ]}
+                                                        ]}
         ch_software_versions = ch_software_versions.mix(READ_MERGING.out.versions)
 
         //
