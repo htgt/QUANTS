@@ -48,7 +48,7 @@ workflow QUANTIFICATION {
             if (params.transform_library) {
                 PYQUEST ( reads.join(TRANSFORM_LIBRARY_FOR_PYQUEST.out.oligo_library) )
             } else {
-                PYQUEST ( reads )
+                PYQUEST ( reads.join(ch_oligo_library) )
             }
 
             ch_sample_library_counts = PYQUEST.out.library_counts
