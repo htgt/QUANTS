@@ -53,7 +53,7 @@ class WorkflowMain {
             System.exit(0)
         }
 
-        // Validate Workflow parameters via the JSON schema
+        // Validate workflow parameters via the JSON schema
         if (params.validate_params) {
             NfcoreSchema.validateParameters(workflow, params, log)
         }
