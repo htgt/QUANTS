@@ -354,10 +354,11 @@ workflow SGE {
         // TODO: Review why single_end is hardcoded to true
         ch_read_transform = READ_MERGING.out.reads.map{it -> [[id: it[0].id + '_merged',
                                                                single_end: true,
-                                                               group_id: it[0].group_id
+                                                               group_id: it[0].group_id,
+                                                               oligo_library: it[0].oligo_library
                                                                ],
                                                                it[1]
-                                                             ]}
+                                                        ]}
         ch_software_versions = ch_software_versions.mix(READ_MERGING.out.versions)
 
         //
@@ -432,13 +433,7 @@ workflow SGE {
     // Returns the number of reads assigned to each guide from a user-defined library
     //
     if (params.quantification) {
-        if (params.transform_library) {
-            oligo_library = params.oligo_library
-        } else {
-            oligo_library = params.oligo_library
-        }
-
-        QUANTIFICATION ( ch_reads_to_analyse, oligo_library )
+        QUANTIFICATION ( ch_reads_to_analyse )
         ch_software_versions = ch_software_versions.mix(QUANTIFICATION.out.versions)
     }
 
