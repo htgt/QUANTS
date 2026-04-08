@@ -486,6 +486,9 @@
         },
         {
             "$ref": "#/definitions/generic_options"
+        },
+        {
+            "$ref": "#/definitions/downsampling_options"
         }
     ]
 }

@@ -27,11 +27,7 @@ if ( input_type_options.contains( params.input_type ) == false ) {
 
 // Check downsampling options
 if (params.downsampling) {
-    if (! params.single_end) {
-        printErr("Downsampling is only enabled for single-end data!")
-        exit 1
-    }
-    if (! params.downsampling_size instanceof Integer) {
+    if (!(params.downsampling_size instanceof Integer)) {
         printErr("downsampling_size must be an integer!")
         exit 1
     }
