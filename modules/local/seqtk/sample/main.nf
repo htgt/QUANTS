@@ -24,7 +24,7 @@ process SEQTK_SAMPLE {
         error "SEQTK/SAMPLE must have a sample_size value included"
     }
     if (!single_end && read_files.size() != 2) {
-        error "SEQTK/SAMPLE expected exactly 2 input FASTQs for paired-end data"
+        error "SEQTK/SAMPLE expects exactly 2 input FASTQs for paired-end data"
     }
     def commands = read_files.withIndex().collect { read, idx ->
         def suffix = single_end ? '' : "_${idx + 1}"
