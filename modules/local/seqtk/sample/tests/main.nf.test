@@ -30,7 +30,11 @@ nextflow_process {
         then {
             assertAll (
                 { assert process.success },
-                { assert process.out.reads[0][1].toString().endsWith("test.sampled_downsampled.fq.gz") }
+                { assert snapshot(process.out).match() },
+                {
+                    def reads = process.out.reads[0][1]
+                    assert reads.toString().endsWith("test.sampled_downsampled.fq.gz")
+                }
             )
         }
     }
@@ -58,7 +62,12 @@ nextflow_process {
         then {
             assertAll (
                 { assert process.success },
-                { assert process.out.reads[0][1].collect { it.toString().tokenize('/').last() } == ["test.sampled_downsampled_1.fq.gz", "test.sampled_downsampled_2.fq.gz"] }
+                { assert snapshot(process.out).match() },
+                {
+                    def reads = process.out.reads[0][1].collect { it.toString().tokenize('/').last() }
+                    assert reads.size() == 2
+                    assert reads == ["test.sampled_downsampled_1.fq.gz", "test.sampled_downsampled_2.fq.gz"]
+                }
             )
         }
     }
@@ -84,7 +93,11 @@ nextflow_process {
         then {
             assertAll (
                 { assert process.success },
-                { assert process.out.reads[0][1].toString().endsWith("test.sampled_downsampled.fq.gz") }
+                { assert snapshot(process.out).match() },
+                {
+                    def reads = process.out.reads[0][1]
+                    assert reads.toString().endsWith("test.sampled_downsampled.fq.gz")
+                }
             )
         }
     }
@@ -113,7 +126,12 @@ nextflow_process {
         then {
             assertAll (
                 { assert process.success },
-                { assert process.out.reads[0][1].collect { it.toString().tokenize('/').last() } == ["test.sampled_downsampled_1.fq.gz", "test.sampled_downsampled_2.fq.gz"] }
+                { assert snapshot(process.out).match() },
+                {
+                    def reads = process.out.reads[0][1].collect { it.toString().tokenize('/').last() }
+                    assert reads.size() == 2
+                    assert reads == ["test.sampled_downsampled_1.fq.gz", "test.sampled_downsampled_2.fq.gz"]
+                }
             )
         }
     }
