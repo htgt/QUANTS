@@ -34,8 +34,8 @@ process APPEND_STRINGS_TO_FQ {
     def software = getSoftwareName(task.process)
     def prefix = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     def input = reads
-    def append_start = meta?.append_start
-    def append_end = meta?.append_end
+    def append_start = meta?.append_start ?: ""
+    def append_end = meta?.append_end ?: ""
     def append_quality_start = append_start ? params.append_quality*append_start.length() : ""
     def append_quality_end = append_end ? params.append_quality*append_end.length() : ""
     def output = "${prefix}.modified.fq.gz"
