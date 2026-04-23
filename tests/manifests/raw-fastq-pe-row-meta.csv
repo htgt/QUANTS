@@ -1,0 +1,2 @@
+sample,fastq_1,fastq_2,group_id,primer_start,primer_end,append_start,append_end,read_transform
+test_sample,../../../tests/sample-data/xR1.fq.gz,../../../tests/sample-data/xR2.fq.gz,T1,GTGGGCTCTGCTCTGTCC,ATGGCAGTCCTGGAGAGTCC,GGACTCTCCAGGACTGCCAT,GGACAGAGCAGAGCCCAC,reverse_complement
