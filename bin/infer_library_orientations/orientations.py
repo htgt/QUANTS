@@ -130,14 +130,6 @@ class SequenceLibrary:
             return "fwd"
         if count_fwd < count_rev:
             return "rev"
-        else:
-            msg = (
-                f"{self.library.name}: Unable to determine "
-                "orientation of primers, review expt_forward_primer "
-                "and expt_reverse_primer sequences."
-            )
-            logger.error(msg)
-            raise ValueError(msg)
 
     @staticmethod
     def _calculate_transformations(
