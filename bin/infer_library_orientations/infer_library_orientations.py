@@ -16,6 +16,22 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
+def non_empty_file(value):
+    path = Path(value)
+
+    if not path.is_file():
+        raise argparse.ArgumentTypeError(
+            f"'{value}' is not a file"
+        )
+
+    if path.stat().st_size == 0:
+        raise argparse.ArgumentTypeError(
+            f"'{value}' is empty"
+        )
+
+    return path
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description=(
@@ -57,12 +73,14 @@ def parse_args():
 
     parser.add_argument(
         "--valiant_meta",
+        type=non_empty_file,
         required=True,
         help="path to valiant meta file"
     )
 
     parser.add_argument(
         "--fastq_1",
+        type=non_empty_file,
         required=True,
         help="path to fastq_1"
     )
