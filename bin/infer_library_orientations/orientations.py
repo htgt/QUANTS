@@ -35,7 +35,7 @@ def reverse_complement(dna_sequence: str) -> str:
     # Check if the input sequence contains only valid DNA bases
     if not set(dna_sequence.upper()).issubset(valid_bases):
         raise ValueError(
-            "Input sequence contains invalid characters."
+            "Input sequence contains invalid characters. "
             "Only A, T, C, and G are allowed."
         )
     complement = {"A": "T", "T": "A", "C": "G", "G": "C"}

@@ -27,7 +27,7 @@ def parse_args():
             "  - FASTQ read file\n"
             "  - Template library metadata\n\n"
             "Outputs:\n"
-            "  TSV file containing"
+            "  TSV file containing\n"
             "  - name \n"
             "  - primer_start\n"
             "  - primer_end\n"
@@ -58,7 +58,7 @@ def parse_args():
     parser.add_argument(
         "--valiant_meta",
         required=True,
-        help="path valiant met file"
+        help="path to valiant meta file"
     )
 
     parser.add_argument(
@@ -133,10 +133,9 @@ def main():
     append_start = sample_data.append_fwd
     append_end = sample_data.append_rev
 
+    read_transform = ""
     if sample_data.read_transform:
         read_transform = "reverse_complement"
-    else:
-        read_transform = ""
 
     headers = [
         "name",
