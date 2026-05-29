@@ -104,29 +104,29 @@ def main():
 
     sample_data = SequenceLibrary(sample)
 
-    logging.info("-" * 52)
+    logger.info("-" * 52)
 
-    logging.info(
+    logger.info(
         "Detecting orientation for sample: %s",
         sample.name,
     )
 
-    logging.info(
+    logger.info(
         "Primer vs. Template orientation: %s",
         sample_data.lib_relative_orientation
     )
 
-    logging.info(
+    logger.info(
         "Primer vs. Reads orientation: %s",
         sample_data.read_relative_orientation
     )
 
-    logging.info(
+    logger.info(
         "Apply reverse complement to reads: %s",
         sample_data.read_transform
     )
 
-    logging.info("-" * 52)
+    logger.info("-" * 52)
 
     primer_forward = sample_data.effective_fwd
     primer_reverse = sample_data.effective_rev
@@ -166,7 +166,7 @@ def main():
             ]
         )
 
-        logging.info(f"Created {output_file}")
+        logger.info(f"Created {output_file}")
 
 
 if __name__ == "__main__":
