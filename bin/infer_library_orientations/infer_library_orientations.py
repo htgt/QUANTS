@@ -8,6 +8,7 @@ __version__ = "1.0.0"
 import argparse
 import csv
 import logging
+import os
 from pathlib import Path
 from orientations import SequenceLibrary, SequenceSample
 
@@ -171,7 +172,7 @@ def main():
         newline="",
         encoding="utf-8"
     ) as file:
-        writer = csv.writer(file, delimiter="\t")
+        writer = csv.writer(file, delimiter="\t", lineterminator=os.linesep)
         writer.writerow(headers)
         writer.writerow(
             [
