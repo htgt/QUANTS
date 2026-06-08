@@ -16,3 +16,7 @@ tests/sample-data/*
 tests/ref/*
 !**/.gitkeep
 .nf-test/
+
+# Python cache
+__pycache__/
+*.py[cod]
