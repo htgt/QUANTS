@@ -79,13 +79,14 @@ Initial release of QUANTS, created with the [nf-core](https://nf-co.re/) templat
 
 ## 4.1.0.0 - [19th June 2026]
 
-* Memory scaling added for downsampling step
-* CPU, memory, and time set per process, and script added to summarise the execution trace
+### Added
+* Support for paired-end samples to be processed through the pipeline
+* Memory scaling for downsampling step
+* GitLab CI pipeline with a linting step
+* Validation for input files containing cram paths
+* Script to summarise the execution trace
+
+### Changed
+* CPU, memory, and time set per process
 * Updated html report produced when pipeline run
-* Added GitLab CI pipeline with a linting step
 * Overview QUANTS diagrams updated
-* nf-core cutadapt module added (but not used)
-* new process (IRODS_IGET_FILE) added but not called
-* Added validation for input files containing cram paths
-* Changes made to enable paired-end samples to be processed through the pipeline
-* Script added to infer library orientations (but not called)
