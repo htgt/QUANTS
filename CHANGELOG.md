@@ -76,3 +76,17 @@ Initial release of QUANTS, created with the [nf-core](https://nf-co.re/) templat
 * Aggregate output directories by group_id
 * Add memory scaling and error strategy for downsampling
 * Extend error codes for overall error strategy
+
+## 4.1.0.0 - [19th June 2026]
+
+### Added
+* Support for paired-end samples to be processed through the pipeline
+* Memory scaling for downsampling step
+* GitLab CI pipeline with a linting step
+* Validation for input files containing cram paths
+* Script to summarise the execution trace
+
+### Changed
+* CPU, memory, and time set per process
+* Updated html report produced when pipeline run
+* Overview QUANTS diagrams updated
