@@ -1,0 +1,65 @@
+// Test cases for IRODS_IGET_FILE process
+// - Test 1: Successful download using stub (no iget required)
+// - Test 2: Graceful failure when iget command is not available
+
+nextflow_process {
+
+    name "Test Process IRODS_IGET_FILE"
+    script "modules/local/irods/iget_file/main.nf"
+    process "IRODS_IGET_FILE"
+
+    test("Should successfully download file from iRODS (stubbed)") {
+
+        options "-stub-run"
+
+        when {
+            process {
+                """
+                input[0] = tuple([id:'dummy_sample'], '/seq/10754/10754_1#20.cram')
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def file_out = process.out.file.get(0)
+            def md5_out  = process.out.md5.get(0)
+            def ver_out  = process.out.versions.get(0)
+
+            def meta = file_out[0]
+
+            assert snapshot([
+                id: meta.id,
+                file: new File(file_out[1].toString()).getName(),
+                md5:  new File(md5_out[1].toString()).getName(),
+                versions: new File(ver_out.toString()).getName()
+            ]).match()
+        }
+    }
+
+    test("Should fail when iget command is not available") {
+
+        options "-c ${baseDir}/tests/modules/iget_file.missing_iget.config"
+
+        when {
+            process {
+                """
+                input[0] = tuple([id:'dummy_sample'], '/seq/10754/10754_1#20.cram')
+                """
+            }
+        }
+
+        then {
+            assert process.failed
+            assert process.errorMessage.contains("ERROR: iget not found (iRODS iCommands required)")
+
+            def firstLine = (process.errorMessage ?: "").readLines().find { it } ?: ""
+
+            assert snapshot([
+                status: "failed",
+                message: firstLine
+            ]).match()
+        }
+    }
+}

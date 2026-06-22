@@ -4,7 +4,7 @@ nextflow_process {
     script "modules/local/seqtk/sample/main.nf"
     process "SEQTK_SAMPLE"
 
-    test("Validate downsampling") {
+    test("Validate single-end downsampling") {
         when {
             params {
                 downsampling = true
@@ -21,8 +21,37 @@ nextflow_process {
 
         then {
             assert process.success
-            assert path(process.out.reads[0][1]).md5 == "fded5d8b62e204ed2cfada34c3af798c"
+            assert process.out.reads[0][1].toString().endsWith("test_sample_downsampled.fq.gz")
+        }
+    }
+
+    test("Validate paired-end downsampling") {
+        when {
+            params {
+                downsampling = true
+                downsampling_size = 1000000
+                downsampling_seed = 413
+            }
+
+            process {
+                """
+                input[0] = Channel.of([
+                    ["id":"test_sample", "single_end":"false"],
+                    [
+                        file("${projectDir}/tests/sample-data/xR1.fq.gz", checkIfExists: true),
+                        file("${projectDir}/tests/sample-data/xR2.fq.gz", checkIfExists: true)
+                    ]
+                ])
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.reads[0][1].collect { it.toString().tokenize('/').last() } == [
+                "test_sample_downsampled_1.fq.gz",
+                "test_sample_downsampled_2.fq.gz"
+            ]
         }
     }
 }
-

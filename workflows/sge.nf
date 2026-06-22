@@ -27,11 +27,7 @@ if ( input_type_options.contains( params.input_type ) == false ) {
 
 // Check downsampling options
 if (params.downsampling) {
-    if (! params.single_end) {
-        printErr("Downsampling is only enabled for single-end data!")
-        exit 1
-    }
-    if (! params.downsampling_size instanceof Integer) {
+    if (!(params.downsampling_size instanceof Integer)) {
         printErr("downsampling_size must be an integer!")
         exit 1
     }
@@ -98,7 +94,7 @@ if (params.read_merging_qc && !params.read_merging) {
 
 // Check read fitering is valid (if set)
 if (params.read_filtering && (!params.single_end && !params.read_merging)) {
-    printErr("Read filtering cannot be run when data is paired end or single end, but read merging is set to false.")
+    printErr("Read filtering cannot be run on paired-end data unless read_merging is enabled. Please enable read_merging or disable read_filtering.")
     exit 1
 }
 
@@ -197,8 +193,7 @@ multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"
 //
 // editorconfig-checker-disable
 include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' addParams( options: [publish_files : ['tsv':'']] )
-include { INPUT_CHECK_FASTQ;
-          INPUT_CHECK_CRAM } from '../subworkflows/local/input_check' addParams( options: [:] )
+include { INPUT_CHECK } from '../subworkflows/local/input_check' addParams( options: [:] )
 include { CRAM_TO_FASTQ } from '../subworkflows/local/cram_to_fastq' addParams( options: [:] )
 include { READ_TRANSFORM } from '../subworkflows/local/read_transform' addParams( options: [:] )
 include { READ_MERGING } from '../subworkflows/local/read_merging' addParams( options: [:] )
@@ -246,26 +241,22 @@ workflow SGE {
     seqkit_stat_ch = Channel.empty()
     cutadapt_jsons_ch = Channel.empty()
 
-    if (params.input_type == 'cram') {
-        //
-        // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-        //
-        INPUT_CHECK_CRAM ( ch_input )
+    //
+    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+    //
+    INPUT_CHECK ( ch_input )
 
+    if (params.input_type == 'cram') {
         //
         // SUBWORKFLOW: Convert CRAM to FASTQ
         //
-        CRAM_TO_FASTQ(INPUT_CHECK_CRAM.out.crams)
+        CRAM_TO_FASTQ(INPUT_CHECK.out.seq_data)
         ch_raw_reads = CRAM_TO_FASTQ.out.reads
         ch_adapter_trim = ch_raw_reads
         ch_software_versions = ch_software_versions.mix(CRAM_TO_FASTQ.out.versions)
     } else {
-        //
-        // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-        //
-        INPUT_CHECK_FASTQ ( ch_input )
-        ch_raw_reads = INPUT_CHECK_FASTQ.out.reads
-        ch_adapter_trim = INPUT_CHECK_FASTQ.out.reads
+        ch_raw_reads = INPUT_CHECK.out.seq_data
+        ch_adapter_trim = INPUT_CHECK.out.seq_data
     }
 
     //
@@ -284,12 +275,7 @@ workflow SGE {
     // SUBWORKFLOW: Run FASTQC on raw reads
     //
     if (params.raw_sequencing_qc) {
-        ch_raw_read_qc = ch_raw_reads.map{it -> [[ id: it[0].id + '_raw',
-                                                   single_end: it[0].single_end,
-                                                   group_id: it[0].group_id
-                                                 ],
-                                                 it[1]
-                                                ]}
+        ch_raw_read_qc = ch_raw_reads.map{it -> [(it[0] + [id: it[0].id + '_raw', single_end: it[0].single_end]), it[1]]}
         RAW_SEQUENCING_QC ( ch_raw_read_qc )
         ch_software_versions = ch_software_versions.mix(RAW_SEQUENCING_QC.out.fastqc_version, RAW_SEQUENCING_QC.out.seqkit_version)
         seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, RAW_SEQUENCING_QC, 'seqkit_stats')
@@ -307,12 +293,7 @@ workflow SGE {
         //SUBWORKFLOW: Run FASTQC on adapter trimmed reads
         //
         if (params.adapter_trimming_qc) {
-            ch_adapter_trimming_qc = ADAPTER_TRIMMING.out.reads.map{it -> [[id: it[0].id + '_adapter_trimmed',
-                                                                            single_end: it[0].single_end,
-                                                                            group_id: it[0].group_id
-                                                                           ],
-                                                                           it[1]
-                                                                          ]}
+            ch_adapter_trimming_qc = ADAPTER_TRIMMING.out.reads.map{it -> [(it[0] + [id: it[0].id + '_adapter_trimmed', single_end: it[0].single_end]), it[1]]}
             ADAPTER_TRIMMED_SEQUENCING_QC ( ch_adapter_trimming_qc )
             ch_software_versions = ch_software_versions.mix(ADAPTER_TRIMMED_SEQUENCING_QC.out.fastqc_version, ADAPTER_TRIMMED_SEQUENCING_QC.out.seqkit_version)
             seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, ADAPTER_TRIMMED_SEQUENCING_QC, 'seqkit_stats')
@@ -324,58 +305,52 @@ workflow SGE {
     }
 
     //
-    // SUBWORKFLOW: Run primer trimming
-    //
-    if (params.primer_trimming) {
-        // Run primer trimming
-        PRIMER_TRIMMING ( ch_primer_trim )
-        ch_software_versions = ch_software_versions.mix(PRIMER_TRIMMING.out.versions)
-        cutadapt_jsons_ch = add_stats_with_stage(cutadapt_jsons_ch, PRIMER_TRIMMING, 'stats')
-        //
-        //SUBWORKFLOW: Run FASTQC on primer trimmed reads
-        //
-        if (params.primer_trimming_qc) {
-            ch_primer_trimming_qc = PRIMER_TRIMMING.out.reads.map{it -> [[id: it[0].id + '_primer_trimmed',
-                                                                          single_end: it[0].single_end,
-                                                                          group_id: it[0].group_id
-                                                                         ],
-                                                                         it[1]
-                                                                        ]}
-            PRIMER_TRIMMED_SEQUENCING_QC ( ch_primer_trimming_qc )
-            ch_software_versions = ch_software_versions.mix(PRIMER_TRIMMED_SEQUENCING_QC.out.fastqc_version, PRIMER_TRIMMED_SEQUENCING_QC.out.seqkit_version)
-            seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, PRIMER_TRIMMED_SEQUENCING_QC, 'seqkit_stats')
-        }
-        // Send to next stage
-        ch_read_merge = PRIMER_TRIMMING.out.reads
-    } else {
-        ch_read_merge = ch_primer_trim
-    }
-
-    //
     // SUBWORKFLOW: Run read merging (PE only)
+    // Merge before primer trimming so paired-end reads become a single
+    // contiguous read for the downstream primer trimming step.
     //
     if (params.read_merging) {
-        READ_MERGING ( ch_read_merge )
-        // TODO: Review why single_end is hardcoded to true
-        ch_read_transform = READ_MERGING.out.reads.map{it -> [[id: it[0].id + '_merged',
-                                                               single_end: true,
-                                                               group_id: it[0].group_id
-                                                               ],
-                                                               it[1]
-                                                             ]}
+        READ_MERGING ( ch_primer_trim )
+        // Merged reads are derived from paired-end data but are now single contiguous sequences.
+        // Downstream steps expect single-end input, so keep single_end=true while preserving
+        // row-level metadata such as append strings and transform settings.
+        ch_post_merge = READ_MERGING.out.reads.map{it -> [(it[0] + [id: it[0].id + '_merged', single_end: true]), it[1]]}
         ch_software_versions = ch_software_versions.mix(READ_MERGING.out.versions)
 
         //
         // SUBWORKFLOW: Run FASTQC on merged reads
         //
         if (params.read_merging_qc) {
-            ch_merged_read_qc = ch_read_transform
+            ch_merged_read_qc = ch_post_merge
             MERGED_SEQUENCING_QC ( ch_merged_read_qc )
             ch_software_versions = ch_software_versions.mix(MERGED_SEQUENCING_QC.out.fastqc_version, MERGED_SEQUENCING_QC.out.seqkit_version)
             seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, MERGED_SEQUENCING_QC, 'seqkit_stats')
         }
     } else {
-        ch_read_transform = ch_read_merge
+        ch_post_merge = ch_primer_trim
+    }
+
+    //
+    // SUBWORKFLOW: Run primer trimming
+    //
+    if (params.primer_trimming) {
+        // Run primer trimming
+        PRIMER_TRIMMING ( ch_post_merge )
+        ch_software_versions = ch_software_versions.mix(PRIMER_TRIMMING.out.versions)
+        cutadapt_jsons_ch = add_stats_with_stage(cutadapt_jsons_ch, PRIMER_TRIMMING, 'stats')
+        //
+        //SUBWORKFLOW: Run FASTQC on primer trimmed reads
+        //
+        if (params.primer_trimming_qc) {
+            ch_primer_trimming_qc = PRIMER_TRIMMING.out.reads.map{it -> [(it[0] + [id: it[0].id + '_primer_trimmed', single_end: it[0].single_end]), it[1]]}
+            PRIMER_TRIMMED_SEQUENCING_QC ( ch_primer_trimming_qc )
+            ch_software_versions = ch_software_versions.mix(PRIMER_TRIMMED_SEQUENCING_QC.out.fastqc_version, PRIMER_TRIMMED_SEQUENCING_QC.out.seqkit_version)
+            seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, PRIMER_TRIMMED_SEQUENCING_QC, 'seqkit_stats')
+        }
+        // Send to next stage
+        ch_read_transform = PRIMER_TRIMMING.out.reads
+    } else {
+        ch_read_transform = ch_post_merge
     }
 
     //
@@ -406,13 +381,7 @@ workflow SGE {
         // SUBWORKFLOW: Run FASTQC on filtered reads
         //
         if (params.read_filtering_qc) {
-            // TODO: Review why single_end is hardcoded to true
-            ch_filtered_read_qc = READ_FILTERING.out.reads.map{it -> [[id: it[0].id + '_filtered',
-                                                                       single_end: true,
-                                                                       group_id: it[0].group_id
-                                                                       ],
-                                                                       it[1]
-                                                                     ]}
+            ch_filtered_read_qc = READ_FILTERING.out.reads.map{it -> [(it[0] + [id: it[0].id + '_filtered', single_end: true]), it[1]]}
             FILTERED_SEQUENCING_QC ( ch_filtered_read_qc )
             ch_software_versions = ch_software_versions.mix(FILTERED_SEQUENCING_QC.out.fastqc_version, FILTERED_SEQUENCING_QC.out.seqkit_version)
             seqkit_stat_ch = add_stats_with_stage(seqkit_stat_ch, FILTERED_SEQUENCING_QC, 'seqkit_stats')
@@ -437,13 +406,7 @@ workflow SGE {
     // Returns the number of reads assigned to each guide from a user-defined library
     //
     if (params.quantification) {
-        if (params.transform_library) {
-            oligo_library = params.oligo_library
-        } else {
-            oligo_library = params.oligo_library
-        }
-
-        QUANTIFICATION ( ch_reads_to_analyse, oligo_library )
+        QUANTIFICATION ( ch_reads_to_analyse )
         ch_software_versions = ch_software_versions.mix(QUANTIFICATION.out.versions)
     }
 

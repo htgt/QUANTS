@@ -1,0 +1,56 @@
+nextflow_pipeline {
+
+    name "Test PE read merging preserves row metadata"
+    script "main.nf"
+
+    test("Should preserve append metadata through read merging and downsampling") {
+
+        when {
+            params {
+                input = "${projectDir}/tests/manifests/raw-fastq-pe-row-meta.csv"
+                single_end = false
+                input_type = "fastq"
+                downsampling = true
+                downsampling_size = 1000000
+                downsampling_seed = 413
+                primer_trimming = "cutadapt"
+                read_merging = "flash2"
+                read_modification = true
+                append_quality = "?"
+                outdir = "./results"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def matches = []
+            new File("${projectDir}/.nf-test/tests").eachDirRecurse { dir ->
+                def candidate = new File(dir, "results/T1/modified_fastq/test_sample_merged.modified.fq.gz")
+                if (candidate.exists()) {
+                    matches << candidate
+                }
+            }
+
+            assert !matches.isEmpty()
+
+            def output = matches.max { it.lastModified() }
+            def reader = new BufferedReader(
+                new InputStreamReader(
+                    new java.util.zip.GZIPInputStream(new FileInputStream(output)),
+                    "UTF-8"
+                )
+            )
+
+            def header = reader.readLine()
+            def sequence = reader.readLine()
+            reader.close()
+
+            assert header.startsWith("@")
+            assert sequence.startsWith("GGACTCTCCAGGACTGCCAT")
+            assert sequence.endsWith("GGACAGAGCAGAGCCCAC")
+            assert !sequence.contains("null")
+        }
+
+    }
+}

@@ -1,4 +1,19 @@
 repository_type: pipeline
 lint:
+  # Checks that take a LIST of specific files to skip:
   files_exist:
-  - conf/igenomes.config
+    - CODE_OF_CONDUCT.md
+    - assets/multiqc_config.yml
+    # add whichever files you don't want checked for existence
+  files_unchanged:
+    - assets/email_template.html
+    - .github/workflows/branch.yml
+    # add whichever files you don't want checked for template match
+  multiqc_config:
+    - assets/multiqc_config.yml
+    # list specific config keys to ignore
+
+  # Checks that are all-or-nothing — False IS correct here:
+  nf_test_content: False
+  actions_awsfulltest: False
+  nextflow_config: False

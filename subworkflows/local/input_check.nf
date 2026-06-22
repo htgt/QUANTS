@@ -7,48 +7,44 @@
 
 params.options = [:]
 
-include { SAMPLESHEET_CHECK_FASTQ; SAMPLESHEET_CHECK_CRAM } from '../../modules/local/samplesheet_check' addParams( options: params.options )
+include { SAMPLESHEET_CHECK; EXTRACT_PARAMS } from '../../modules/local/samplesheet_check' addParams( options: params.options )
+
+workflow INPUT_CHECK {
+    take:
+        samplesheet // file: /path/to/samplesheet.csv
+
+    main:
+        // process to extract necessary parameters for samplesheet validation from global params
+        extracted_params = EXTRACT_PARAMS()
+
+        if (params.input_type == "fastq") {
+            fastq_ch = INPUT_CHECK_FASTQ(samplesheet, extracted_params)
+            seq_data = fastq_ch.reads
+        }
+        else if (params.input_type == "cram") {
+            cram_ch = INPUT_CHECK_CRAM(samplesheet, extracted_params)
+            seq_data = cram_ch.crams
+    }
+
+    emit:
+        seq_data
+}
 
 workflow INPUT_CHECK_FASTQ {
     take:
     samplesheet // file: /path/to/samplesheet.csv
+    extracted_params
 
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
-
-    // process to extract necessary parameters for samplesheet validation from global params
-    extracted_params = EXTRACT_PARAMS()
-
-    SAMPLESHEET_CHECK_FASTQ ( samplesheet, extracted_params )
+    SAMPLESHEET_CHECK ( samplesheet, extracted_params )
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channels(it) }
         .set { reads }
+
     emit:
         reads // channel: [ val(meta), [ reads ] ]
 }
-
-process EXTRACT_PARAMS {
-
-    output:
-    path "extracted_params.json"
-
-    script:
-    def jsonText = groovy.json.JsonOutput.toJson([
-                append_start                        : params.append_start,
-                append_end                          : params.append_end,
-                oligo_library                       : params.oligo_library,
-                adapter_trimming                    : params.adapter_trimming,
-                primer_trimming                     : params.primer_trimming,
-                read_modification                   : params.read_modification,
-                read_transform                      : params.read_transform,
-                quantification                      : params.quantification,
-            ])
-
-    """
-    echo '${jsonText.replace("'", "\\'")}' > extracted_params.json
-    """
-}
-
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_fastq_channels(LinkedHashMap row) {
@@ -66,13 +62,13 @@ def create_fastq_channels(LinkedHashMap row) {
 
     def array = []
     if (!file(row.fastq_1).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!\n${row.fastq_1}"
+        exit 1, "ERROR: Please check input samplesheet -> Read 1 FASTQ file does not exist!\n${row.fastq_1}"
     }
     if (meta.single_end) {
         array = [ meta, [ file(row.fastq_1) ] ]
     } else {
         if (!file(row.fastq_2).exists()) {
-            exit 1, "ERROR: Please check input samplesheet -> Read 2 FastQ file does not exist!\n${row.fastq_2}"
+            exit 1, "ERROR: Please check input samplesheet -> Read 2 FASTQ file does not exist!\n${row.fastq_2}"
         }
         array = [ meta, [ file(row.fastq_1), file(row.fastq_2) ] ]
     }
@@ -82,27 +78,37 @@ def create_fastq_channels(LinkedHashMap row) {
 workflow INPUT_CHECK_CRAM {
     take:
     samplesheet // file: /path/to/samplesheet.csv
+    extracted_params
 
     main:
     //TODO: look into doing this as a single step rather than duplicating check loop
-    SAMPLESHEET_CHECK_CRAM ( samplesheet )
+    SAMPLESHEET_CHECK ( samplesheet, extracted_params )
         .splitCsv ( header:true, sep:',' )
         .map { create_cram_channels(it) }
         .set { crams }
+
     emit:
-        crams // channel: [ val(meta), [ cram_file ] ]
+        crams // channel: [ val(meta), [ cram_path ] ]
 }
 
-// Function to get list of [ meta, [ cram_file ] ]
+// Function to get list of [ meta, [ cram_path ] ]
 def create_cram_channels(LinkedHashMap row) {
     def meta = [:]
-    meta.id           = row.sample
-    meta.single_end   = row.single_end.toBoolean()
+    meta.id                        = row.sample
+    meta.single_end                = row.single_end.toBoolean()
+    meta.group_id                  = row.group_id
+    meta.read_transform            = row.read_transform
+    meta.adapter_path              = row.adapter_path
+    meta.primer_start              = row.primer_start
+    meta.primer_end                = row.primer_end
+    meta.append_start              = row.append_start
+    meta.append_end                = row.append_end
+    meta.oligo_library             = row.oligo_library
 
     def array = []
-    if (!file(row.cram_file).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> CRAM file does not exist!\n${row.cram_file}"
+    if (!file(row.cram_path).exists()) {
+        exit 1, "ERROR: Please check input samplesheet -> CRAM file does not exist!\n${row.cram_path}"
     }
-    array = [ meta, [ file(row.cram_file) ] ]
+    array = [ meta, [ file(row.cram_path) ] ]
     return array
 }
