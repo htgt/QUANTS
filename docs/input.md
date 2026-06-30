@@ -35,25 +35,9 @@ S03_D7_R1,S03_D7_R1_merged.cram,
 S04_D7_R2,S04_D7_R2_merged.cram,
 ```
 
-### Example of complete samplesheet with all available fields
+### Valid samplesheet fields
 
-Note the example below contains FASTQ files, but sample-specific parameters can be added to CRAM samplesheets in the same way.
-
-```csv
-sample,group_id,fastq_1,fastq_2,oligo_library,append_start,append_end,primer_start,primer_end,read_transform,adapter_path
-S01_D4_R1,AAAA,S01_D4_R1_1.fastq.gz,S01_D4_R1_2.fastq.gz,/path/to/meta1.csv,CTTGC,GCTG,CAGC,GCAAG,reverse_complement,path/to/adaptors.fa
-S02_D4_R2,AAAA,S02_D4_R2_1.fastq.gz,S02_D4_R2_2.fastq.gz,/path/to/meta1.csv,CTTGC,GCTG,CAGC,GCAAG,reverse_complement,path/to/adaptors.fa
-S03_D7_R1,AAAA,S03_D7_R1_1.fastq.gz,S03_D7_R1_2.fastq.gz,/path/to/meta1.csv,CTTGC,GCTG,CAGC,GCAAG,reverse_complement,path/to/adaptors.fa
-S04_D7_R2,AAAA,S04_D7_R2_1.fastq.gz,S04_D7_R2_2.fastq.gz,/path/to/meta1.csv,CTTGC,GCTG,CAGC,GCAAG,reverse_complement,path/to/adaptors.fa
-S05_D4_R1,BBBB,S05_D4_R1_1.fastq.gz,S05_D4_R1_2.fastq.gz,/path/to/meta2.csv,ATACG,AACG,CGTT,CGTAT,reverse_complement,path/to/adaptors.fa
-S06_D7_R1,BBBB,S06_D7_R1_1.fastq.gz,S06_D7_R1_2.fastq.gz,/path/to/meta2.csv,ATACG,AACG,CGTT,CGTAT,reverse_complement,path/to/adaptors.fa
-
-```
-
-The sample-specific parameters are in relation to the global params (see [configurations](configuration.md#quants-configuration)). Samplesheet fields must be consistent with the global parameters (see configuration), i.e., fields may vary depending on global parameter settings. For example, the samplesheet can only include `oligo_library` values if the global quantification parameter is set to `"pyquest"`. 
-
-
-Available samplesheet fields are in the table below:
+Valid samplesheet fields are in the table below:
 
 | Column         | Description                                                                                                                |
 |----------------|----------------------------------------------------------------------------------------------------------------------------|
@@ -69,7 +53,46 @@ Available samplesheet fields are in the table below:
 | `primer_end`   | (Optional) Primer sequence to trim from the end of reads. Required if `primer_trimming` is set in global parameters.                                       |
 | `read_transform`| (Optional) Define this to `reverse`, `complement` or `reverse_complement` if transformation is required, else leave empty. |
 | `adapter_path` | (Optional) Path to a FASTA file containing adapter sequences to trim from reads. Required if `adapter_trimming` is set in global parameters.                                   |
+| `expt_forward_primer` | (Optional) Sequence of the forward primer used in the experiment. This will replace `primer_start`, but this change is currently under development. This is accepted in the samplesheet but not used in the pipeline currently.                                    |
+| `expt_reverse_primer` | (Optional) Sequence of the reverse primer used in the experiment. This will replace `primer_end`, but this change is currently under development. This is accepted in the samplesheet but not used in the pipeline currently.                                  |
 
+Note that the sample-specific parameters are in relation to the global params (see [configurations](configuration.md#quants-configuration)). Samplesheet fields must be consistent with the global parameters (see configuration), i.e., fields may vary depending on global parameter settings. For example, the samplesheet can only include `oligo_library` values if the global quantification parameter is set to `"pyquest"`.
+
+### Example of samplesheet (compatible with QUANTS release 4.x.x.x)
+
+Note the example below contains FASTQ files, but sample-specific parameters can be added to CRAM samplesheets in the same way.
+
+This is the format which should be used for any current production runs.
+
+```csv
+sample,group_id,fastq_1,fastq_2,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform
+S01_D4_R1,AAAA,S01_D4_R1_1.fastq.gz,S01_D4_R1_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement
+S02_D4_R2,AAAA,S02_D4_R2_1.fastq.gz,S02_D4_R2_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement
+S03_D7_R1,AAAA,S03_D7_R1_1.fastq.gz,S03_D7_R1_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement
+S04_D7_R2,AAAA,S04_D7_R2_1.fastq.gz,S04_D7_R2_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement
+S05_D4_R1,BBBB,S05_D4_R1_1.fastq.gz,S05_D4_R1_2.fastq.gz,/path/to/meta2.csv,path/to/adaptors.fa,CGTT,CGTAT,ATACG,AACG,reverse_complement
+S06_D7_R1,BBBB,S06_D7_R1_1.fastq.gz,S06_D7_R1_2.fastq.gz,/path/to/meta2.csv,path/to/adaptors.fa,CGTT,CGTAT,ATACG,AACG,reverse_complement
+
+```
+
+### [BETA/UNDER DEVELOPMENT] Example of samplesheet with all available fields (interim format)
+
+Note that this is an interim format as subsequent changes, under development, will validate the new columns and provide alternative ways in which the samplesheet can be structured.
+
+Any values provided in `expt_forward_primer` and `expt_reverse_primer` will not be used in the pipeline at the moment.
+
+```csv
+sample,group_id,fastq_1,fastq_2,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform,expt_forward_primer,expt_reverse_primer
+S01_D4_R1,AAAA,S01_D4_R1_1.fastq.gz,S01_D4_R1_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement,GCTG,CTTGC
+S02_D4_R2,AAAA,S02_D4_R2_1.fastq.gz,S02_D4_R2_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement,GCTG,CTTGC
+S03_D7_R1,AAAA,S03_D7_R1_1.fastq.gz,S03_D7_R1_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement,GCTG,CTTGC
+S04_D7_R2,AAAA,S04_D7_R2_1.fastq.gz,S04_D7_R2_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement,GCTG,CTTGC
+S05_D4_R1,BBBB,S05_D4_R1_1.fastq.gz,S05_D4_R1_2.fastq.gz,/path/to/meta2.csv,path/to/adaptors.fa,CGTT,CGTAT,ATACG,AACG,reverse_complement,AACG,ATACG
+S06_D7_R1,BBBB,S06_D7_R1_1.fastq.gz,S06_D7_R1_2.fastq.gz,/path/to/meta2.csv,path/to/adaptors.fa,CGTT,CGTAT,ATACG,AACG,reverse_complement,AACG,ATACG
+
+```
+
+```
 
 ### Other inputs
 

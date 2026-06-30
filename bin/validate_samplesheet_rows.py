@@ -52,14 +52,16 @@ def get_row(row):
         "oligo_library"      : row.get('oligo_library', 'noCol'),
         "read_transform"     : row.get('read_transform', ''),
         "group_id"           : row.get('group_id', ''),
+        "expt_forward_primer": row.get('expt_forward_primer', 'noCol'),
+        "expt_reverse_primer": row.get('expt_reverse_primer', 'noCol')
     }
 
     return SimpleNamespace(**row_obj)
 
 
-def validate_row(row={}, params={}, errors=[]):
+def validate_row(row={}, params={}):
     """
-    Validates a single row of the samplesheet and appends any error messages to the errors list.
+    Validates a single row of the samplesheet and returns any error messages.
     """
     row_errors = []
 
@@ -164,10 +166,10 @@ def validate_row(row={}, params={}, errors=[]):
         match_primer = lambda seq: seq if not bool(VALID_BASES_PATTERN.match(str(seq))) else ''
 
         if (match_primer(row.primer_start) or match_primer(row.primer_end)):
-            msg = "Values for primer_start and primer_end must be provided with a valid strings in the samplesheet."
+            msg = "Values for primer_start and primer_end must be provided with valid strings in the samplesheet."
             row_errors.append(msg)
 
-    # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplehseet.
+    # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplesheet.
     if not params.primer_trimming:
 
         if row.primer_start != "noCol" and not len(row.primer_start) == 0:
@@ -213,8 +215,9 @@ def validate_row(row={}, params={}, errors=[]):
         row_errors.append(msg)
 
     if row_errors:
-        errors.extend([f"Row {row.row_identifier} : Sample-{row.sample} : {err}" for err in row_errors])
-        return False
+        return ([f"Row {row.row_identifier} : Sample-{row.sample} : {err}" for err in row_errors])
+
+    return row_errors
 
 
 def display_validation_report(all_validation_errors):

@@ -1,43 +1,42 @@
-import subprocess
-from unittest import mock
 import pytest
-from check_samplesheet import validate_headers, check_sequencing_fields
+import subprocess
+
+from check_samplesheet import check_sequencing_fields, OPTIONAL_HEADERS, REQUIRED_HEADERS, validate_all_samples, validate_headers
+from types import SimpleNamespace
+from unittest import mock
 
 
-REQUIRED_HEADERS = [
-            "sample",
-            "fastq_1",
-            "fastq_2"
-        ]
-
-OPTIONAL_HEADERS = [
-            "oligo_library",
-            "adapter_path",
-            "primer_start",
-            "primer_end",
-            "append_start",
-            "append_end",
-            "read_transform"
-        ]
+@pytest.fixture(autouse=True)
+def reset_required_headers():
+    REQUIRED_HEADERS[:] = ["sample"]
 
 
-def test_validate_headers_all_present():
-    all_fieldnames = [
-            "sample",
-            "fastq_1",
-            "fastq_2",
-            "oligo_library",
-            "adapter_path",
-            "primer_start",
-            "primer_end",
-            "append_start",
-            "append_end",
-            "read_transform"
-        ]
+def test_validate_headers_all_present_fastq():
+    all_fieldnames = REQUIRED_HEADERS + ["fastq_1", "fastq_2"] + OPTIONAL_HEADERS
 
     result = validate_headers(fieldnames = all_fieldnames, file_type = "fastq")
 
     assert result == REQUIRED_HEADERS + OPTIONAL_HEADERS
+
+
+def test_validate_headers_all_present_cram():
+    all_fieldnames = REQUIRED_HEADERS + ["cram_path"] + OPTIONAL_HEADERS
+
+    result = validate_headers(fieldnames = all_fieldnames, file_type = "cram")
+
+    assert result == REQUIRED_HEADERS + OPTIONAL_HEADERS
+
+
+def test_validate_headers_no_row_headers(capsys):
+    row_headers = []
+
+    with pytest.raises(SystemExit) as exc_info:
+        validate_headers(row_headers = row_headers, is_params = True)
+
+    assert exc_info.value.code == 1
+
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "No row to validate headers."
 
 
 def test_validate_headers_missing_required_headers():
@@ -73,8 +72,10 @@ def test_validate_headers_missing_optional_headers():
         validate_headers(fieldnames = fieldnames, file_type = "fastq")
 
     # Check that the warning message is printed
+    missing_optional_headers = [header for header in OPTIONAL_HEADERS if header not in fieldnames]
+
     mock_print.assert_called_once_with(
-        "WARNING: samplesheet missing optional headers: group_id, read_transform"
+        f"WARNING: samplesheet missing optional headers: {', '.join(missing_optional_headers)}"
     )
 
     # Check at least once print statement was called
@@ -198,6 +199,102 @@ def test_check_sequencing_fields_cram_path_wrong_extension():
         "Line",
         "s1.bam"
     )
+
+@mock.patch("check_samplesheet.get_params")
+@mock.patch("check_samplesheet.validate_headers")
+@mock.patch("check_samplesheet.get_row")
+@mock.patch("check_samplesheet.validate_row")
+@mock.patch("check_samplesheet.display_validation_report")
+def test_validate_all_samples_no_errors(
+    mock_display_report,
+    mock_validate_row,
+    mock_get_row,
+    mock_validate_headers,
+    mock_get_params
+):
+    samplesheet_data = [
+        {"sample": "A"},
+        {"sample": "B"},
+    ]
+    params = {"foo": "bar"}
+
+    mock_get_params.return_value = SimpleNamespace()
+    mock_get_row.return_value = SimpleNamespace()
+    mock_validate_row.return_value = []
+
+    validate_all_samples(
+        samplesheet_data=samplesheet_data,
+        params=params,
+        file_type="fastq",
+    )
+
+    mock_get_params.assert_called_once_with(params)
+    assert mock_validate_headers.call_count == 2
+    assert mock_get_row.call_count == 2
+    assert mock_validate_row.call_count == 2
+    mock_display_report.assert_not_called()
+
+
+@mock.patch("check_samplesheet.get_params")
+@mock.patch("check_samplesheet.validate_headers")
+@mock.patch("check_samplesheet.get_row")
+@mock.patch("check_samplesheet.validate_row")
+@mock.patch("check_samplesheet.display_validation_report")
+def test_validate_all_samples_errors(
+    mock_display_report,
+    mock_validate_row,
+    mock_get_row,
+    mock_validate_headers,
+    mock_get_params
+):
+    samplesheet_data = [
+        {"sample": "A"},
+        {"sample": "B"},
+    ]
+    params = {"foo": "bar"}
+    error_message = ['Some error message']
+
+    mock_get_params.return_value = SimpleNamespace()
+    mock_get_row.return_value = SimpleNamespace()
+    mock_validate_row.return_value = error_message
+
+    validate_all_samples(
+        samplesheet_data=samplesheet_data,
+        params=params,
+        file_type="fastq",
+    )
+
+    mock_get_params.assert_called_once_with(params)
+    assert mock_validate_headers.call_count == 2
+    assert mock_get_row.call_count == 2
+    assert mock_validate_row.call_count == 2
+    mock_display_report.assert_called_once_with([error_message, error_message])
+
+
+@mock.patch("check_samplesheet.get_params")
+@mock.patch("check_samplesheet.get_row")
+@mock.patch("check_samplesheet.validate_row")
+def test_validate_all_samples_add_row_id(
+    mock_validate_row,
+    mock_get_row,
+    mock_get_params
+):
+    samplesheet_data = [
+        {"sample": "A"}
+    ]
+    params = {"foo": "bar"}
+
+    mock_get_params.return_value = SimpleNamespace()
+    mock_get_row.return_value = SimpleNamespace()
+    mock_validate_row.return_value = []
+
+    validate_all_samples(
+        samplesheet_data=samplesheet_data,
+        params=params,
+        file_type="fastq",
+    )
+
+    mock_get_row.assert_called_with({"sample": "A", "row_identifier": 2})
 
 
 def test_check_samplesheet_command_runs_as_expected_fastq(tmp_path):
