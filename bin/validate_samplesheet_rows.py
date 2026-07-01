@@ -41,7 +41,7 @@ def get_params(params):
 
 
 def is_valid_sequence(seq):
-    """Used to check whether primer and adapter fields contain valid strings"""
+    """Used to check whether primer and adapter fields contain valid DNA sequences"""
     return bool(VALID_BASES_PATTERN.match(str(seq)))
 
 
@@ -87,19 +87,21 @@ def validate_row(row={}, params={}):
             sys.exit(1)
 
         if len(row.expt_forward_primer) == 0:
-            msg = "expt_forward_primer should not be empty in the samplesheet."
+            msg = ("expt_forward_primer should not be empty in the samplesheet when infer_library_orientations is set "
+                   "globally.")
             row_errors.append(msg)
 
         if len(row.expt_reverse_primer) == 0:
-            msg = "expt_reverse_primer should not be empty in the samplesheet."
+            msg = ("expt_reverse_primer should not be empty in the samplesheet when infer_library_orientations is set "
+                   "globally.")
             row_errors.append(msg)
 
         if row.expt_forward_primer and not is_valid_sequence(row.expt_forward_primer):
-            msg = "expt_forward_primer is not a valid string."
+            msg = "expt_forward_primer is not a valid DNA sequence."
             row_errors.append(msg)
 
         if row.expt_reverse_primer and not is_valid_sequence(row.expt_reverse_primer):
-            msg = "expt_reverse_primer is not a valid string."
+            msg = "expt_reverse_primer is not a valid DNA sequence."
             row_errors.append(msg)
 
         # oligo_library is needed
@@ -149,7 +151,7 @@ def validate_row(row={}, params={}):
                 msg = "append_start must be set in the samplesheet."
                 row_errors.append(msg)
             elif row.append_start != "noCol" and not is_valid_sequence(row.append_start):
-                msg = "append_start must be a valid string in the samplesheet."
+                msg = "Value for append_start must be a valid DNA sequence in the samplesheet."
                 row_errors.append(msg)
 
         elif row.append_start == "noCol":
@@ -158,19 +160,19 @@ def validate_row(row={}, params={}):
                 msg = "append_end must be set in the samplesheet."
                 row_errors.append(msg)
             elif row.append_end != "noCol" and not is_valid_sequence(row.append_end):
-                msg = "append_end must be a valid string in the samplesheet."
+                msg = "Value for append_end must be a valid DNA sequence in the samplesheet."
                 row_errors.append(msg)
 
         else:
             if (row.append_start and not is_valid_sequence(row.append_start)):
-                msg = "Value for append_start must be valid strings in the samplesheet."
+                msg = "Value for append_start must be a valid DNA sequence in the samplesheet."
                 row_errors.append(msg)
 
             if (row.append_end and not is_valid_sequence(row.append_end)):
-                msg = "Value for append_end must be valid strings in the samplesheet."
+                msg = "Value for append_end must be a valid DNA sequence in the samplesheet."
                 row_errors.append(msg)
 
-            # Check if valid not-empty string is provided in the samplesheet for append_start or append_end.
+            # Check that at least one of append_start or append_end is set in the samplesheet
             if len(row.append_start) == 0 and len(row.append_end) == 0:
                 msg = "append_start or append_end must be set in the samplesheet."
                 row_errors.append(msg)
@@ -226,10 +228,10 @@ def validate_row(row={}, params={}):
             row_errors.append(msg)
 
         if (row.primer_start and not is_valid_sequence(row.primer_start)):
-            msg = "Values for primer_start must be provided as valid strings in the samplesheet."
+            msg = "Value for primer_start must be provided as a valid DNA sequence in the samplesheet."
             row_errors.append(msg)
         if (row.primer_end and not is_valid_sequence(row.primer_end)):
-            msg = "Values for primer_end must be provided as valid strings in the samplesheet."
+            msg = "Value for primer_end must be provided as a valid DNA sequence in the samplesheet."
             row_errors.append(msg)
 
     # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplesheet.
@@ -262,7 +264,7 @@ def validate_row(row={}, params={}):
 
         if row.oligo_library != "noCol" and not len(row.oligo_library) == 0:
             msg = ("If quantification and infer_library_orientations are globally set to False, then the oligo_library "
-                   "column must not exist in the samplesheet or be empty.")
+                   "column must not exist in the samplesheet or must be empty.")
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
