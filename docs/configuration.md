@@ -90,7 +90,7 @@
 
 ## [BETA/UNDER DEVELOPMENT] Inferring library orientation options
 
-Please note that, while the below parameter option is already available, the module required to infer library orientations has not yet been integrated into QUANTS. Until this functionality is implemented, this parameter should always be set to `false`.
+Please note that, while the below parameter option is already available, the module required to infer library orientations has not yet been integrated into QUANTS. Until this functionality is implemented, this parameter should always be set to `False` (default).
 
 --infer_library_orientations          [boolean] Define whether the pipeline should infer library orientations.
 
