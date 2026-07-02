@@ -67,8 +67,10 @@ def get_row(row):
 
 def validate_row(row={}, params={}):
     """
-    Validates a single row of the samplesheet and returns any error messages.
+    Validates a single row of the samplesheet and returns any error or warning messages.
     """
+
+    row_warnings = []
     row_errors = []
 
     if not row:
@@ -115,25 +117,19 @@ def validate_row(row={}, params={}):
             msg = "If infer_library_orientations is set globally, then oligo_library must be set in the samplesheet."
             row_errors.append(msg)
 
-        # Both append_start and append_end must be empty
+        # Both append_start and append_end will be ignored
         if (row.append_start != "noCol" and not len(row.append_start) == 0):
-            msg = ("If infer_library_orientations is set globally to False, the append_start column should not be in "
-                   "the samplesheet or be empty.")
-            print_error(f"ERROR: {msg}")
-            sys.exit(1)
+            msg = "As infer_library_orientations is set globally, the append_start value will be overridden."
+            row_warnings.append(msg)
 
         if (row.append_end != "noCol" and not len(row.append_end) == 0):
-            msg = ("If infer_library_orientations is set globally to False, the append_end column should not be in "
-                   "the samplesheet or be empty.")
-            print_error(f"ERROR: {msg}")
-            sys.exit(1)
+            msg = "As infer_library_orientations is set globally, the append_end value will be overridden."
+            row_warnings.append(msg)
 
-        # read_transform must be empty
+        # read_transform will be ignored
         if (row.read_transform != "noCol" and not len(row.read_transform) == 0):
-            msg = ("If infer_library_orientations is set globally, the read_transform column should not be in the "
-                   "samplesheet or be empty.")
-            print_error(f"ERROR: {msg}")
-            sys.exit(1)
+            msg = "As infer_library_orientations is set globally, the read_transform value will be overridden."
+            row_warnings.append(msg)
 
     # When read_modification is True (and infer_library_orientations is False)
     if params.read_modification and not params.infer_library_orientations:
@@ -209,8 +205,8 @@ def validate_row(row={}, params={}):
         print_error(f"ERROR: {msg}")
         sys.exit(1)
 
-    # If primer_trimming set (and infer_library_orientations off), then both primer_start and primer_end must in the
-    # samplesheet
+    # If primer_trimming set (and infer_library_orientations is False), then both primer_start and primer_end must in
+    # the samplesheet
     if params.primer_trimming == "cutadapt" and not params.infer_library_orientations:
 
         if row.primer_start == "noCol" or row.primer_end == "noCol":
@@ -259,7 +255,8 @@ def validate_row(row={}, params={}):
             msg = "If quantification is set globally, then oligo_library must be set in the samplesheet."
             row_errors.append(msg)
 
-    # Check if quantification is not set, then oligo_library must not be in the samplesheet.
+    # Check that when quantification is not set (and infer_library_orientations is False), oligo_library is not does not
+    # have any values in the samplesheet.
     if not params.quantification and not params.infer_library_orientations:
 
         if row.oligo_library != "noCol" and not len(row.oligo_library) == 0:
@@ -268,9 +265,9 @@ def validate_row(row={}, params={}):
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
-    # Check if read_transform is set in the samplesheet with valid value.
+    # Check that read_transform values are valid (when infer_library_orientations is False)
     read_transformation_options = ['reverse', 'complement', 'reverse_complement']
-    if row.read_transform:
+    if row.read_transform and not params.infer_library_orientations:
 
         if row.read_transform not in read_transformation_options and row.read_transform:
             msg = f"If read_transform is set, options must be one of: {', '.join(read_transformation_options)}."
@@ -280,16 +277,23 @@ def validate_row(row={}, params={}):
         msg = "group_id must be alphanumeric!"
         row_errors.append(msg)
 
-    if row_errors:
-        return ([f"Row {row.row_identifier} : Sample-{row.sample} : {err}" for err in row_errors])
+    formatted_warnings = [f"Row {row.row_identifier} (sample {row.sample}) – {warning}" for warning in row_warnings]
 
-    return row_errors
+    formatted_errors = [f"Row {row.row_identifier} (sample {row.sample}) – {err}" for err in row_errors]
+
+    return formatted_warnings, formatted_errors
 
 
-def display_validation_report(all_validation_errors):
+def display_validation_report(error_msgs, warning_msgs):
+    """Display validation errors and warnings"""
 
-    for error_msg in all_validation_errors:
-        if error_msg:
-            print_error(f"ERROR: {error_msg}")
+    for warning in warning_msgs:
+        if warning:
+            print_info(f"WARNING: {warning}")
 
-    sys.exit(1)
+    for error in error_msgs:
+        if error:
+            print_error(f"ERROR: {error}")
+
+    if error_msgs:
+        sys.exit(1)

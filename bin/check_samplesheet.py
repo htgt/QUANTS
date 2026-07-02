@@ -166,9 +166,10 @@ def validate_all_samples(samplesheet_data: list[dict],
                          params: dict,
                          file_type: str):
     """
-    Processes all rows in the samplesheet, collecting all validation errors.
+    Processes all rows in the samplesheet, collecting all validation warnings and errors.
     """
 
+    all_validation_warnings = []
     all_validation_errors = []
 
     processed_params = get_params(params)
@@ -184,12 +185,14 @@ def validate_all_samples(samplesheet_data: list[dict],
             row['row_identifier'] = i
 
         processed_row = get_row(row)
-        row_errors = validate_row(processed_row, processed_params)
+        row_warnings, row_errors = validate_row(processed_row, processed_params)
 
-        all_validation_errors.append(row_errors)
+        all_validation_warnings.extend(row_warnings)
+        all_validation_errors.extend(row_errors)
 
-    if any(all_validation_errors):
-        display_validation_report(all_validation_errors)
+    if any(all_validation_errors) or any(all_validation_warnings):
+        display_validation_report(all_validation_warnings,
+                                  all_validation_errors)
 
 
 def check_samplesheet(file_in, params_in, file_out):
