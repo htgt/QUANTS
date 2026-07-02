@@ -122,7 +122,7 @@ def check_sequencing_fields(input_type: str,
                         ",".join(str(v) if v is not None else "" for v in line.values()))
 
         files_to_check.append(fastq_1)
-        
+
         if single_end:
             if fastq_2:
                 print_error("fastq_2 provided but single_end is set globally to True!",
@@ -141,9 +141,9 @@ def check_sequencing_fields(input_type: str,
         cram_path = line.get("cram_path")
 
         if not cram_path:
-                print_error("cram_path file path missing!",
-                            "Line",
-                            ",".join(str(v) if v is not None else "" for v in line.values()))
+            print_error("cram_path file path missing!",
+                        "Line",
+                        ",".join(str(v) if v is not None else "" for v in line.values()))
 
         files_to_check.append(cram_path)
 
@@ -238,7 +238,7 @@ def check_samplesheet(file_in, params_in, file_out):
         group_id = []
 
         header_len = len(headers)
-        
+
         f_reads_ln = list(f_reads)
 
         # Check sample entries
@@ -279,7 +279,7 @@ def check_samplesheet(file_in, params_in, file_out):
 
             # Get group_id for later check
             group_id += [line.get("group_id")]
-                                
+
             # Check file extension
             single_end = int(params['single_end'])
             check_sequencing_fields(input_type = params['input_type'],
