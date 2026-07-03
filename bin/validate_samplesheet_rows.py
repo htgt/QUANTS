@@ -278,7 +278,6 @@ def validate_row(row={}, params={}):
         row_errors.append(msg)
 
     formatted_warnings = [f"Row {row.row_identifier} (sample {row.sample}) – {warning}" for warning in row_warnings]
-
     formatted_errors = [f"Row {row.row_identifier} (sample {row.sample}) – {err}" for err in row_errors]
 
     return formatted_warnings, formatted_errors
