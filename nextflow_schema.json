@@ -117,6 +117,19 @@
                 }
             }
         },
+        "infer_library_orientation_options": {
+            "title": "Infer library orientation options",
+            "type": "object",
+            "fa_icon": "fas fa-arrow-left",
+            "description": "Define pipeline options for inferring library orientations.",
+            "properties": {
+                "infer_library_orientation": {
+                    "type": "boolean",
+                    "description": "Define whether the pipeline should infer the orientation of the input sequencing library.",
+                    "help_text": "Set this to true to infer library orientations, else set to false."
+                }
+            }
+        },
         "read_transformation_options": {
             "title": "Read transformation options",
             "type": "object",
