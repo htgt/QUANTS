@@ -7,14 +7,15 @@ from validate_samplesheet_rows import (is_valid_sequence, validate_row, display_
 
 
 # is_valid_sequence tests
-def test_is_valid_sequence_valid():
-    sequence = "ATcg"
-    assert is_valid_sequence(sequence) is True
+@pytest.mark.parametrize("sequence,expected",
+                         [("ATcg", True),
+                          ("12XZ", False),
+                          ("AXtz", False),
+                          ("", False)])
 
 
-def test_is_valid_sequence_invalid():
-    sequence = "1234"
-    assert is_valid_sequence(sequence) is False
+def test_is_valid_sequence(sequence, expected):
+    assert is_valid_sequence(sequence) is expected
 
 
 # validate_row fixtures
@@ -80,10 +81,14 @@ def test_validate_row_infer_library_orientations_empty_reverse_primer(input_row,
     assert "expt_reverse_primer should not be empty" in errors[0]
 
 
-
-def test_validate_row_infer_library_orientations_invalid_forward_primer(input_row, input_params):
+@mock.patch("validate_samplesheet_rows.is_valid_sequence")
+def test_validate_row_infer_library_orientations_invalid_forward_primer(mock_is_valid_sequence,
+                                                                        input_row,
+                                                                        input_params):
     input_params.infer_library_orientations = True
-    input_row.expt_forward_primer = "XYZ"
+
+    # Forward primer False, reverse True
+    mock_is_valid_sequence.side_effect = [False, True]
 
     warnings, errors = validate_row(input_row, input_params)
 
@@ -157,11 +162,30 @@ def test_validate_row_infer_library_orientations_read_transform_warning(input_ro
     assert "read_transform value will be overridden" in warnings[0]
 
 
+# display_validation_report tests
 @mock.patch("validate_samplesheet_rows.print_info")
 @mock.patch("validate_samplesheet_rows.print_error")
-def test_display_validation_report_raises_warning_and_error(mock_error, mock_info):
-    with pytest.raises(SystemExit):
-        display_validation_report(["my_error"], ["my_warning"])
+def test_display_validation_report_no_messages(mock_error, mock_info):
+    display_validation_report([], [])
+
+    mock_info.assert_not_called()
+    mock_error.assert_not_called()
+
+
+@mock.patch("validate_samplesheet_rows.print_info")
+@mock.patch("validate_samplesheet_rows.print_error")
+def test_display_validation_report_warning(mock_error, mock_info):
+    display_validation_report(["my_warning"], [])
 
     mock_info.assert_called_once_with("WARNING: my_warning")
+    mock_error.assert_not_called()
+
+
+@mock.patch("validate_samplesheet_rows.print_info")
+@mock.patch("validate_samplesheet_rows.print_error")
+def test_display_validation_report_raises_error(mock_error, mock_info):
+    with pytest.raises(SystemExit):
+        display_validation_report([], ["my_error"])
+
+    mock_info.assert_not_called()
     mock_error.assert_called_once_with("ERROR: my_error")

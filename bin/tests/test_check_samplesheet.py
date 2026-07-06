@@ -252,12 +252,12 @@ def test_validate_all_samples_message(
         {"sample": "B"},
     ]
     params = {"foo": "bar"}
-    warning_message = ["Some warning message"]
-    error_message = ["Some error message"]
+    warning_message = "Some warning message"
+    error_message = "Some error message"
 
     mock_get_params.return_value = SimpleNamespace()
     mock_get_row.return_value = SimpleNamespace()
-    mock_validate_row.return_value = (warning_message, error_message)
+    mock_validate_row.return_value = ([warning_message], [error_message])
 
     validate_all_samples(
         samplesheet_data=samplesheet_data,
@@ -269,8 +269,8 @@ def test_validate_all_samples_message(
     assert mock_validate_headers.call_count == 2
     assert mock_get_row.call_count == 2
     assert mock_validate_row.call_count == 2
-    mock_display_report.assert_called_once_with(["Some warning message", "Some warning message"],
-                                                ["Some error message", "Some error message"])
+    mock_display_report.assert_called_once_with([warning_message, warning_message],
+                                                [error_message, error_message])
 
 
 @mock.patch("check_samplesheet.get_params")
