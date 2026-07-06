@@ -12,8 +12,6 @@ from validate_samplesheet_rows import (is_valid_sequence, validate_row, display_
                           ("12XZ", False),
                           ("AXtz", False),
                           ("", False)])
-
-
 def test_is_valid_sequence(sequence, expected):
     assert is_valid_sequence(sequence) is expected
 
