@@ -27,8 +27,6 @@ def print_success(message):
 def get_params(params):
 
     params_obj = {
-        "append_start"              : params.get('append_start', '') or False,
-        "append_end"                : params.get('append_end', '') or False,
         "read_modification"         : params.get('read_modification', '') or False,
         "adapter_trimming"          : params.get('adapter_trimming', '') or False,
         "primer_trimming"           : params.get('primer_trimming', '') or False,
@@ -283,7 +281,7 @@ def validate_row(row={}, params={}):
     return formatted_warnings, formatted_errors
 
 
-def display_validation_report(error_msgs, warning_msgs):
+def display_validation_report(warning_msgs, error_msgs):
     """Display validation errors and warnings"""
 
     for warning in warning_msgs:

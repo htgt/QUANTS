@@ -190,7 +190,7 @@ def validate_all_samples(samplesheet_data: list[dict],
         all_validation_warnings.extend(row_warnings)
         all_validation_errors.extend(row_errors)
 
-    if any(all_validation_errors) or any(all_validation_warnings):
+    if any(all_validation_warnings) or any(all_validation_errors):
         display_validation_report(all_validation_warnings,
                                   all_validation_errors)
 
