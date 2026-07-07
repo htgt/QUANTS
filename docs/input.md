@@ -75,20 +75,20 @@ S06_D7_R1,BBBB,S06_D7_R1_1.fastq.gz,S06_D7_R1_2.fastq.gz,/path/to/meta2.csv,path
 
 ```
 
-### [BETA/UNDER DEVELOPMENT] Example of samplesheet with all available fields (interim format)
+### [BETA/UNDER DEVELOPMENT] Example of future standard production samplesheet (interim format)
 
-Note that this is an interim format as subsequent changes, under development, will validate the new columns and provide alternative ways in which the samplesheet can be structured.
+Note that this is an interim format intended for use when `infer_library_orientations` is globally set to `True`. The corresponding functionality is still under development and does not yet work as expected; future updates will integrate the module required to infer library orientations into QUANTS.
 
 Any values provided in `expt_forward_primer` and `expt_reverse_primer` will not be used in the pipeline at the moment.
 
 ```csv
-sample,group_id,fastq_1,fastq_2,oligo_library,adapter_path,primer_start,primer_end,append_start,append_end,read_transform,expt_forward_primer,expt_reverse_primer
-S01_D4_R1,AAAA,S01_D4_R1_1.fastq.gz,S01_D4_R1_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement,GCTG,CTTGC
-S02_D4_R2,AAAA,S02_D4_R2_1.fastq.gz,S02_D4_R2_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement,GCTG,CTTGC
-S03_D7_R1,AAAA,S03_D7_R1_1.fastq.gz,S03_D7_R1_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement,GCTG,CTTGC
-S04_D7_R2,AAAA,S04_D7_R2_1.fastq.gz,S04_D7_R2_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,CAGC,GCAAG,CTTGC,GCTG,reverse_complement,GCTG,CTTGC
-S05_D4_R1,BBBB,S05_D4_R1_1.fastq.gz,S05_D4_R1_2.fastq.gz,/path/to/meta2.csv,path/to/adaptors.fa,CGTT,CGTAT,ATACG,AACG,reverse_complement,AACG,ATACG
-S06_D7_R1,BBBB,S06_D7_R1_1.fastq.gz,S06_D7_R1_2.fastq.gz,/path/to/meta2.csv,path/to/adaptors.fa,CGTT,CGTAT,ATACG,AACG,reverse_complement,AACG,ATACG
+sample,group_id,fastq_1,fastq_2,oligo_library,adapter_path,expt_forward_primer,expt_reverse_primer
+S01_D4_R1,AAAA,S01_D4_R1_1.fastq.gz,S01_D4_R1_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,GCTG,CTTGC
+S02_D4_R2,AAAA,S02_D4_R2_1.fastq.gz,S02_D4_R2_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,GCTG,CTTGC
+S03_D7_R1,AAAA,S03_D7_R1_1.fastq.gz,S03_D7_R1_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,GCTG,CTTGC
+S04_D7_R2,AAAA,S04_D7_R2_1.fastq.gz,S04_D7_R2_2.fastq.gz,/path/to/meta1.csv,path/to/adaptors.fa,GCTG,CTTGC
+S05_D4_R1,BBBB,S05_D4_R1_1.fastq.gz,S05_D4_R1_2.fastq.gz,/path/to/meta2.csv,path/to/adaptors.fa,AACG,ATACG
+S06_D7_R1,BBBB,S06_D7_R1_1.fastq.gz,S06_D7_R1_2.fastq.gz,/path/to/meta2.csv,path/to/adaptors.fa,AACG,ATACG
 
 ```
 
