@@ -123,7 +123,7 @@
             "fa_icon": "fas fa-arrow-left",
             "description": "Define pipeline options for inferring library orientations.",
             "properties": {
-                "infer_library_orientation": {
+                "infer_library_orientations": {
                     "type": "boolean",
                     "description": "Define whether the pipeline should infer the orientation of the input sequencing library.",
                     "help_text": "Set this to true to infer library orientations, else set to false."
