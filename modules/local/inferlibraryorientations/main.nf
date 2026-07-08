@@ -2,7 +2,7 @@ process INFERLIBRARYORIENTATIONS {
     tag "$meta.id"
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/pip_bio:225114761ab0ae9b' :
+'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/22/22bee7342faf242ec00cc4b07316a2205d87476961be9d1dba5950db7985e572/data' :
         'community.wave.seqera.io/library/pip_bio:9e823e800c83a47a' }"
 
 
