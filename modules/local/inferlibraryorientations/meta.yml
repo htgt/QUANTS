@@ -1,0 +1,92 @@
+name: "inferlibraryorientations"
+description: "Infers library orientation from experimental primers, FASTQ reads and template library"
+keywords:
+  - experimental primers
+  - FASTQ
+  - template library sequences
+  - Oligo library
+  - orientations
+tools:
+  - "Biopython-singularity":
+      description: "A Sequera singularity container with Biopython"
+      homepage: "https://seqera.io/containers/"
+      documentation: "https://wave.seqera.io/view/builds/bd-225114761ab0ae9b_1"
+  - "Biopython-docker":
+      description: "A Sequera docker container with Biopython"
+      homepage: "https://seqera.io/containers/"
+      documentation: "https://wave.seqera.io/view/builds/bd-9e823e800c83a47a_1"
+      identifier: "biotools:python"
+  - "inferlibraryorientations":
+      description: "Custom script to infer library orientations"
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+           e.g. `[ id:'sample1' ]`
+
+          Fields required for this process
+          id                   Unique sample identifier
+          expt_forward_primer  Sequence of the forward primer used in the experiment
+          expt_reverse_primer  Sequence of the reverse primer used in the experiment
+
+          Additional fields may also be present and are preserved by the module
+    - valiant_meta:
+        type: file
+        description: Oligo library meta file produced by VaLiAnT
+        pattern: "*.csv"
+        ontologies:
+          - edam: "http://edamontology.org/format_3752" # CSV
+    - fastq_1:
+        type: file
+        description: FASTQ file. Single-end or first read of paired-end set
+        pattern: "*.{fq.gz, fastq.gz"
+        ontologies:
+          - edam: "http://edamontology.org/format_1930" # FASTQ
+output:
+  library_orientations:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.tsv":
+          type: file
+          description: |
+            A tab delimited file containing
+              name              Sample name
+              primer_start      Primer sequence to trim from the start of reads
+              primer_end        Primer sequence to trim from the end of reads
+              append_start      Sequence to append to the start of reads before alignment
+              append_end        Sequence to append to the end of reads before alignment
+              read_transform    Read transform required (none, reverse_complement)
+          pattern: "*_library_orientations.tsv"
+          ontologies:
+            - edam: http://edamontology.org/format_3475 # TSV
+  versions_inferlibraryorientations:
+    - - "${task.process}":
+          type: string
+          description: The name of the process
+      - "inferlibraryorientations":
+          type: string
+          description: The name of the tool
+      - "inferlibraryorientations --version":
+          type: eval
+          description: The expression to obtain the version of the tool
+
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - inferlibraryorientations:
+          type: string
+          description: The name of the tool
+      - "infer_library_orientations.py --version | sed 's/infer_library_orientations.py //'":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@helensch"
+maintainers:
+  - "@helensch"
