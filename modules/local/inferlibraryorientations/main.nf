@@ -47,3 +47,4 @@ process INFERLIBRARYORIENTATIONS {
     touch ${prefix}_library_orientations.tsv
     """
 }
+
