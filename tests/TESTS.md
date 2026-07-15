@@ -1,12 +1,14 @@
-# Test datasets and files
+# End-to-end pipeline tests
 
-end-to-end tests for the quants pipeline using the nf-test framework.
+The `test/` directory contains end-to-end tests for the quants pipeline using the nf-test framework.
+
+## End-to-end datasets and files
 
 Having retrieved data and placed it in the ref and sample-data folders, tests can be run with `nf-test test tests/test[#].main.nf.test`
 
 To confirm that you've retrieved the correct data, and named it appropriately if necessary, run `diff -q <(md5sum tests/sample-data/*) tests/sample-data-checksums` and `diff -q <(md5sum tests/ref/*) tests/ref-checksums`. If the commands return nothing (exit code 0), the data is as expected. Note that if you do not run this command from the top level directory of the repo, it will fail, as md5sum will output relative paths along with checksums.
 
-## Test parameters
+## End-to-end test parameters
 
 | Test | Source | FASTQ or CRAM | SE or PE| RevComp | Read merging | Adapter trimming | Primer Trimming | Read filtering | Read modification | QC | Quantification |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -25,3 +27,9 @@ To confirm that you've retrieved the correct data, and named it appropriately if
 | `test13.main.nf.test` | Raw | CRAM | PE | N | N | Y | Y | N | Y | Y | Y | Y |
 | `test14.main.nf.test` | Raw | FASTQ | - | - | - | - | - | - | - | - | - | Y |
 | `test15.main.nf.test` | Raw | FASTQ | PE | Y | Y (Flash2) | N | Y | N | Y | N | N |
+
+# Module tests
+
+Individual module tests are located in each module's tests directory, i.e. `modules/<local-or-nf-core>/<module-name>/tests/`.
+
+Local module tests should be run when developing or modifying a module to confirm that the module behaves as expected. Module tests can be run with `nf-test test modules/<local-or-nf-core>/<module-name>/tests/main.nf.test`
