@@ -1,8 +1,7 @@
 // Import generic module functions
 include { initOptions; saveFiles; getSoftwareName } from './functions'
 
-params.options = [:]
-options        = initOptions(params.options)
+options        = initOptions(params.modules.seqkit_stats ?: [:])
 
 process SEQKIT_STATS {
     tag "$meta.id"
@@ -14,7 +13,7 @@ process SEQKIT_STATS {
         saveAs: { filename ->
                     saveFiles(
                         filename:filename,
-                        options:params.options,
+                        options:options,
                         publish_dir: meta.group_id ? "${meta.group_id}/${getSoftwareName(task.process)}_stats"
                                                    : getSoftwareName(task.process)+"_stats",
                         meta:meta,
@@ -22,7 +21,7 @@ process SEQKIT_STATS {
                     )
                 }
 
-    conda (params.enable_conda ? "bioconda::seqkit=0.15.0" : null)
+    conda params.enable_conda ? 'bioconda::seqkit=0.15.0' : ''
     container "quay.io/biocontainers/seqkit:0.15.0--0"
 
     input:

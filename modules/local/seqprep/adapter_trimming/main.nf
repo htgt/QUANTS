@@ -9,8 +9,9 @@ process SEQPREP {
     label 'process_medium'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
-        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }    conda (params.enable_conda ? "bioconda::seqprep=1.3.2" : null)
+        saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }    
 
+    conda params.enable_conda ? 'bioconda::seqprep=1.3.2' : ''
     container "quay.io/biocontainers/seqprep:1.3.2--h5bf99c6_5"
 
     input:

@@ -9,7 +9,7 @@ def modules = params.modules.clone()
 // MODULE: samtools/bam2fq
 //
 
-include { SAMTOOLS_BAM2FQ } from '../../modules/local/samtools/bam2fq/main' addParams()
+include { SAMTOOLS_BAM2FQ } from '../../modules/local/samtools/bam2fq/main'
 
 workflow CRAM_TO_FASTQ {
     take:

@@ -1,8 +1,7 @@
 // Import generic module functions
 include { initOptions; saveFiles; getSoftwareName } from './functions'
 
-params.options = [:]
-options        = initOptions(params.options)
+options        = initOptions(params.modules.pyquest_library_converter ?: [:])
 
 process TRANSFORM_LIBRARY_FOR_PYQUEST {
     label 'process_medium'
@@ -15,7 +14,7 @@ process TRANSFORM_LIBRARY_FOR_PYQUEST {
         saveAs: { filename ->
                     saveFiles(
                         filename:filename,
-                        options:params.options,
+                        options:options,
                         publish_dir: meta.group_id ? "${meta.group_id}/pyquest"
                                                    : "pyquest",
                         meta:meta,
@@ -23,7 +22,7 @@ process TRANSFORM_LIBRARY_FOR_PYQUEST {
                     ) 
                 }
 
-    conda (params.enable_conda ? "conda-forge::python=3.12.7" : null)
+    conda params.enable_conda ? 'conda-forge::python=3.12.7' : ''
     container "docker.io/python:3.12.7"
 
     input:

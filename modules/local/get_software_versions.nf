@@ -1,7 +1,7 @@
 // Import generic module functions
 include { saveFiles } from './functions'
 
-params.options = [:]
+params.options = [publish_files : ['tsv':'']]
 
 process GET_SOFTWARE_VERSIONS {
     publishDir "${params.outdir}",

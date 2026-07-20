@@ -2,24 +2,21 @@
 // Quantification
 //
 
-params.options = [:]
-def modules = params.modules.clone()
-
 //
 // MODULE: pyQUEST
 //
-def pyquest_options  = modules['pyquest']
-include { PYQUEST  } from '../../modules/local/pyquest/main.nf' addParams( options: pyquest_options )
+include { PYQUEST  } from '../../modules/local/pyquest/main.nf'
 
 //
 // MODULE: pyQUEST library transformer
 // Script found in modules/local/pyquest_library_converter/bin/pyquest_library_converter
 //
-def pyquest_library_converter_options  = modules['pyquest_library_converter']
-if (params.pyquest_library_converter_options) {
-    pyquest_library_converter_options.args += " " + params.pyquest_library_converter_options
-}
-include { TRANSFORM_LIBRARY_FOR_PYQUEST  } from '../../modules/local/pyquest_library_converter/main.nf' addParams( options: pyquest_library_converter_options )
+params.modules.pyquest_library_converter.args = [
+    params.modules.pyquest_library_converter.args,
+    params.pyquest_library_converter_options
+].findAll().join(' ')
+
+include { TRANSFORM_LIBRARY_FOR_PYQUEST  } from '../../modules/local/pyquest_library_converter/main.nf'
 
 workflow QUANTIFICATION {
     take:

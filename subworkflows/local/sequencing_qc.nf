@@ -2,22 +2,20 @@
 // Sequencing QC
 //
 
-params.options = [:]
-def modules = params.modules.clone()
-
 //
 // MODULE: Load nf-core modules
 //
-include { FASTQC  } from '../../modules/nf-core/fastqc/main' addParams( options: [:] )
+include { FASTQC  } from '../../modules/nf-core/fastqc/main'
 
 //
 // MODULE: SeqKit stats
 //
-def seqkit_stats_options  = modules['seqkit_stats']
-if (params.seqkit_stats_options) {
-    seqkit_stats_options.args += " " + params.seqkit_stats_options
-}
-include { SEQKIT_STATS  } from '../../modules/local/seqkit_stats/main' addParams( options: seqkit_stats_options )
+params.modules.seqkit_stats.args = [
+  params.modules.seqkit_stats.args,
+  params.seqkit_stats_options
+].findAll().join(' ')
+
+include { SEQKIT_STATS  } from '../../modules/local/seqkit_stats/main'
 
 workflow SEQUENCING_QC {
     take:
