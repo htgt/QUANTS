@@ -5,9 +5,7 @@
 // TODO: look into better ways for handling CRAM vs FASTQ input types
 // For now, reads can also mean CRAM depending on input_type
 
-params.options = [:]
-
-include { SAMPLESHEET_CHECK; EXTRACT_PARAMS } from '../../modules/local/samplesheet_check' addParams( options: params.options )
+include { SAMPLESHEET_CHECK; EXTRACT_PARAMS } from '../../modules/local/samplesheet_check'
 
 workflow INPUT_CHECK {
     take:

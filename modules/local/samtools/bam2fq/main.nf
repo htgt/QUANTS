@@ -2,7 +2,7 @@ process SAMTOOLS_BAM2FQ {
     tag "$meta.id"
     label 'process_low'
 
-    conda (params.enable_conda ? "bioconda::samtools=1.15" : null)
+    conda params.enable_conda ? 'bioconda::samtools=1.15' : ''
     container 'quay.io/biocontainers/samtools:1.15--h1170115_1'
 
     input:
@@ -11,8 +11,8 @@ process SAMTOOLS_BAM2FQ {
 
     output:
     tuple val(meta), path("*[12].fq.gz")        , emit: reads
-    tuple val(meta), path("*_other.fq.gz")      , emit: other_reads optional true
-    tuple val(meta), path("*_singleton.fq.gz")  , emit: singleton_reads optional true
+    tuple val(meta), path("*_other.fq.gz")      , emit: other_reads, optional: true
+    tuple val(meta), path("*_singleton.fq.gz")  , emit: singleton_reads, optional: true
     path "versions.yml"                         , emit: versions
 
     when:
