@@ -20,7 +20,7 @@ process SEQKIT_SEQ {
                         meta:meta,
                         publish_by_meta:['id']) }
 
-    conda (params.enable_conda ? "bioconda::seqkit=0.15.0" : null)
+    conda params.enable_conda ? 'bioconda::seqkit=0.15.0' : ''
     container "quay.io/biocontainers/seqkit:0.15.0--0"
 
     input:

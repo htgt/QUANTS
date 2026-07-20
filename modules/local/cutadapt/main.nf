@@ -20,7 +20,7 @@ process CUTADAPT {
                     )
                 }
 
-    conda (params.enable_conda ? 'bioconda::cutadapt=4.4' : null)
+    conda params.enable_conda ? 'bioconda::cutadapt=4.4' : ''
     container 'quay.io/biocontainers/cutadapt:4.4--py39hf95cd2a_1'
 
     input:

@@ -2,27 +2,25 @@
 // Merge paired end reads
 //
 
-params.options = [:]
-
-def modules = params.modules.clone()
-
 //
 // MODULE: Load FLASH2
 //
-def flash2_options  = modules['flash2']
-if (params.flash2_options) {
-    flash2_options.args += " " + params.flash2_options
-}
-include { FLASH2  } from '../../modules/local/flash2/main.nf' addParams( options: flash2_options )
+params.modules.flash2.args = [
+    params.modules.flash2.args,
+    params.flash2_options
+].findAll().join(' ')
+
+include { FLASH2  } from '../../modules/local/flash2/main.nf'
 
 //
 // MODULE: Load SEQPREP
 //
-def seqprep_options  = modules['seqprep']
-if (params.seqprep_options) {
-    seqprep_options.args += " " + params.seqprep_options
-}
-include { SEQPREP } from '../../modules/local/seqprep/read_merging/main.nf' addParams( options: seqprep_options )
+params.modules.seqprep.args = [
+  params.modules.seqprep.args,
+  params.seqprep_options
+].findAll().join(' ')
+
+include { SEQPREP } from '../../modules/local/seqprep/read_merging/main.nf'
 
 workflow READ_MERGING {
     take:
