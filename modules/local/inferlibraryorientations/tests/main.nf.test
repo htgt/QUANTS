@@ -15,11 +15,11 @@ nextflow_process {
                 input[0] = [
                     [
                         id: 'test_sample',
-                        expt_forward_primer: 'GGTTCTCTGTCTGCTGCCAC',
-                        expt_reverse_primer: 'CTCCAACCCGCTGATCCTGG',
+                        expt_forward_primer: 'ATTCACGTTATGCTGTCCAATCTCT',
+                        expt_reverse_primer: 'CCCTGGGAAGGTAATTTTAGATTTC',
                     ],
-                    file("${projectDir}/tests/sample-data/meta.csv", checkIfExists: true),
-                    file("${projectDir}/tests/sample-data/test_infer.fq.gz", checkIfExists: true)
+                    file("${projectDir}/tests/ref/2.csv", checkIfExists: true),
+                    file("${projectDir}/tests/sample-data/2.fq.gz", checkIfExists: true)
                 ]
                 """
             }
@@ -41,11 +41,11 @@ nextflow_process {
                 input[0] = [
                     [
                         id: 'test_sample',
-                        expt_forward_primer: 'GGTTCTCTGTCTGCTGCCAC',
-                        expt_reverse_primer: 'CTCCAACCCGCTGATCCTGG',
+                        expt_forward_primer: 'ATTCACGTTATGCTGTCCAATCTCT',
+                        expt_reverse_primer: 'CCCTGGGAAGGTAATTTTAGATTTC',
                     ],
-                    file("${projectDir}/tests/sample-data/meta.csv", checkIfExists: true),
-                    file("${projectDir}/tests/sample-data/test_infer.fq.gz", checkIfExists: true)
+                    file("${projectDir}/tests/ref/2.csv", checkIfExists: true),
+                    file("${projectDir}/tests/sample-data/2.fq.gz", checkIfExists: true)
                 ]
                 """
             }
