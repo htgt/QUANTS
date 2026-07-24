@@ -205,7 +205,7 @@ def test_check_sequencing_fields_cram_path_wrong_extension():
 @mock.patch("check_samplesheet.get_row")
 @mock.patch("check_samplesheet.validate_row")
 @mock.patch("check_samplesheet.display_validation_report")
-def test_validate_all_samples_no_errors(
+def test_validate_all_samples_no_messages(
     mock_display_report,
     mock_validate_row,
     mock_get_row,
@@ -220,7 +220,7 @@ def test_validate_all_samples_no_errors(
 
     mock_get_params.return_value = SimpleNamespace()
     mock_get_row.return_value = SimpleNamespace()
-    mock_validate_row.return_value = []
+    mock_validate_row.return_value = ([], [])
 
     validate_all_samples(
         samplesheet_data=samplesheet_data,
@@ -240,7 +240,7 @@ def test_validate_all_samples_no_errors(
 @mock.patch("check_samplesheet.get_row")
 @mock.patch("check_samplesheet.validate_row")
 @mock.patch("check_samplesheet.display_validation_report")
-def test_validate_all_samples_errors(
+def test_validate_all_samples_message(
     mock_display_report,
     mock_validate_row,
     mock_get_row,
@@ -252,11 +252,12 @@ def test_validate_all_samples_errors(
         {"sample": "B"},
     ]
     params = {"foo": "bar"}
-    error_message = ['Some error message']
+    warning_message = "Some warning message"
+    error_message = "Some error message"
 
     mock_get_params.return_value = SimpleNamespace()
     mock_get_row.return_value = SimpleNamespace()
-    mock_validate_row.return_value = error_message
+    mock_validate_row.return_value = ([warning_message], [error_message])
 
     validate_all_samples(
         samplesheet_data=samplesheet_data,
@@ -268,7 +269,8 @@ def test_validate_all_samples_errors(
     assert mock_validate_headers.call_count == 2
     assert mock_get_row.call_count == 2
     assert mock_validate_row.call_count == 2
-    mock_display_report.assert_called_once_with([error_message, error_message])
+    mock_display_report.assert_called_once_with([warning_message, warning_message],
+                                                [error_message, error_message])
 
 
 @mock.patch("check_samplesheet.get_params")
@@ -286,7 +288,7 @@ def test_validate_all_samples_add_row_id(
 
     mock_get_params.return_value = SimpleNamespace()
     mock_get_row.return_value = SimpleNamespace()
-    mock_validate_row.return_value = []
+    mock_validate_row.return_value = ([], [])
 
     validate_all_samples(
         samplesheet_data=samplesheet_data,

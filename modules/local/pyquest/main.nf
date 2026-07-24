@@ -1,8 +1,7 @@
 // Import generic module functions
 include { initOptions; saveFiles; getSoftwareName } from './functions'
 
-params.options = [:]
-options        = initOptions(params.options)
+options        = initOptions(params.modules.pyquest ?: [:])
 
 process PYQUEST {
     label 'process_medium'
@@ -11,7 +10,7 @@ process PYQUEST {
         saveAs: { filename ->
                     saveFiles(
                         filename:filename,
-                        options:params.options,
+                        options:options,
                         publish_dir: meta.group_id ? "${meta.group_id}/${getSoftwareName(task.process)}"
                                                    : getSoftwareName(task.process),
                         meta:meta,

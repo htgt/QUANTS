@@ -27,16 +27,20 @@ def print_success(message):
 def get_params(params):
 
     params_obj = {
-        "append_start"       : params.get('append_start', '') or False,
-        "append_end"         : params.get('append_end', '') or False,
-        "read_modification"  : params.get('read_modification', '') or False,
-        "adapter_trimming"   : params.get('adapter_trimming', '') or False,
-        "primer_trimming"    : params.get('primer_trimming', '') or False,
-        "quantification"     : params.get('quantification', '') or False,
+        "read_modification"         : params.get('read_modification', '') or False,
+        "adapter_trimming"          : params.get('adapter_trimming', '') or False,
+        "primer_trimming"           : params.get('primer_trimming', '') or False,
+        "quantification"            : params.get('quantification', '') or False,
+        "infer_library_orientations": params.get('infer_library_orientations', '') or False,
 
     }
 
     return SimpleNamespace(**params_obj)
+
+
+def is_valid_sequence(seq):
+    """Used to check whether primer and adapter fields contain valid DNA sequences"""
+    return bool(VALID_BASES_PATTERN.match(str(seq)))
 
 
 def get_row(row):
@@ -61,33 +65,87 @@ def get_row(row):
 
 def validate_row(row={}, params={}):
     """
-    Validates a single row of the samplesheet and returns any error messages.
+    Validates a single row of the samplesheet and returns any error or warning messages.
     """
+
+    row_warnings = []
     row_errors = []
 
     if not row:
         print_error("No row found to validate.")
         sys.exit(1)
 
-    # When read_modification is True
-    if params.read_modification:
+    # When infer_library_orientations is True:
+    # Note this check needs to be at the top given current structure
+    if params.infer_library_orientations:
 
-        # Check if string is provided in the samplesheet for append_start or append_end.
-        if row.append_start == "noCol" and row.append_end == "noCol":
-            msg = "If read_modification is set globally, append_start or append_end columns must exist in the samplesheet."
+        # Both expt_forward_primer and expt_reverse_primer are needed
+        if row.expt_forward_primer == "noCol" or row.expt_reverse_primer == "noCol":
+            msg = ("If infer_library_orientations is set globally, the samplesheet must include both the "
+                   "expt_forward_primer and expt_reverse_primer columns.")
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
-        # Check if append_start and append_end must be a non-empty valid string.
-        match_append = lambda seq: seq if bool(VALID_BASES_PATTERN.match(str(seq))) else False
+        if len(row.expt_forward_primer) == 0:
+            msg = ("expt_forward_primer should not be empty in the samplesheet when infer_library_orientations is set "
+                   "globally.")
+            row_errors.append(msg)
+
+        if len(row.expt_reverse_primer) == 0:
+            msg = ("expt_reverse_primer should not be empty in the samplesheet when infer_library_orientations is set "
+                   "globally.")
+            row_errors.append(msg)
+
+        if row.expt_forward_primer and not is_valid_sequence(row.expt_forward_primer):
+            msg = "expt_forward_primer is not a valid DNA sequence."
+            row_errors.append(msg)
+
+        if row.expt_reverse_primer and not is_valid_sequence(row.expt_reverse_primer):
+            msg = "expt_reverse_primer is not a valid DNA sequence."
+            row_errors.append(msg)
+
+        # oligo_library is needed
+        if row.oligo_library == "noCol":
+            msg = ("If infer_library_orientations is set globally, the oligo_library "
+                   "column must exist in the samplesheet.")
+            print_error(f"ERROR: {msg}")
+            sys.exit(1)
+
+        if len(row.oligo_library) == 0:
+            msg = "If infer_library_orientations is set globally, then oligo_library must be set in the samplesheet."
+            row_errors.append(msg)
+
+        # Both append_start and append_end will be ignored
+        if (row.append_start != "noCol" and not len(row.append_start) == 0):
+            msg = "As infer_library_orientations is set globally, the append_start value will be overridden."
+            row_warnings.append(msg)
+
+        if (row.append_end != "noCol" and not len(row.append_end) == 0):
+            msg = "As infer_library_orientations is set globally, the append_end value will be overridden."
+            row_warnings.append(msg)
+
+        # read_transform will be ignored
+        if (row.read_transform != "noCol" and not len(row.read_transform) == 0):
+            msg = "As infer_library_orientations is set globally, the read_transform value will be overridden."
+            row_warnings.append(msg)
+
+    # When read_modification is True (and infer_library_orientations is False)
+    if params.read_modification and not params.infer_library_orientations:
+
+        # Check if string is provided in the samplesheet for append_start or append_end.
+        if row.append_start == "noCol" and row.append_end == "noCol":
+            msg = ("If read_modification is set globally and infer_library_orientations is set to False, the "
+                   "samplesheet must include the append_start and/or append_end column")
+            print_error(f"ERROR: {msg}")
+            sys.exit(1)
 
         if row.append_end == "noCol":
 
             if len(row.append_start) == 0:
                 msg = "append_start must be set in the samplesheet."
                 row_errors.append(msg)
-            elif row.append_start != "noCol" and not match_append(row.append_start):
-                msg = "append_start must be a valid string in the samplesheet."
+            elif row.append_start != "noCol" and not is_valid_sequence(row.append_start):
+                msg = "Value for append_start must be a valid DNA sequence in the samplesheet."
                 row_errors.append(msg)
 
         elif row.append_start == "noCol":
@@ -95,21 +153,20 @@ def validate_row(row={}, params={}):
             if len(row.append_end) == 0:
                 msg = "append_end must be set in the samplesheet."
                 row_errors.append(msg)
-            elif row.append_end != "noCol" and not match_append(row.append_end):
-                msg = "append_end must be a valid string in the samplesheet."
+            elif row.append_end != "noCol" and not is_valid_sequence(row.append_end):
+                msg = "Value for append_end must be a valid DNA sequence in the samplesheet."
                 row_errors.append(msg)
 
         else:
-
-            if (row.append_start and not match_append(row.append_start)):
-                msg = "Value for append_start must be valid strings in the samplesheet."
+            if (row.append_start and not is_valid_sequence(row.append_start)):
+                msg = "Value for append_start must be a valid DNA sequence in the samplesheet."
                 row_errors.append(msg)
 
-            if (row.append_end and not (match_append(row.append_end))):
-                msg = "Value for append_end must be valid strings in the samplesheet."
+            if (row.append_end and not is_valid_sequence(row.append_end)):
+                msg = "Value for append_end must be a valid DNA sequence in the samplesheet."
                 row_errors.append(msg)
 
-            # Check if valid not-empty string is provided in the samplesheet for append_start or append_end.
+            # Check that at least one of append_start or append_end is set in the samplesheet
             if len(row.append_start) == 0 and len(row.append_end) == 0:
                 msg = "append_start or append_end must be set in the samplesheet."
                 row_errors.append(msg)
@@ -146,11 +203,13 @@ def validate_row(row={}, params={}):
         print_error(f"ERROR: {msg}")
         sys.exit(1)
 
-    # Check if primer_trimming set, then both primer_start and primer_end must in the samplesheet
-    if params.primer_trimming == "cutadapt":
+    # If primer_trimming set (and infer_library_orientations is False), then both primer_start and primer_end must in
+    # the samplesheet
+    if params.primer_trimming == "cutadapt" and not params.infer_library_orientations:
 
         if row.primer_start == "noCol" or row.primer_end == "noCol":
-            msg = "If primer_trimming is set globally, both primer_start and primer_end columns must exist in the samplesheet."
+            msg = ("If primer_trimming is set globally and infer_library_orientations is globally set to False, the "
+                   "samplesheet must include both the primer_start and primer_end columns.")
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
@@ -162,11 +221,11 @@ def validate_row(row={}, params={}):
             msg = "primer_end should not be empty in the samplesheet."
             row_errors.append(msg)
 
-        # Check if primer_start and primer_end must be a non-empty valid string.
-        match_primer = lambda seq: seq if not bool(VALID_BASES_PATTERN.match(str(seq))) else ''
-
-        if (match_primer(row.primer_start) or match_primer(row.primer_end)):
-            msg = "Values for primer_start and primer_end must be provided with valid strings in the samplesheet."
+        if (row.primer_start and not is_valid_sequence(row.primer_start)):
+            msg = "Value for primer_start must be provided as a valid DNA sequence in the samplesheet."
+            row_errors.append(msg)
+        if (row.primer_end and not is_valid_sequence(row.primer_end)):
+            msg = "Value for primer_end must be provided as a valid DNA sequence in the samplesheet."
             row_errors.append(msg)
 
     # Check if primer_trimming is not set, then both primer_start and primer_end must not be in the samplesheet.
@@ -194,17 +253,19 @@ def validate_row(row={}, params={}):
             msg = "If quantification is set globally, then oligo_library must be set in the samplesheet."
             row_errors.append(msg)
 
-    # Check if quantification is not set, then oligo_library must not be in the samplesheet.
-    if not params.quantification:
+    # Check that when quantification is not set (and infer_library_orientations is False), oligo_library is not does not
+    # have any values in the samplesheet.
+    if not params.quantification and not params.infer_library_orientations:
 
         if row.oligo_library != "noCol" and not len(row.oligo_library) == 0:
-            msg = "If quantification is not set globally, then oligo_library must not exist in the samplesheet or be empty."
+            msg = ("If quantification and infer_library_orientations are globally set to False, then the oligo_library "
+                   "column must not exist in the samplesheet or must be empty.")
             print_error(f"ERROR: {msg}")
             sys.exit(1)
 
-    # Check if read_transform is set in the samplesheet with valid value.
+    # Check that read_transform values are valid (when infer_library_orientations is False)
     read_transformation_options = ['reverse', 'complement', 'reverse_complement']
-    if row.read_transform:
+    if row.read_transform and not params.infer_library_orientations:
 
         if row.read_transform not in read_transformation_options and row.read_transform:
             msg = f"If read_transform is set, options must be one of: {', '.join(read_transformation_options)}."
@@ -214,15 +275,22 @@ def validate_row(row={}, params={}):
         msg = "group_id must be alphanumeric!"
         row_errors.append(msg)
 
-    if row_errors:
-        return ([f"Row {row.row_identifier} : Sample-{row.sample} : {err}" for err in row_errors])
+    formatted_warnings = [f"Row {row.row_identifier} (sample {row.sample}) – {warning}" for warning in row_warnings]
+    formatted_errors = [f"Row {row.row_identifier} (sample {row.sample}) – {err}" for err in row_errors]
 
-    return row_errors
+    return formatted_warnings, formatted_errors
 
 
-def display_validation_report(all_validation_errors):
+def display_validation_report(warning_msgs, error_msgs):
+    """Display validation errors and warnings"""
 
-    for error_msg in all_validation_errors:
-        print_error(f"ERROR: {error_msg}")
+    for warning in warning_msgs:
+        if warning:
+            print_info(f"WARNING: {warning}")
 
-    sys.exit(1)
+    for error in error_msgs:
+        if error:
+            print_error(f"ERROR: {error}")
+
+    if error_msgs:
+        sys.exit(1)

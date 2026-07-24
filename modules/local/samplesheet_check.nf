@@ -46,6 +46,7 @@ process EXTRACT_PARAMS {
                 read_modification                   : params.read_modification,
                 read_transform                      : params.read_transform,
                 quantification                      : params.quantification,
+                infer_library_orientations          : params.infer_library_orientations
             ])
 
     """

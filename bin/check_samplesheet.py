@@ -122,7 +122,7 @@ def check_sequencing_fields(input_type: str,
                         ",".join(str(v) if v is not None else "" for v in line.values()))
 
         files_to_check.append(fastq_1)
-        
+
         if single_end:
             if fastq_2:
                 print_error("fastq_2 provided but single_end is set globally to True!",
@@ -141,9 +141,9 @@ def check_sequencing_fields(input_type: str,
         cram_path = line.get("cram_path")
 
         if not cram_path:
-                print_error("cram_path file path missing!",
-                            "Line",
-                            ",".join(str(v) if v is not None else "" for v in line.values()))
+            print_error("cram_path file path missing!",
+                        "Line",
+                        ",".join(str(v) if v is not None else "" for v in line.values()))
 
         files_to_check.append(cram_path)
 
@@ -166,9 +166,10 @@ def validate_all_samples(samplesheet_data: list[dict],
                          params: dict,
                          file_type: str):
     """
-    Processes all rows in the samplesheet, collecting all validation errors.
+    Processes all rows in the samplesheet, collecting all validation warnings and errors.
     """
 
+    all_validation_warnings = []
     all_validation_errors = []
 
     processed_params = get_params(params)
@@ -184,12 +185,14 @@ def validate_all_samples(samplesheet_data: list[dict],
             row['row_identifier'] = i
 
         processed_row = get_row(row)
-        row_errors = validate_row(processed_row, processed_params)
+        row_warnings, row_errors = validate_row(processed_row, processed_params)
 
-        all_validation_errors.append(row_errors)
+        all_validation_warnings.extend(row_warnings)
+        all_validation_errors.extend(row_errors)
 
-    if any(all_validation_errors):
-        display_validation_report(all_validation_errors)
+    if any(all_validation_warnings) or any(all_validation_errors):
+        display_validation_report(all_validation_warnings,
+                                  all_validation_errors)
 
 
 def check_samplesheet(file_in, params_in, file_out):
@@ -235,7 +238,7 @@ def check_samplesheet(file_in, params_in, file_out):
         group_id = []
 
         header_len = len(headers)
-        
+
         f_reads_ln = list(f_reads)
 
         # Check sample entries
@@ -276,7 +279,7 @@ def check_samplesheet(file_in, params_in, file_out):
 
             # Get group_id for later check
             group_id += [line.get("group_id")]
-                                
+
             # Check file extension
             single_end = int(params['single_end'])
             check_sequencing_fields(input_type = params['input_type'],
