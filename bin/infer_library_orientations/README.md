@@ -49,6 +49,7 @@ A TSV file containing:
 | `primer_end` | Primer sequence to trim from the end of reads.|
 | `append_start` |  Sequence to append to the start of reads before alignment. |
 | `append_end` | Sequence to append to the end of reads before alignment. |
+| `read_transform` | Read transform required (reverse_complement or none) |
 
 ## Example
 
