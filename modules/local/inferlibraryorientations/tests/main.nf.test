@@ -1,0 +1,61 @@
+nextflow_process {
+
+    name "Test Process INFERLIBRARYORIENTATIONS"
+    script "../main.nf"
+    process "INFERLIBRARYORIENTATIONS"
+
+    tag "modules"
+    tag "modules_local"
+    tag "inferlibraryorientations"
+
+    test("inferlibraryorientations - fastq - tsv") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [
+                        id: 'test_sample',
+                        expt_forward_primer: 'ATTCACGTTATGCTGTCCAATCTCT',
+                        expt_reverse_primer: 'CCCTGGGAAGGTAATTTTAGATTTC',
+                    ],
+                    file("${projectDir}/tests/ref/2.csv", checkIfExists: true),
+                    file("${projectDir}/tests/sample-data/2.fq.gz", checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+
+    test("inferlibraryorientations - fastq - tsv - stub") {
+        options "-stub"
+        when {
+            process {
+                """
+                input[0] = [
+                    [
+                        id: 'test_sample',
+                        expt_forward_primer: 'ATTCACGTTATGCTGTCCAATCTCT',
+                        expt_reverse_primer: 'CCCTGGGAAGGTAATTTTAGATTTC',
+                    ],
+                    file("${projectDir}/tests/ref/2.csv", checkIfExists: true),
+                    file("${projectDir}/tests/sample-data/2.fq.gz", checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}
