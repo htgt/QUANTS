@@ -54,6 +54,8 @@ def create_fastq_channels(LinkedHashMap row) {
     meta.adapter_path              = row.adapter_path
     meta.primer_start              = row.primer_start
     meta.primer_end                = row.primer_end
+    meta.expt_primer_forward       = row.expt_primer_forward
+    meta.expt_primer_reverse       = row.expt_primer_reverse
     meta.append_start              = row.append_start
     meta.append_end                = row.append_end
     meta.oligo_library             = row.oligo_library
@@ -99,6 +101,8 @@ def create_cram_channels(LinkedHashMap row) {
     meta.adapter_path              = row.adapter_path
     meta.primer_start              = row.primer_start
     meta.primer_end                = row.primer_end
+    meta.expt_primer_forward       = row.expt_primer_forward
+    meta.expt_primer_reverse       = row.expt_primer_reverse
     meta.append_start              = row.append_start
     meta.append_end                = row.append_end
     meta.oligo_library             = row.oligo_library
