@@ -8,7 +8,7 @@ process INFERLIBRARYORIENTATIONS {
 
 
     input:
-    tuple val(meta), path(valiant_meta), path(fastq_1)
+    tuple val(meta), path(valiant_meta), path(reads)
 
     output:
     tuple val(meta), path("${meta.id}_library_orientations.tsv"), emit: library_orientations
@@ -36,7 +36,7 @@ process INFERLIBRARYORIENTATIONS {
       --expt_forward_primer ${meta.expt_forward_primer} \
       --expt_reverse_primer ${meta.expt_reverse_primer} \
       --valiant_meta ${valiant_meta} \
-      --fastq_1 ${fastq_1} \
+      --fastq_1 ${reads[0]} \
       --output ${prefix}_library_orientations.tsv
     """
 
