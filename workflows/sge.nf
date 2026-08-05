@@ -27,7 +27,7 @@ if ( input_type_options.contains( params.input_type ) == false ) {
 
 // Temporary check, to be removed when infer_library_orientations has been integrated into QUANTS
 if (params.infer_library_orientations) {
-    printErr("WARNING: infer_library_orientations is globally set to True but the module is not yet available")
+    printErr("WARNING: infer_library_orientations is globally set to True but the workflow is under development")
 }
 
 // Check downsampling options
@@ -265,8 +265,8 @@ workflow SGE {
     if (params.infer_library_orientations) {
         INFER_LIBRARY_ORIENTATIONS(ch_raw_reads)
         ch_raw_reads = INFER_LIBRARY_ORIENTATIONS.out.reads
-        // Versions not added in as versions does as topics in module.
-        // This not compatible with version style in use in pipeline
+        // Versions not added as versions done as topics in module.
+        // This not compatible with version style in use in pipeline.
     }
 
     // adapter trimming (and other downstream processes) see updated meta
