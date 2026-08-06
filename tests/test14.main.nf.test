@@ -4,7 +4,7 @@ nextflow_process {
     script "modules/local/seqtk/sample/main.nf"
     process "SEQTK_SAMPLE"
 
-    test("Validate single-end downsampling") {
+    test("Should successfully downsample single-end and paired-end reads with SEQTK_SAMPLE") {
         when {
             params {
                 downsampling = true
@@ -14,7 +14,7 @@ nextflow_process {
 
             process {
                 """
-                input[0] = Channel.of([["id":"test_sample", "single_end":"true"], file("${projectDir}/tests/sample-data/2.fq.gz", checkIfExists: true)])
+                input[0] = Channel.of([["id":"test_sample", "single_end":"true"], file("${projectDir}/tests/quants-data/sample-data/2.fq.gz", checkIfExists: true)])
                 """
             }
         }
@@ -38,8 +38,8 @@ nextflow_process {
                 input[0] = Channel.of([
                     ["id":"test_sample", "single_end":"false"],
                     [
-                        file("${projectDir}/tests/sample-data/xR1.fq.gz", checkIfExists: true),
-                        file("${projectDir}/tests/sample-data/xR2.fq.gz", checkIfExists: true)
+                        file("${projectDir}/tests/quants-data/sample-data/xR1.fq.gz", checkIfExists: true),
+                        file("${projectDir}/tests/quants-data/sample-data/xR2.fq.gz", checkIfExists: true)
                     ]
                 ])
                 """

@@ -6,6 +6,38 @@ The `test/` directory contains end-to-end tests for the quants pipeline using th
 
 Having retrieved data and placed it in the ref and sample-data folders, tests can be run with `nf-test test tests/test[#].main.nf.test`
 
+Make sure you download/clone `quants-data` from this repository `https://gitlab.internal.sanger.ac.uk/sci/quants-data` to `tests/` directory before running the end-to-end tests.
+
+Once downloaded directory structure should look like the following:
+```bash
+tests/
+├── manifests
+├── modules
+├── modules-testdata
+├── quants-data <<-- CASM provided QUANTS nf-test data from GitLab repository
+├── ref
+├── TESTS.md
+├── nextflow.config
+├── quants-nf-test-init
+├── ref-checksums
+├── sample-data-checksums
+├── test1.main.nf.test
+├── test10.main.nf.test
+├── test11.main.nf.test
+├── test12.main.nf.test
+├── test13.main.nf.test
+├── test14.main.nf.test
+├── test15.main.nf.test
+├── test2.main.nf.test
+├── test3.main.nf.test
+├── test4.main.nf.test
+├── test5.main.nf.test
+├── test6.main.nf.test
+├── test7.main.nf.test
+├── test8.main.nf.test
+└── test9.main.nf.test
+```
+
 To confirm that you've retrieved the correct data, and named it appropriately if necessary, run `diff -q <(md5sum tests/sample-data/*) tests/sample-data-checksums` and `diff -q <(md5sum tests/ref/*) tests/ref-checksums`. If the commands return nothing (exit code 0), the data is as expected. Note that if you do not run this command from the top level directory of the repo, it will fail, as md5sum will output relative paths along with checksums.
 
 ## End-to-end test parameters

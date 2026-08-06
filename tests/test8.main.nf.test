@@ -3,26 +3,34 @@ nextflow_pipeline {
     name "Test Workflow main.nf"
     script "main.nf"
 
-    test("Should run without failures") {
+    test("Should run paired-end FLASH2 merging, QC, trimming, filtering, and pyquest quantification without failures") {
+
+        def raw = file("${projectDir}/tests/manifests/raw-fastq-pe.csv").text
+        def resolved = raw.replace(
+            "tests/quants-data",
+            "${projectDir}/tests/quants-data"
+        )
+
+        def tmpDir = File.createTempDir()
+        def resolvedSheet = new File(tmpDir, "raw-fastq-pe.resolved.csv")
+        resolvedSheet.text = resolved
 
         when {
             params {
-                input = "${projectDir}/tests/manifests/raw-fastq-pe.csv"
+                input = "${resolvedSheet}"
                 single_end = false
                 input_type = "fastq"
                 raw_sequencing_qc = true
                 adapter_trimming = "cutadapt"
-                adapter_cutadapt_options = "-a 'AGATCGGAAGAGCGGTTCAGCAGGAATGCCG' -A 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT' -m 1"
                 adapter_trimming_qc = true
                 primer_trimming = "cutadapt"
-                primer_cutadapt_options = "-g 'TCTACATTTTATTTGCACTACTTGAAGG...ATACTTTTAAGTTCTGGGGTCATGTG' -G 'CACATGACCCCAGAACTTAAA...AGTGCAAATAAAATGTAGA' -m 1"
                 primer_trimming_qc = true
                 read_merging = "flash2"
                 read_merging_qc = true
                 read_filtering = "seqkit"
                 seqkit_seq_options = "-m 100"
                 quantification = "pyquest"
-                oligo_library = "${projectDir}/tests/ref/4.tsv"
+                pyquest_library_converter_options = "-N 1 -S 24"
             }
         }
 

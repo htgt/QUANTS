@@ -3,29 +3,33 @@ nextflow_pipeline {
     name "Test Workflow main.nf"
     script "main.nf"
 
-    test("Should run without failures") {
+    test("Should run single-end QC, trimming, modification, transform, and pyquest quantification without failures") {
+
+        def raw = file("${projectDir}/tests/manifests/raw-fastq-se3.csv").text
+        def resolved = raw.replace(
+            "tests/quants-data",
+            "${projectDir}/tests/quants-data"
+        )
+
+        def tmpDir = File.createTempDir()
+        def resolvedSheet = new File(tmpDir, "raw-fastq-se3.resolved.csv")
+        resolvedSheet.text = resolved
 
         when {
             params {
-                input = "${projectDir}/tests/manifests/raw-fastq-se.csv"
+                input = "${resolvedSheet}"
                 single_end = true
                 input_type = "fastq"
                 raw_sequencing_qc = true
                 adapter_trimming = "cutadapt"
-                adapter_cutadapt_options = "-a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -m 1"
                 adapter_trimming_qc = true
                 primer_trimming = "cutadapt"
-                primer_cutadapt_options = "-g 'CCCTGGGAAGGTAATTTTAGATTTC...AGAGATTGGACAGCATAACGTGAAT' -m 1"
                 primer_trimming_qc = true
                 read_modification = true
-                append_start = "ATTCACGTTATGCTGTCCAATCTCT"
-                append_end = "GAAATCTAAAATTACCTTCCCAGGG"
                 append_quality = "?"
-                read_transform = "reverse_complement"
                 transform_library = true
                 pyquest_library_converter_options = "-N 1 -S 24"
                 quantification = "pyquest"
-                oligo_library = "${projectDir}/tests/ref/2.csv"
             }
         }
 

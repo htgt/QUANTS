@@ -3,21 +3,28 @@ nextflow_pipeline {
     name "Test Workflow main.nf"
     script "main.nf"
 
-    test("Should run without failures") {
+    test("Should run without failures with raw_sequencing_qc enabled") {
+
+        def raw = file("${projectDir}/tests/manifests/trimmed-fastq-se2.csv").text
+        def resolved = raw.replace(
+            "tests/quants-data",
+            "${projectDir}/tests/quants-data"
+        )
+
+        def tmpDir = File.createTempDir()
+        def resolvedSheet = new File(tmpDir, "trimmed-fastq-se2.resolved.csv")
+        resolvedSheet.text = resolved
 
         when {
             params {
-                input = "${projectDir}/tests/manifests/trimmed-fastq-se.csv"
+                input = "${resolvedSheet}"
                 single_end = true
                 input_type = "fastq"
                 raw_sequencing_qc = true
                 read_modification = true
-                append_start = "ATTCACGTTATGCTGTCCAATCTCT"
-                append_end = "GAAATCTAAAATTACCTTCCCAGGG"
                 append_quality = "?"
-                read_transform = "reverse_complement"
                 quantification = "pyquest"
-                oligo_library = "${projectDir}/tests/ref/3.tsv"
+                pyquest_library_converter_options = "-N 1 -S 24"
             }
         }
 

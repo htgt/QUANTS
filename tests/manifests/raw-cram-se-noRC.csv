@@ -1,2 +1,2 @@
-sample,cram_path
-test_sample,../../../tests/sample-data/1.cram
+sample,cram_path,oligo_library,append_start,append_end,primer_start,primer_end,adapter_path
+test_sample,tests/quants-data/sample-data/1.cram,tests/quants-data/ref/1.csv,AGCATGTCTAAGGCATATCAGAGCA,TGAGCTGGCAGAGGGGCCATTGTGG,AGCATGTCTAAGGCATATCAGAGCA,TGAGCTGGCAGAGGGGCCATTGTGG,tests/quants-data/ref/adapter_illumina_test3.fa

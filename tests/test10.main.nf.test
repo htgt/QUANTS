@@ -1,22 +1,29 @@
-// TEST BROKEN
 nextflow_pipeline {
 
     name "Test Workflow main.nf"
     script "main.nf"
 
-    test("Should run without failures") {
+    test("Should run multi-sample single-end QC, adapter trimming, and primer trimming without failures") {
+
+        def raw = file("${projectDir}/tests/manifests/raw-fastq-se-multiple-samples10.csv").text
+        def resolved = raw.replace(
+            "tests/quants-data",
+            "${projectDir}/tests/quants-data"
+        )   
+
+        def tmpDir = File.createTempDir()
+        def resolvedSheet = new File(tmpDir, "raw-fastq-se-multiple-samples10.resolved.csv")
+        resolvedSheet.text = resolved
 
         when {
             params {
-                input = "${projectDir}/tests/manifests/raw-fastq-se-multiple-samples.csv"
+                input = "${resolvedSheet}"
                 single_end = true
                 input_type = "fastq"
                 raw_sequencing_qc = true
                 adapter_trimming = "cutadapt"
-                adapter_cutadapt_options = "-a 'AGATCGGAAGAGCGGTTCAGCAGGAATGCCG' -A 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT' -m 1"
                 adapter_trimming_qc = true
                 primer_trimming = "cutadapt"
-                primer_cutadapt_options = "-g 'TCTACATTTTATTTGCACTACTTGAAGG...ATACTTTTAAGTTCTGGGGTCATGTG' -G 'CACATGACCCCAGAACTTAAA...AGTGCAAATAAAATGTAGA' -m 1"
                 primer_trimming_qc = true
             }
         }

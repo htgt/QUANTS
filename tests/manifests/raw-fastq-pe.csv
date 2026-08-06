@@ -1,2 +1,2 @@
-sample,fastq_1,fastq_2
-test_sample,../../../tests/sample-data/xR1.fq.gz,../../../tests/sample-data/xR2.fq.gz
+sample,fastq_1,fastq_2,oligo_library,primer_start,primer_end,adapter_path
+test_sample,tests/quants-data/sample-data/xR1.fq.gz,tests/quants-data/sample-data/xR2.fq.gz,tests/quants-data/ref/4.tsv,TCTACATTTTATTTGCACTACTTGAAGG,ATACTTTTAAGTTCTGGGGTCATGTG,tests/quants-data/ref/adapter_pe_test5.fa
