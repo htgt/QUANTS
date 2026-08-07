@@ -212,7 +212,7 @@ include { SEQUENCING_QC as RAW_SEQUENCING_QC;
         } from '../subworkflows/local/sequencing_qc'
 include { COLLATE_CUTADAPT_JSONS } from '../modules/local/cutadapt_json_collation/main.nf'
 
-include { INFER_LIBRARY_ORIENTATIONS } from '../subworkflows/local/infer_library_orientations.nf'
+include { FASTQ_INFER_LIBRARY_ORIENTATIONS } from '../subworkflows/local/fastq_infer_library_orientations.nf'
 
 // Installed from nf-core but modified substantially
 include { SEQTK_SAMPLE } from '../modules/local/seqtk/sample/main'
@@ -263,8 +263,8 @@ workflow SGE {
     //  SUBWORKFLOW: Infer library orientations
     //  Updates read metadata for downstream processing
     if (params.infer_library_orientations) {
-        INFER_LIBRARY_ORIENTATIONS(ch_raw_reads)
-        ch_raw_reads = INFER_LIBRARY_ORIENTATIONS.out.reads
+        FASTQ_INFER_LIBRARY_ORIENTATIONS(ch_raw_reads)
+        ch_raw_reads = FASTQ_INFER_LIBRARY_ORIENTATIONS.out.reads
         // Versions not added as versions done as topics in module.
         // This not compatible with version style in use in pipeline.
     }

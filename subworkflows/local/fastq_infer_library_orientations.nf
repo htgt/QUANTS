@@ -6,7 +6,7 @@
 // MODULE: INFERLIBRARYORIENTATIONS
 include { INFERLIBRARYORIENTATIONS } from '../../modules/local/inferlibraryorientations/main.nf'
 
-workflow INFER_LIBRARY_ORIENTATIONS {
+workflow FASTQ_INFER_LIBRARY_ORIENTATIONS {
     take:
         reads
 
