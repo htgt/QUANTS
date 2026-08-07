@@ -1,0 +1,50 @@
+nextflow_workflow {
+    name "Test Workflow FASTQ_INFER_LIBRARY_ORIENTATIONS"
+        script "../main.nf"
+        workflow "FASTQ_INFER_LIBRARY_ORIENTATIONS"
+        config "tests/nextflow.config"
+
+        tag "subworkflows"
+        tag "subworkflows/fastq_infer_library_orientations"
+        tag "fastq_infer_library_orientations"
+
+        test("fastq_infer_library_orientations - fastq - tsv - two samples") {
+
+            when {
+                workflow {
+                    """
+                    input[0] = Channel.of(
+                       [
+                            [
+                                id: 'test_sample_1',
+                                expt_forward_primer: 'AGCATGTCTAAGGCATATCAGAGCA',
+                                expt_reverse_primer: 'CCACAATGGCCCCTCTGCCAGCTCA',
+                                oligo_library: "${projectDir}/tests/ref/1.csv"
+                            ],
+                        file("${projectDir}/tests/sample-data/1.fq.gz", checkIfExists: true)
+                        ],
+                        [
+                            [
+                                id: 'test_sample_2',
+                                expt_forward_primer: 'ATTCACGTTATGCTGTCCAATCTCT',
+                                expt_reverse_primer: 'CCCTGGGAAGGTAATTTTAGATTTC',
+                                oligo_library: "${projectDir}/tests/ref/2.csv"
+                            ],
+                        file("${projectDir}/tests/sample-data/2.fq.gz", checkIfExists: true)
+                        ]
+                    )
+                    """
+                }
+            }
+
+            then {
+                assertAll(
+                    { assert workflow.success },
+                    { assert snapshot(workflow.out.reads).match() },
+                    { assert workflow.out.reads.size() == 2}
+                )
+            }
+        }
+}
+
+

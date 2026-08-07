@@ -1,0 +1,41 @@
+{
+    "fastq_infer_library_orientations - fastq - tsv - two samples": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test_sample_1",
+                        "expt_forward_primer": "AGCATGTCTAAGGCATATCAGAGCA",
+                        "expt_reverse_primer": "CCACAATGGCCCCTCTGCCAGCTCA",
+                        "oligo_library": "1.csv:md5,485b9de403b0278ed6684ad1348d37a8",
+                        "primer_start": "AGCATGTCTAAGGCATATCAGAGCA",
+                        "primer_end": "TGAGCTGGCAGAGGGGCCATTGTGG",
+                        "append_start": "AGCATGTCTAAGGCATATCAGAGCA",
+                        "append_end": "TGAGCTGGCAGAGGGGCCATTGTGG",
+                        "read_transform": ""
+                    },
+                    "1.fq.gz:md5,ce184db9788e50628ba5cd71947ad22d"
+                ],
+                [
+                    {
+                        "id": "test_sample_2",
+                        "expt_forward_primer": "ATTCACGTTATGCTGTCCAATCTCT",
+                        "expt_reverse_primer": "CCCTGGGAAGGTAATTTTAGATTTC",
+                        "oligo_library": "2.csv:md5,3e403419a08708609c9341a07ef7ac98",
+                        "primer_start": "CCCTGGGAAGGTAATTTTAGATTTC",
+                        "primer_end": "AGAGATTGGACAGCATAACGTGAAT",
+                        "append_start": "ATTCACGTTATGCTGTCCAATCTCT",
+                        "append_end": "GAAATCTAAAATTACCTTCCCAGGG",
+                        "read_transform": "reverse_complement"
+                    },
+                    "2.fq.gz:md5,b540f0ff23d9f9bfd47234c2df06e238"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-08-07T19:09:53.237919179"
+    }
+}
