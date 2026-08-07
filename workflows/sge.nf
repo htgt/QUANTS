@@ -212,7 +212,7 @@ include { SEQUENCING_QC as RAW_SEQUENCING_QC;
         } from '../subworkflows/local/sequencing_qc'
 include { COLLATE_CUTADAPT_JSONS } from '../modules/local/cutadapt_json_collation/main.nf'
 
-include { FASTQ_INFER_LIBRARY_ORIENTATIONS } from '../subworkflows/local/fastq_infer_library_orientations.nf'
+include { FASTQ_INFER_LIBRARY_ORIENTATIONS } from '../subworkflows/local/fastq_infer_library_orientations/main.nf'
 
 // Installed from nf-core but modified substantially
 include { SEQTK_SAMPLE } from '../modules/local/seqtk/sample/main'

@@ -4,7 +4,7 @@
 
 //
 // MODULE: INFERLIBRARYORIENTATIONS
-include { INFERLIBRARYORIENTATIONS } from '../../modules/local/inferlibraryorientations/main.nf'
+include { INFERLIBRARYORIENTATIONS } from '../../../modules/local/inferlibraryorientations/main.nf'
 
 workflow FASTQ_INFER_LIBRARY_ORIENTATIONS {
     take:
