@@ -5,15 +5,7 @@ nextflow_pipeline {
 
     test("Should run multi-sample single-end QC, adapter trimming, and primer trimming without failures") {
 
-        def raw = file("${projectDir}/tests/manifests/raw-fastq-se-multiple-samples10.csv").text
-        def resolved = raw.replace(
-            "tests/quants-data",
-            "${projectDir}/tests/quants-data"
-        )   
-
-        def tmpDir = File.createTempDir()
-        def resolvedSheet = new File(tmpDir, "raw-fastq-se-multiple-samples10.resolved.csv")
-        resolvedSheet.text = resolved
+        def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "raw-fastq-se-multiple-samples10.csv")
 
         when {
             params {

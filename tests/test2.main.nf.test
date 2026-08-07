@@ -5,15 +5,7 @@ nextflow_pipeline {
 
     test("Should run without failures with raw_sequencing_qc enabled") {
 
-        def raw = file("${projectDir}/tests/manifests/trimmed-fastq-se2.csv").text
-        def resolved = raw.replace(
-            "tests/quants-data",
-            "${projectDir}/tests/quants-data"
-        )
-
-        def tmpDir = File.createTempDir()
-        def resolvedSheet = new File(tmpDir, "trimmed-fastq-se2.resolved.csv")
-        resolvedSheet.text = resolved
+        def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "trimmed-fastq-se2.csv")
 
         when {
             params {

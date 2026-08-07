@@ -5,15 +5,7 @@ nextflow_pipeline {
 
     test("Should run single-end QC, trimming, modification, transform, and pyquest quantification without failures") {
 
-        def raw = file("${projectDir}/tests/manifests/raw-fastq-se3.csv").text
-        def resolved = raw.replace(
-            "tests/quants-data",
-            "${projectDir}/tests/quants-data"
-        )
-
-        def tmpDir = File.createTempDir()
-        def resolvedSheet = new File(tmpDir, "raw-fastq-se3.resolved.csv")
-        resolvedSheet.text = resolved
+        def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "raw-fastq-se3.csv")
 
         when {
             params {

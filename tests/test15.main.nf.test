@@ -5,19 +5,11 @@ nextflow_pipeline {
 
     test("Should preserve appended metadata through paired-end read merging and downsampling") {
 
-        def raw = file("${projectDir}/tests/manifests/raw-fastq-pe-row-meta.csv").text
-        def resolved = raw.replace(
-            "tests/quants-data",
-            "${projectDir}/tests/quants-data"
-        )
-
-        def tmpDir = File.createTempDir()
-        def resolvedSheet = new File(tmpDir, "raw-fastq-pe-row-meta.resolved.csv")
-        resolvedSheet.text = resolved
+        def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "raw-fastq-pe-row-meta.csv")
 
         when {
             params {
-                input = resolvedSheet.path
+                input = "${resolvedSheet}"
                 single_end = false
                 input_type = "fastq"
                 downsampling = true

@@ -5,15 +5,7 @@ nextflow_pipeline {
 
     test("Should run single-end CRAM QC, trimming, modification, transform, and pyquest quantification without failures") {
 
-        def raw = file("${projectDir}/tests/manifests/raw-cram-se4.csv").text
-        def resolved = raw.replace(
-            "tests/quants-data",
-            "${projectDir}/tests/quants-data"
-        )
-
-        def tmpDir = File.createTempDir()
-        def resolvedSheet = new File(tmpDir, "raw-cram-se4.resolved.csv")
-        resolvedSheet.text = resolved
+        def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "raw-cram-se4.csv")   
 
         when {
             params {

@@ -5,15 +5,7 @@ nextflow_pipeline {
 
     test("Should fail when downsampling is enabled and downsampling_size is not an integer") {
 
-        def raw = file("${projectDir}/tests/manifests/raw-fastq-se.csv").text
-        def resolved = raw.replace(
-            "tests/quants-data",
-            "${projectDir}/tests/quants-data"
-        )
-
-        def tmpDir = File.createTempDir()
-        def resolvedSheet = new File(tmpDir, "raw-fastq-se.resolved.csv")
-        resolvedSheet.text = resolved
+        def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "raw-fastq-se.csv")
 
         when {
             params {
