@@ -38,6 +38,31 @@
         },
         "timestamp": "2026-08-10T10:26:34.536755705"
     },
+    "fastq_infer_library_orientations - fastq - tsv - meta update": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test_sample_1",
+                        "expt_forward_primer": "AGCATGTCTAAGGCATATCAGAGCA",
+                        "expt_reverse_primer": "CCACAATGGCCCCTCTGCCAGCTCA",
+                        "oligo_library": "1.csv:md5,485b9de403b0278ed6684ad1348d37a8",
+                        "primer_start": "AGCATGTCTAAGGCATATCAGAGCA",
+                        "primer_end": "TGAGCTGGCAGAGGGGCCATTGTGG",
+                        "append_start": "AGCATGTCTAAGGCATATCAGAGCA",
+                        "append_end": "TGAGCTGGCAGAGGGGCCATTGTGG",
+                        "read_transform": ""
+                    },
+                    "1.fq.gz:md5,ce184db9788e50628ba5cd71947ad22d"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.4"
+        },
+        "timestamp": "2026-08-10T12:43:21.881206528"
+    },
     "fastq_infer_library_orientations - fastq - tsv -  1 sample - stub": {
         "content": [
             [
