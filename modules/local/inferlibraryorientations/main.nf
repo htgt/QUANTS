@@ -45,7 +45,10 @@ process INFERLIBRARYORIENTATIONS {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    touch ${prefix}_library_orientations.tsv
+    cat <<-END > ${prefix}_library_orientations.tsv
+    name\tprimer_start\tprimer_end\tappend_start\tappend_end\tread_transform
+    test\tAAGGCC\tAAGGTT\tAACCGG\tCCGGTT\treverse_complement
+    END
     """
 }
 
