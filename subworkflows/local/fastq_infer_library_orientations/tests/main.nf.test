@@ -80,6 +80,33 @@ nextflow_workflow {
             }
         }
 
+        test("fastq_infer_library_orientations - fastq - tsv - infer failure") {
+            // Test workflow failure with incorrect primers
+            when {
+                workflow {
+                    """
+                    input[0] = Channel.of(
+                       [
+                            [
+                                id: 'test_sample_1',
+                                expt_forward_primer: 'ATTCACGTTATGCTGTCCAATCTCT',
+                                expt_reverse_primer: 'CCCTGGGAAGGTAATTTTAGATTTC',
+                                oligo_library: "${projectDir}/tests/ref/1.csv",
+                            ],
+                            file("${projectDir}/tests/sample-data/1.fq.gz", checkIfExists: true)
+                        ]
+                    )
+                    """
+                }
+            }
+
+            then {
+                assertAll(
+                    { assert workflow.failed }
+                )
+            }
+        }
+
         test("fastq_infer_library_orientations - fastq - tsv -  1 sample - stub") {
 
             options "-stub"
