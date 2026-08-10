@@ -33,3 +33,9 @@ To confirm that you've retrieved the correct data, and named it appropriately if
 Individual module tests are located in each module's tests directory, i.e. `modules/<local-or-nf-core>/<module-name>/tests/`.
 
 Module tests should be run locally when developing or modifying a module to confirm that the module behaves as expected. Module tests can be run with `nf-test test modules/<local-or-nf-core>/<module-name>/tests/main.nf.test`.
+
+# Subworkflow tests
+
+Tests for local subworkflow are located in each subworkflows' tests directory, i.e. `subworkflows/local/<subworkflow-name>/tests/`.
+
+Subworkflow tests should be run locally when developing or modifying a subworkflow to confirm that the subworkflow behaves as expected. Subworkflow tests can be run with `nf-test test subworkflows/local/<subworkflow-name>/tests/main.nf.test`.
