@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: fastq_infer_library_orientations
+description: |
+  Infer library orientation from experimental primers, FASTQ reads, and template library sequences.
+  The inferred orientation information is added to the sample metadata.
+keywords:
+  - fastq
+  - library orientation
+  - primers
+  - oligo library
+  - experimental primers
+  - orientations
+  - reads
+components:
+  - inferlibraryorientations
+input:
+  - reads:
+      description: |
+        Structure: [ meta, fastq_files ]
+          meta:
+            Groovy map containing sample information
+            Required fields:
+              id: Unique sample identifier
+              expt_forward_primer: Experimental forward primer sequence
+              expt_reverse_primer: Experimental reverse primer sequence
+              oligo_library: Path to oligo library file
+          fastq_files: 
+            List containing one or two input FASTQ files for 
+            single-end and paired-end data, respectively.
+output:
+  - reads:
+      description: |
+        Structure: [ meta, fastq_files ]
+          meta:
+            Groovy map containing sample information.
+            The original meta data is preserved with the following fields, added or updated 
+            after inferring the library orientation:
+            - primer_start
+            - primer_end
+            - append_start
+            - append_end
+            - read_transform
+          fastq_files: 
+            List containing one or two input FASTQ files for 
+            single-end and paired-end data, respectively.
+authors:
+  - "@helensch"
+maintainers:
+  - "@helensch"

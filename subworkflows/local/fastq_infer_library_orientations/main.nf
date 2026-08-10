@@ -8,7 +8,7 @@ include { INFERLIBRARYORIENTATIONS } from '../../../modules/local/inferlibraryor
 
 workflow FASTQ_INFER_LIBRARY_ORIENTATIONS {
     take:
-        reads
+        reads     // channel: [meta, fastq_files]
 
     main:
         ch_input = reads.map { meta, fastq ->
