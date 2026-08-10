@@ -13,12 +13,14 @@ When `group_id` is specified in the samplesheet, the output files will be groupe
     ├── seqkit_stats   # These are run-level results
     └── <group_id_1>   # These are group-specific results
         ├── cutadapt
+        ├── infer_library_orientations
         ├── modified_fastq
         ├── pyquest
         ├── seqkit_seq
         └── seqkit_stats
     └── <group_id_2>   # These are group-specific results
         ├── cutadapt
+        ├── infer_library_orientations
         ├── modified_fastq
         ├── pyquest
         ├── seqkit_seq
@@ -42,6 +44,20 @@ When `group_id` is specified in the samplesheet, the output files will be groupe
 </details>
 
 [Cutadapt](https://cutadapt.readthedocs.io/en/stable/) finds and removes adapter sequences, primers, poly-A tails and other types of unwanted sequence from your high-throughput sequencing reads. For further reading and documentation see the [cutadapt user guide](https://cutadapt.readthedocs.io/en/stable/guide.html).
+
+## Data fetching
+
+### infer_library_orientations
+
+<details markdown="1">
+<summary>Output files</summary>
+
+* `infer_library_orientations/`
+    * `*_library_orientations.tsv`: File containing primer trimming sequences, adapter adding sequences and required read transformation.
+
+</details>
+
+[infer_library_orientations.py] script located in `bin/`.  Infers library orientation from experimental primers, FASTQ reads, and template library sequences.
 
 ## Read merging
 
