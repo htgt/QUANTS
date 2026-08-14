@@ -68,59 +68,38 @@ Individual module tests are located in each module's tests directory, i.e. `modu
 Module tests should be run locally when developing or modifying a module to confirm that the module behaves as expected. Module tests can be run with `nf-test test modules/<local-or-nf-core>/<module-name>/tests/main.nf.test`.
 
 
-# All the different tests in QUANTS
+# Overview of the QUANTS tests: test types, directories and purpose
 
-### Nf-tests
+### nf-tests
 ```bash
 # Module level nf-test
-modules/local/seqtk/sample/tests/main.nf.test
-modules/local/inferlibraryorientations/tests/main.nf.test
-modules/nf-core/gunzip/tests/main.nf.test
-modules/nf-core/cat/fastq/tests/main.nf.test
-tests/modules/iget_file.nf.test
+modules/local/*
+modules/nf-core/*
+tests/modules/*
 
 # End to end tests
-tests/test8.main.nf.test
-tests/test13.main.nf.test
-tests/test4.main.nf.test
-tests/test11.main.nf.test
-tests/test7.main.nf.test
-tests/test12.main.nf.test
-tests/test2.main.nf.test
-tests/test6.main.nf.test
-tests/test10.main.nf.test
 tests/test1.main.nf.test
-tests/test14.main.nf.test
+tests/test2.main.nf.test
 tests/test3.main.nf.test
+tests/test4.main.nf.test
 tests/test5.main.nf.test
+tests/test6.main.nf.test
+tests/test7.main.nf.test
+tests/test8.main.nf.test
 tests/test9.main.nf.test
+tests/test10.main.nf.test
+tests/test11.main.nf.test
+tests/test12.main.nf.test
+tests/test13.main.nf.test
+tests/test14.main.nf.test
 tests/test15.main.nf.test
 ```
 
 ### Python tests
 
 ```bash
-bin/manifest_transformer/tests/unit/csv/test_validate.py
-bin/manifest_transformer/tests/unit/csv/test_parser.py
-bin/manifest_transformer/tests/unit/csv/test_entrypoint.py
-bin/manifest_transformer/tests/unit/csv/test_properties.py
-bin/manifest_transformer/tests/unit/csv/test_transform.py
-bin/manifest_transformer/tests/unit/args/test_validate.py
-bin/manifest_transformer/tests/unit/args/test_json_helper.py
-bin/manifest_transformer/tests/unit/args/test_parser.py
-bin/manifest_transformer/tests/unit/args/test_struct__granular.py
-bin/manifest_transformer/tests/unit/args/test_struct.py
-bin/manifest_transformer/tests/unit/args/test_io.py
-bin/manifest_transformer/tests/unit/args/test_clean.py
-bin/manifest_transformer/tests/unit/test_version.py
-bin/manifest_transformer/tests/conftest.py
-bin/infer_library_orientations/tests/test_orientations.py
-bin/pyquest_library_converter/tests/test_trimming.py
-bin/pyquest_library_converter/tests/test_arg_validation.py
-bin/pyquest_library_converter/tests/test_primer_scanner.py
-bin/pyquest_library_converter/tests/test_reverse_compliment.py
-bin/pyquest_library_converter/tests/test_main.py
-bin/pyquest_library_converter/tests/test_csv_helper.py
-bin/tests/test_check_samplesheet.py
-bin/tests/test_validate_samplesheet_rows.py
+bin/manifest_transformer/tests/*
+bin/infer_library_orientations/tests/*
+bin/pyquest_library_converter/tests/*
+bin/tests/*
 ```
