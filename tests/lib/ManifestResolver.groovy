@@ -7,8 +7,8 @@ class ManifestResolver {
         String raw = manifest.text
 
         String resolved = raw.replace(
-            "tests/quants-data",
-            "${projectDirPath}/tests/quants-data"
+            "tests",
+            "${projectDirPath}/tests"
         )
 
         File tmpDir = Files.createTempDirectory("nf-test-").toFile()

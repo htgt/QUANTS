@@ -1,5 +1,5 @@
 sample,fastq_1,fastq_2,oligo_library,primer_start,primer_end,adapter_path
-lib,tests/quants-data/sample-data/libR1.fq.gz,tests/quants-data/sample-data/libR2.fq.gz,tests/quants-data/ref/5.tsv,ACTACTGAGGACCACAAAATGGTA,AGAGCTTAAGTTTCAGCATTCTC,tests/quants-data/ref/adapter_pe_test5.fa
-u,tests/quants-data/sample-data/uR1.fq.gz,tests/quants-data/sample-data/uR2.fq.gz,tests/quants-data/ref/5.tsv,ACTACTGAGGACCACAAAATGGTA,AGAGCTTAAGTTTCAGCATTCTC,tests/quants-data/ref/adapter_pe_test5.fa
-v,tests/quants-data/sample-data/vR1.fq.gz,tests/quants-data/sample-data/vR2.fq.gz,tests/quants-data/ref/5.tsv,ACTACTGAGGACCACAAAATGGTA,AGAGCTTAAGTTTCAGCATTCTC,tests/quants-data/ref/adapter_pe_test5.fa
-w,tests/quants-data/sample-data/wR1.fq.gz,tests/quants-data/sample-data/wR2.fq.gz,tests/quants-data/ref/5.tsv,ACTACTGAGGACCACAAAATGGTA,AGAGCTTAAGTTTCAGCATTCTC,tests/quants-data/ref/adapter_pe_test5.fa
+lib,tests/sample-data/libR1.fq.gz,tests/sample-data/libR2.fq.gz,tests/ref/5.tsv,ACTACTGAGGACCACAAAATGGTA,AGAGCTTAAGTTTCAGCATTCTC,tests/ref/adapter_pe_test5.fa
+u,tests/sample-data/uR1.fq.gz,tests/sample-data/uR2.fq.gz,tests/ref/5.tsv,ACTACTGAGGACCACAAAATGGTA,AGAGCTTAAGTTTCAGCATTCTC,tests/ref/adapter_pe_test5.fa
+v,tests/sample-data/vR1.fq.gz,tests/sample-data/vR2.fq.gz,tests/ref/5.tsv,ACTACTGAGGACCACAAAATGGTA,AGAGCTTAAGTTTCAGCATTCTC,tests/ref/adapter_pe_test5.fa
+w,tests/sample-data/wR1.fq.gz,tests/sample-data/wR2.fq.gz,tests/ref/5.tsv,ACTACTGAGGACCACAAAATGGTA,AGAGCTTAAGTTTCAGCATTCTC,tests/ref/adapter_pe_test5.fa

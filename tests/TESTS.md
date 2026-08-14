@@ -6,20 +6,21 @@ The `test/` directory contains end-to-end tests for the quants pipeline using th
 
 Having retrieved data and placed it in the ref and sample-data folders, tests can be run with `nf-test test tests/test[#].main.nf.test`
 
-Make sure you download/clone `quants-data` from this repository `https://gitlab.internal.sanger.ac.uk/sci/quants-data` to `tests/` directory before running the end-to-end tests.
+Make sure you download/clone `quants-data` from this repository `https://gitlab.internal.sanger.ac.uk/sci/quants-data` into your chosen directory on local machine. Before running the end-to-end tests copy `ref/` and `sample-data/` from local cloned `quants-data` repository and overwrite onto `tests/ref` and `tests/sample-data` directories.
 
-Once downloaded directory structure should look like the following:
+Once copied and overwritten, `tests` directory structure should look like the following:
 ```bash
 tests/
+├── TESTS.md
+├── lib
 ├── manifests
 ├── modules
 ├── modules-testdata
-├── quants-data <<-- CASM provided QUANTS nf-test data from GitLab repository
-├── ref
-├── TESTS.md
 ├── nextflow.config
-├── quants-nf-test-init
+├── quants-data
+├── ref
 ├── ref-checksums
+├── sample-data
 ├── sample-data-checksums
 ├── test1.main.nf.test
 ├── test10.main.nf.test

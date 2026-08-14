@@ -1,2 +1,2 @@
 sample,fastq_1,fastq_2,append_start,append_end,read_transform,oligo_library
-test_sample,tests/quants-data/sample-data/sge.fq.gz,,ATTCACGTTATGCTGTCCAATCTCT,GAAATCTAAAATTACCTTCCCAGGG,reverse_complement,tests/quants-data/ref/2.csv
+test_sample,tests/sample-data/sge.fq.gz,,ATTCACGTTATGCTGTCCAATCTCT,GAAATCTAAAATTACCTTCCCAGGG,reverse_complement,tests/ref/2.csv
