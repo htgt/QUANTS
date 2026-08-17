@@ -29,14 +29,21 @@ nextflow_pipeline {
             def appendCommandScripts = []
             def modifiedOutputs = []
 
-            new File("${projectDir}/.nf-test/tests").eachFileRecurse { file ->
+            def testRuns = new File("${projectDir}/.nf-test/tests").listFiles()?.findAll { it.isDirectory() }?.sort { -it.lastModified() }
+            assert testRuns
+
+            def latestRunDir = testRuns[0]
+
+            new File(latestRunDir, "work").eachFileRecurse { file ->
                 if (file.name == ".command.sh") {
                     def scriptText = file.text
                     if (scriptText.contains("append_start=") && scriptText.contains("append_end=")) {
-                        appendCommandScripts << [path: file.path, text: scriptText]
+                        appendCommandScripts << [path: file.path, text: scriptText, lastModified: file.lastModified()]
                     }
                 }
+            }
 
+            new File(latestRunDir, "results").eachFileRecurse { file ->
                 if (file.name.endsWith(".modified.fq.gz") && file.path.contains("/results/T1/modified_fastq/")) {
                     modifiedOutputs << file
                 }
@@ -44,7 +51,7 @@ nextflow_pipeline {
 
             assert !appendCommandScripts.isEmpty()
 
-            def appendCmd = appendCommandScripts.max { it.path }
+            def appendCmd = appendCommandScripts.max { it.lastModified }
             assert appendCmd.text.contains('append_start="GGACTCTCCAGGACTGCCAT"')
             assert appendCmd.text.contains('append_end="GGACAGAGCAGAGCCCAC"')
             assert !appendCmd.text.contains('append_start="null"')
