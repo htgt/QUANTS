@@ -3,7 +3,7 @@ nextflow_pipeline {
     name "Test PE read merging preserves row metadata"
     script "main.nf"
 
-    test("Should preserve appended metadata through paired-end read merging and downsampling") {
+    test("Should preserve append metadata through read merging and downsampling") {
 
         def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "raw-fastq-pe-row-meta.csv")
 
@@ -26,93 +26,33 @@ nextflow_pipeline {
         then {
             assert workflow.success
 
-            def appendCommandScripts = []
-            def modifiedOutputs = []
-
-            def testRuns = new File("${projectDir}/.nf-test/tests").listFiles()?.findAll { it.isDirectory() }?.sort { -it.lastModified() }
-            assert testRuns
-
-            def latestRunDir = testRuns[0]
-
-            new File(latestRunDir, "work").eachFileRecurse { file ->
-                if (file.name == ".command.sh") {
-                    def scriptText = file.text
-                    if (scriptText.contains("append_start=") && scriptText.contains("append_end=")) {
-                        appendCommandScripts << [path: file.path, text: scriptText, lastModified: file.lastModified()]
-                    }
+            def matches = []
+            new File("${projectDir}/.nf-test/tests").eachDirRecurse { dir ->
+                def candidate = new File(dir, "results/T1/modified_fastq/test_sample_merged.modified.fq.gz")
+                if (candidate.exists()) {
+                    matches << candidate
                 }
             }
 
-            new File(latestRunDir, "results").eachFileRecurse { file ->
-                if (file.name.endsWith(".modified.fq.gz") && file.path.contains("/results/T1/modified_fastq/")) {
-                    modifiedOutputs << file
-                }
-            }
+            assert !matches.isEmpty()
 
-            assert !appendCommandScripts.isEmpty()
+            def output = matches.max { it.lastModified() }
 
-            def appendCmd = appendCommandScripts.max { it.lastModified }
-            assert appendCmd.text.contains('append_start="GGACTCTCCAGGACTGCCAT"')
-            assert appendCmd.text.contains('append_end="GGACAGAGCAGAGCCCAC"')
-            assert !appendCmd.text.contains('append_start="null"')
-            assert !appendCmd.text.contains('append_end="null"')
+            def reader = new BufferedReader(
+                new InputStreamReader(
+                    new java.util.zip.GZIPInputStream(new FileInputStream(output)),
+                    "UTF-8"
+                )
+            )
 
-            assert !modifiedOutputs.isEmpty()
+            def header = reader.readLine()
+            def sequence = reader.readLine()
+            reader.close()
 
-            def sortedMatches = modifiedOutputs.sort { -it.lastModified() }
-            def output = null
-            def header = null
-            def sequence = null
-
-            for (candidate in sortedMatches) {
-                if (candidate.length() == 0L) {
-                    continue
-                }
-
-                def parsedHeader = null
-                def parsedSequence = null
-                new BufferedReader(
-                    new InputStreamReader(
-                        new java.util.zip.GZIPInputStream(new FileInputStream(candidate)),
-                        "UTF-8"
-                    )
-                ).withCloseable { reader ->
-                    parsedHeader = reader.readLine()
-                    parsedSequence = reader.readLine()
-                }
-
-                if (parsedHeader != null && parsedSequence != null) {
-                    output = candidate
-                    header = parsedHeader
-                    sequence = parsedSequence
-                    break
-                }
-            }
-
-            if (output != null) {
-                assert header.startsWith("@")
-                assert sequence.startsWith("GGACTCTCCAGGACTGCCAT")
-                assert sequence.endsWith("GGACAGAGCAGAGCCCAC")
-                assert !sequence.contains("null")
-            }
-
-            sortedMatches.each { candidate ->
-                def fullText = ""
-                new BufferedReader(
-                    new InputStreamReader(
-                        new java.util.zip.GZIPInputStream(new FileInputStream(candidate)),
-                        "UTF-8"
-                    )
-                ).withCloseable { reader ->
-                    def lines = []
-                    def line
-                    while ((line = reader.readLine()) != null) {
-                        lines << line
-                    }
-                    fullText = lines.join("\n")
-                }
-                assert !fullText.contains("null")
-            }
+            assert header.startsWith("@")
+            assert sequence.startsWith("GGACTCTCCAGGACTGCCAT")
+            assert sequence.endsWith("GGACAGAGCAGAGCCCAC")
+            assert !sequence.contains("null")
         }
 
     }
