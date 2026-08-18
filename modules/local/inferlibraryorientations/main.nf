@@ -32,6 +32,7 @@ process INFERLIBRARYORIENTATIONS {
 
     """
     python3 ${projectDir}/bin/infer_library_orientations/infer_library_orientations.py \
+      ${args} \
       --name ${meta.id} \
       --expt_forward_primer ${meta.expt_forward_primer} \
       --expt_reverse_primer ${meta.expt_reverse_primer} \
