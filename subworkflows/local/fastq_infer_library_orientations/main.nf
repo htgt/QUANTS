@@ -18,8 +18,8 @@ workflow FASTQ_INFER_LIBRARY_ORIENTATIONS {
         INFERLIBRARYORIENTATIONS(ch_input)
 
         ch_reads_with_tsv = reads
-            .map { meta, reads ->
-                tuple(meta.id, meta, reads)
+            .map { meta, sample_reads ->
+                tuple(meta.id, meta, sample_reads)
             }
             .join(
                 INFERLIBRARYORIENTATIONS.out.library_orientations
