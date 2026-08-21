@@ -6,7 +6,7 @@ The `test/` directory contains end-to-end tests for the quants pipeline using th
 
 Having retrieved data and placed it in the ref and sample-data folders, tests can be run with `nf-test test tests/test[#].main.nf.test`
 
-Make sure you download/clone `quants-data` from this repository `https://gitlab.internal.sanger.ac.uk/sci/quants-data` into your chosen directory on local machine. Before running the end-to-end tests copy `ref/` and `sample-data/` from local cloned `quants-data` repository and overwrite onto `tests/ref` and `tests/sample-data` directories.
+Make sure you download/clone `quants-data` from this repository `https://gitlab.internal.sanger.ac.uk/sci/quants-data` into your chosen directory on your local machine. Before running the end-to-end tests copy the contents `ref/` and `sample-data/` directories from your local `quants-data` repository into `tests/ref` and `tests/sample-data` respectively, overwriting existing contents.
 
 **Note:** The `quants-data` repository is for internal Sanger use only.
 
