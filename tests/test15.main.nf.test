@@ -5,9 +5,11 @@ nextflow_pipeline {
 
     test("Should preserve append metadata through read merging and downsampling") {
 
+        def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "raw-fastq-pe-row-meta.csv")
+
         when {
             params {
-                input = "${projectDir}/tests/manifests/raw-fastq-pe-row-meta.csv"
+                input = "${resolvedSheet}"
                 single_end = false
                 input_type = "fastq"
                 downsampling = true
@@ -35,6 +37,7 @@ nextflow_pipeline {
             assert !matches.isEmpty()
 
             def output = matches.max { it.lastModified() }
+
             def reader = new BufferedReader(
                 new InputStreamReader(
                     new java.util.zip.GZIPInputStream(new FileInputStream(output)),

@@ -3,29 +3,25 @@ nextflow_pipeline {
     name "Test Workflow main.nf"
     script "main.nf"
 
-    test("Should run without failures") {
+    test("Should run single-end CRAM QC, trimming, modification, transform, and pyquest quantification without failures") {
+
+        def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "raw-cram-se4.csv")   
 
         when {
             params {
-                input = "${projectDir}/tests/manifests/raw-cram-se.csv"
+                input = "${resolvedSheet}"
                 single_end = true
                 input_type = "cram"
                 raw_sequencing_qc = true
                 adapter_trimming = "cutadapt"
-                adapter_cutadapt_options = "-a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -m 1"
                 adapter_trimming_qc = true
                 primer_trimming = "cutadapt"
-                primer_cutadapt_options = "-g 'CCCTGGGAAGGTAATTTTAGATTTC...AGAGATTGGACAGCATAACGTGAAT' -m 1"
                 primer_trimming_qc = true
                 read_modification = true
-                append_start = "ATTCACGTTATGCTGTCCAATCTCT"
-                append_end = "GAAATCTAAAATTACCTTCCCAGGG"
                 append_quality = "?"
-                read_transform = "reverse_complement"
                 transform_library = true
                 pyquest_library_converter_options = "-N 1 -S 24"
                 quantification = "pyquest"
-                oligo_library = "${projectDir}/tests/ref/2.csv"
             }
         }
 
