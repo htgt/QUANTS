@@ -8,7 +8,7 @@ process INFERLIBRARYORIENTATIONS {
 
 
     input:
-    tuple val(meta), path(valiant_meta), path(fastq_1)
+    tuple val(meta), path(valiant_meta), path(reads)
 
     output:
     tuple val(meta), path("${meta.id}_library_orientations.tsv"), emit: library_orientations
@@ -32,20 +32,23 @@ process INFERLIBRARYORIENTATIONS {
 
     """
     python3 ${projectDir}/bin/infer_library_orientations/infer_library_orientations.py \
+      ${args} \
       --name ${meta.id} \
       --expt_forward_primer ${meta.expt_forward_primer} \
       --expt_reverse_primer ${meta.expt_reverse_primer} \
       --valiant_meta ${valiant_meta} \
-      --fastq_1 ${fastq_1} \
+      --fastq_1 ${reads[0]} \
       --output ${prefix}_library_orientations.tsv
     """
 
     stub:
-    def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    touch ${prefix}_library_orientations.tsv
+    cat <<-END > ${prefix}_library_orientations.tsv
+    name\tprimer_start\tprimer_end\tappend_start\tappend_end\tread_transform
+    test\tAAGGCC\tAAGGTT\tAACCGG\tCCGGTT\treverse_complement
+    END
     """
 }
 

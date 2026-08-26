@@ -1,0 +1,139 @@
+nextflow_workflow {
+    name "Test Workflow FASTQ_INFER_LIBRARY_ORIENTATIONS"
+        script "../main.nf"
+        workflow "FASTQ_INFER_LIBRARY_ORIENTATIONS"
+        config "tests/nextflow.config"
+
+        tag "subworkflows"
+        tag "subworkflows/fastq_infer_library_orientations"
+        tag "fastq_infer_library_orientations"
+
+        test("fastq_infer_library_orientations - fastq - tsv - two samples") {
+
+            when {
+                workflow {
+                    """
+                    input[0] = Channel.of(
+                       [
+                            [
+                                id: 'test_sample_1',
+                                expt_forward_primer: 'AGCATGTCTAAGGCATATCAGAGCA',
+                                expt_reverse_primer: 'CCACAATGGCCCCTCTGCCAGCTCA',
+                                oligo_library: "${projectDir}/tests/ref/1.csv"
+                            ],
+                        file("${projectDir}/tests/sample-data/1.fq.gz", checkIfExists: true)
+                        ],
+                        [
+                            [
+                                id: 'test_sample_2',
+                                expt_forward_primer: 'ATTCACGTTATGCTGTCCAATCTCT',
+                                expt_reverse_primer: 'CCCTGGGAAGGTAATTTTAGATTTC',
+                                oligo_library: "${projectDir}/tests/ref/2.csv"
+                            ],
+                        file("${projectDir}/tests/sample-data/2.fq.gz", checkIfExists: true)
+                        ]
+                    )
+                    """
+                }
+            }
+
+            then {
+                assertAll(
+                    { assert workflow.success },
+                    { assert snapshot(workflow.out.reads).match() },
+                    { assert workflow.out.reads.size() == 2}
+                )
+            }
+        }
+
+        test("fastq_infer_library_orientations - fastq - tsv - meta update") {
+            // Test workflow updates existing meta values with meta values inferred
+            when {
+                workflow {
+                    """
+                    input[0] = Channel.of(
+                       [
+                            [
+                                id: 'test_sample_1',
+                                expt_forward_primer: 'AGCATGTCTAAGGCATATCAGAGCA',
+                                expt_reverse_primer: 'CCACAATGGCCCCTCTGCCAGCTCA',
+                                oligo_library: "${projectDir}/tests/ref/1.csv",
+                                primer_start: 'AAGGCCTT',
+                                primer_end: 'GGCCTTAA',
+                                append_start: 'CCTTAAGG',
+                                append_end:   'TTAAGGCC',
+                                read_transform: 'complement'
+                            ],
+                            file("${projectDir}/tests/sample-data/1.fq.gz", checkIfExists: true)
+                        ]
+                    )
+                    """
+                }
+            }
+
+            then {
+                assertAll(
+                    { assert workflow.success },
+                    { assert snapshot(workflow.out.reads).match() },
+                    { assert workflow.out.reads.size() == 1}
+                )
+            }
+        }
+
+        test("fastq_infer_library_orientations - fastq - tsv - infer failure") {
+            // Test workflow failure with incorrect primers
+            when {
+                workflow {
+                    """
+                    input[0] = Channel.of(
+                       [
+                            [
+                                id: 'test_sample_1',
+                                expt_forward_primer: 'ATTCACGTTATGCTGTCCAATCTCT',
+                                expt_reverse_primer: 'CCCTGGGAAGGTAATTTTAGATTTC',
+                                oligo_library: "${projectDir}/tests/ref/1.csv",
+                            ],
+                            file("${projectDir}/tests/sample-data/1.fq.gz", checkIfExists: true)
+                        ]
+                    )
+                    """
+                }
+            }
+
+            then {
+                assertAll(
+                    { assert workflow.failed }
+                )
+            }
+        }
+
+        test("fastq_infer_library_orientations - fastq - tsv -  1 sample - stub") {
+
+            options "-stub"
+            when {
+                workflow {
+                    """
+                    input[0] = Channel.of(
+                        [
+                            [
+                                id: 'test_sample_1',
+                                expt_forward_primer: 'AGCATGTCTAAGGCATATCAGAGCA',
+                                expt_reverse_primer: 'CCACAATGGCCCCTCTGCCAGCTCA',
+                                oligo_library: "${projectDir}/tests/ref/1.csv"
+                            ],
+                            file("${projectDir}/tests/sample-data/1.fq.gz", checkIfExists: true)
+                        ]
+                    )
+                    """
+                }
+            }
+
+            then {
+                assertAll(
+                    { assert workflow.success },
+                    { assert workflow.out.reads.size() == 1 },
+                    { assert snapshot(workflow.out.reads).match() }
+                )
+            }
+        }
+    }

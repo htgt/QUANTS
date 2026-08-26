@@ -53,8 +53,8 @@ Valid samplesheet fields are in the table below:
 | `primer_end`   | (Optional) Primer sequence to trim from the end of reads. Required if `primer_trimming` is set in global parameters.                                       |
 | `read_transform`| (Optional) Define this to `reverse`, `complement` or `reverse_complement` if transformation is required, else leave empty. |
 | `adapter_path` | (Optional) Path to a FASTA file containing adapter sequences to trim from reads. Required if `adapter_trimming` is set in global parameters.                                   |
-| `expt_forward_primer` | (Optional) Sequence of the forward primer used in the experiment. This will replace `primer_start`, but this change is currently under development. This is accepted in the samplesheet but not used in the pipeline currently.                                    |
-| `expt_reverse_primer` | (Optional) Sequence of the reverse primer used in the experiment. This will replace `primer_end`, but this change is currently under development. This is accepted in the samplesheet but not used in the pipeline currently.                                  |
+| `expt_forward_primer` | (Optional) Sequence of the forward primer used in the experiment. This will replace `primer_start`, but this change is currently under development. This is accepted in the samplesheet and is required if `infer_library_orientations` is set to `True` in global parameters. Infer library orientations is currently in **beta**. |
+| `expt_reverse_primer` | (Optional) Sequence of the reverse primer used in the experiment. This will replace `primer_end`, but this change is currently under development. This is accepted in the samplesheet and is required if `infer_library_orientations` is set to `True` in global parameters. Infer library orientations is currently in **beta**. |
 
 Note that the sample-specific parameters are in relation to the global params (see [configurations](configuration.md#quants-configuration)). Samplesheet fields must be consistent with the global parameters (see configuration), i.e., fields may vary depending on global parameter settings. For example, the samplesheet can only include `oligo_library` values if the global quantification parameter is set to `"pyquest"`.
 
@@ -77,9 +77,14 @@ S06_D7_R1,BBBB,S06_D7_R1_1.fastq.gz,S06_D7_R1_2.fastq.gz,/path/to/meta2.csv,path
 
 ### [BETA/UNDER DEVELOPMENT] Example of future standard production samplesheet (interim format)
 
-Note that this is an interim format intended for use when `infer_library_orientations` is globally set to `True`. The corresponding functionality is still under development and does not yet work as expected; future updates will integrate the module required to infer library orientations into QUANTS.
+Note that this is an interim format intended for use when `infer_library_orientations` is globally set to `True`. The infer library orientations is currently in **beta** and not used in production.
 
-Any values provided in `expt_forward_primer` and `expt_reverse_primer` will not be used in the pipeline at the moment.
+When `infer_library_orientations` is set to `True` values provided in `expt_forward_primer` and `expt_reverse_primer` will used in the pipeline to infer and update the following for a sample
+- primer_start
+- primer_end
+- append_end
+- append_end
+- read_transform
 
 ```csv
 sample,group_id,fastq_1,fastq_2,oligo_library,adapter_path,expt_forward_primer,expt_reverse_primer

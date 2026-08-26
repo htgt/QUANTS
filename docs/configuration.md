@@ -88,11 +88,15 @@
     Directory where intermediate result files are stored
 ```
 
-## [BETA/UNDER DEVELOPMENT] Inferring library orientation options
+## [BETA] Inferring library orientation options
 
-Please note that, while the below parameter option is already available, the module required to infer library orientations has not yet been integrated into QUANTS. Until this functionality is implemented, this parameter should always be set to `False` (default).
+The --infer_library_orientations parameter and its associated functionality are available in QUANTS.
 
+**Please note** that this functionality is currently in **beta** and should be used with caution. The parameter currently defaults to `False`
+
+```
 --infer_library_orientations          [boolean] Define whether the pipeline should infer library orientations.
+```
 
 ## Deprecated Parameters
 

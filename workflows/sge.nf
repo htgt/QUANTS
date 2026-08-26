@@ -27,7 +27,7 @@ if ( input_type_options.contains( params.input_type ) == false ) {
 
 // Temporary check, to be removed when infer_library_orientations has been integrated into QUANTS
 if (params.infer_library_orientations) {
-    printErr("WARNING: infer_library_orientations is globally set to True but the module is not yet available")
+    printErr("WARNING: infer_library_orientations is globally set to True but the workflow is under development")
 }
 
 // Check downsampling options
@@ -212,6 +212,8 @@ include { SEQUENCING_QC as RAW_SEQUENCING_QC;
         } from '../subworkflows/local/sequencing_qc'
 include { COLLATE_CUTADAPT_JSONS } from '../modules/local/cutadapt_json_collation/main.nf'
 
+include { FASTQ_INFER_LIBRARY_ORIENTATIONS } from '../subworkflows/local/fastq_infer_library_orientations/main.nf'
+
 // Installed from nf-core but modified substantially
 include { SEQTK_SAMPLE } from '../modules/local/seqtk/sample/main'
 // editorconfig-checker-disable
@@ -253,12 +255,22 @@ workflow SGE {
         //
         CRAM_TO_FASTQ(INPUT_CHECK.out.seq_data)
         ch_raw_reads = CRAM_TO_FASTQ.out.reads
-        ch_adapter_trim = ch_raw_reads
         ch_software_versions = ch_software_versions.mix(CRAM_TO_FASTQ.out.versions)
     } else {
         ch_raw_reads = INPUT_CHECK.out.seq_data
-        ch_adapter_trim = INPUT_CHECK.out.seq_data
     }
+
+    //  SUBWORKFLOW: Infer library orientations
+    //  Updates read metadata for downstream processing
+    if (params.infer_library_orientations) {
+        FASTQ_INFER_LIBRARY_ORIENTATIONS(ch_raw_reads)
+        ch_raw_reads = FASTQ_INFER_LIBRARY_ORIENTATIONS.out.reads
+        // Versions not added as versions done as topics in module.
+        // This not compatible with version style in use in pipeline.
+    }
+
+    // adapter trimming (and other downstream processes) see updated meta
+    ch_adapter_trim = ch_raw_reads
 
     //
     // SUBWORKFLOW: Downsample input files

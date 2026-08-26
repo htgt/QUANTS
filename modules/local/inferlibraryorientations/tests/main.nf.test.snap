@@ -54,7 +54,7 @@
                             "expt_forward_primer": "ATTCACGTTATGCTGTCCAATCTCT",
                             "expt_reverse_primer": "CCCTGGGAAGGTAATTTTAGATTTC"
                         },
-                        "test_sample_library_orientations.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_sample_library_orientations.tsv:md5,b27fdec28debfeeaeba8cddf52df592e"
                     ]
                 ],
                 "1": [
@@ -71,7 +71,7 @@
                             "expt_forward_primer": "ATTCACGTTATGCTGTCCAATCTCT",
                             "expt_reverse_primer": "CCCTGGGAAGGTAATTTTAGATTTC"
                         },
-                        "test_sample_library_orientations.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                        "test_sample_library_orientations.tsv:md5,b27fdec28debfeeaeba8cddf52df592e"
                     ]
                 ],
                 "versions_infer_library_orientations": [
@@ -87,6 +87,6 @@
             "nf-test": "0.9.2",
             "nextflow": "25.10.4"
         },
-        "timestamp": "2026-07-22T13:13:21.299458903"
+        "timestamp": "2026-08-10T10:46:45.648401836"
     }
 }
