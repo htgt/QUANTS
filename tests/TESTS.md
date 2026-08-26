@@ -4,7 +4,11 @@ The `test/` directory contains end-to-end tests for the quants pipeline using th
 
 ## End-to-end datasets and files
 
-Having retrieved data and placed it in the ref and sample-data folders, tests can be run with `nf-test test tests/test[#].main.nf.test`
+Having retrieved data and placed it in the ref and sample-data folders, tests can be run with the following command:
+```bash
+NXF_VER=23.10.0 nf-test test --profile docker
+```
+Note that the `NXF_VER` is expected to changed in future releases of the pipeline, and should be updated to the version of Nextflow that is being used to run the tests.
 
 Make sure you download/clone `quants-data` from this repository `https://gitlab.internal.sanger.ac.uk/sci/quants-data` into your chosen directory on your local machine. Before running the end-to-end tests copy the contents `ref/` and `sample-data/` directories from your local `quants-data` repository into `tests/ref` and `tests/sample-data` respectively, overwriting existing contents.
 
