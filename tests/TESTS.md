@@ -11,16 +11,7 @@ NXF_VER=23.10.0 nf-test test --profile docker
 
 If you are running individual tests, you can run them with the following command:
 ```bash
-NXF_VER=23.10.0 nf-test test tests/test[n].main.nf.test --profile docker
-```
-
-If you are running nf-tests on the Farm cluster (make sure you are running on a worker node instead of the head node), follow the commands below:
-```bash
-module load ISG/singularity/3.11.4
-module load HGI/common/nextflow/23.10.0
-module load cellgen/nf-test/0.9.2
-
-nf-test test --profile singularity
+NXF_VER=23.10.0 nf-test test tests/test[n].main.nf.test --profile <docker|singularity>
 ```
 
 Note that the `NXF_VER` is expected to changed in future releases of the pipeline, and should be updated to the version of Nextflow that is being used to run the tests.
@@ -86,13 +77,29 @@ To confirm that you've retrieved the correct data, and named it appropriately if
 
 Individual module tests are located in each module's tests directory, i.e. `modules/<local-or-nf-core>/<module-name>/tests/`.
 
-Module tests should be run locally when developing or modifying a module to confirm that the module behaves as expected. Module tests can be run with `nf-test test modules/<local-or-nf-core>/<module-name>/tests/main.nf.test`.
+Module tests should be run locally when developing or modifying a module to confirm that the module behaves as expected. Module tests can be run with the following command:
+```bash
+nf-test test modules --profile <docker|singularity>
+```
+
+Running individual module tests can be done with the following command:
+```bash
+nf-test test modules/<local-or-nf-core>/<module-name>/tests/main.nf.test
+```
 
 # Subworkflow tests
 
 Tests for local subworkflow are located in each subworkflows' tests directory, i.e. `subworkflows/local/<subworkflow-name>/tests/`.
 
-Subworkflow tests should be run locally when developing or modifying a subworkflow to confirm that the subworkflow behaves as expected. Subworkflow tests can be run with `nf-test test subworkflows/local/<subworkflow-name>/tests/main.nf.test`.
+Subworkflow tests should be run locally when developing or modifying a subworkflow to confirm that the subworkflow behaves as expected. Subworkflow tests can be run with the following command:
+```bash
+nf-test test subworkflows --profile <docker|singularity>
+```
+
+Running individual subworkflow tests can be done with the following command:
+```bash
+nf-test test subworkflows/local/<subworkflow-name>/tests/main.nf.test --profile <docker|singularity>
+```
 
 # Overview of the QUANTS tests: test types, directories and purpose
 
