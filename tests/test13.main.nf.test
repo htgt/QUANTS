@@ -3,15 +3,17 @@ nextflow_pipeline {
     name "Test main.nf exits when given invalid downsampling parameters"
     script "main.nf"
 
-    test("Should fail when downsampling_size is not an integer") {
+    test("Should fail when downsampling is enabled and downsampling_size is not an integer") {
+
+        def resolvedSheet = ManifestResolver.resolveSheet(projectDir, "raw-fastq-se.csv")
 
         when {
             params {
-                input = "${projectDir}/tests/manifests/raw-fastq-se.csv"
+                input = "${resolvedSheet}"
                 single_end = true
                 input_type = "fastq"
                 downsampling = true
-                downsampling_size = "1000000"
+                downsampling_size = "not_an_integer"
                 downsampling_seed = 413
             }
         }

@@ -1,0 +1,4 @@
+sample,fastq_1,fastq_2,primer_start,primer_end,adapter_path
+HG_CH_1_4_A,tests/sample-data/2.fq.gz,,TCTACATTTTATTTGCACTACTTGAAGG,ATACTTTTAAGTTCTGGGGTCATGTG,tests/ref/adapter_pe_test5.fa
+HG_CH_1_4_B,tests/sample-data/3.fq.gz,,TCTACATTTTATTTGCACTACTTGAAGG,ATACTTTTAAGTTCTGGGGTCATGTG,tests/ref/adapter_pe_test5.fa
+HG_CH_1_4_C,tests/sample-data/4.fq.gz,,TCTACATTTTATTTGCACTACTTGAAGG,ATACTTTTAAGTTCTGGGGTCATGTG,tests/ref/adapter_pe_test5.fa

@@ -4,7 +4,7 @@ nextflow_process {
     script "modules/local/seqtk/sample/main.nf"
     process "SEQTK_SAMPLE"
 
-    test("Validate single-end downsampling") {
+    test("Should successfully downsample single-end and paired-end reads with SEQTK_SAMPLE") {
         when {
             params {
                 downsampling = true

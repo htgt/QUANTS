@@ -1,2 +1,2 @@
-sample,fastq_1,fastq_2
-test_sample,../../../tests/sample-data/1.fq.gz,
+sample,fastq_1,fastq_2,oligo_library,append_start,append_end,primer_start,primer_end,adapter_path
+test_sample,tests/sample-data/1.fq.gz,,tests/ref/1.csv,AGCATGTCTAAGGCATATCAGAGCA,TGAGCTGGCAGAGGGGCCATTGTGG,AGCATGTCTAAGGCATATCAGAGCA,TGAGCTGGCAGAGGGGCCATTGTGG,tests/ref/adapter_illumina_test3.fa

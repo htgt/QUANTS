@@ -6,6 +6,41 @@ The `test/` directory contains end-to-end tests for the quants pipeline using th
 
 Having retrieved data and placed it in the ref and sample-data folders, tests can be run with `nf-test test tests/test[#].main.nf.test`
 
+Make sure you download/clone `quants-data` from this repository `https://gitlab.internal.sanger.ac.uk/sci/quants-data` into your chosen directory on your local machine. Before running the end-to-end tests copy the contents `ref/` and `sample-data/` directories from your local `quants-data` repository into `tests/ref` and `tests/sample-data` respectively, overwriting existing contents.
+
+**Note:** The `quants-data` repository is for internal Sanger use only.
+
+Once copied and overwritten, `tests` directory structure should look like the following:
+```bash
+tests/
+├── TESTS.md
+├── lib
+├── manifests
+├── modules
+├── modules-testdata
+├── nextflow.config
+├── quants-data
+├── ref
+├── ref-checksums
+├── sample-data
+├── sample-data-checksums
+├── test1.main.nf.test
+├── test10.main.nf.test
+├── test11.main.nf.test
+├── test12.main.nf.test
+├── test13.main.nf.test
+├── test14.main.nf.test
+├── test15.main.nf.test
+├── test2.main.nf.test
+├── test3.main.nf.test
+├── test4.main.nf.test
+├── test5.main.nf.test
+├── test6.main.nf.test
+├── test7.main.nf.test
+├── test8.main.nf.test
+└── test9.main.nf.test
+```
+
 To confirm that you've retrieved the correct data, and named it appropriately if necessary, run `diff -q <(md5sum tests/sample-data/*) tests/sample-data-checksums` and `diff -q <(md5sum tests/ref/*) tests/ref-checksums`. If the commands return nothing (exit code 0), the data is as expected. Note that if you do not run this command from the top level directory of the repo, it will fail, as md5sum will output relative paths along with checksums.
 
 ## End-to-end test parameters
@@ -39,3 +74,39 @@ Module tests should be run locally when developing or modifying a module to conf
 Tests for local subworkflow are located in each subworkflows' tests directory, i.e. `subworkflows/local/<subworkflow-name>/tests/`.
 
 Subworkflow tests should be run locally when developing or modifying a subworkflow to confirm that the subworkflow behaves as expected. Subworkflow tests can be run with `nf-test test subworkflows/local/<subworkflow-name>/tests/main.nf.test`.
+
+# Overview of the QUANTS tests: test types, directories and purpose
+
+### nf-tests
+```bash
+# Module level nf-test
+modules/local/*
+modules/nf-core/*
+tests/modules/*
+
+# End to end tests
+tests/test1.main.nf.test
+tests/test2.main.nf.test
+tests/test3.main.nf.test
+tests/test4.main.nf.test
+tests/test5.main.nf.test
+tests/test6.main.nf.test
+tests/test7.main.nf.test
+tests/test8.main.nf.test
+tests/test9.main.nf.test
+tests/test10.main.nf.test
+tests/test11.main.nf.test
+tests/test12.main.nf.test
+tests/test13.main.nf.test
+tests/test14.main.nf.test
+tests/test15.main.nf.test
+```
+
+### Python tests
+
+```bash
+bin/manifest_transformer/tests/*
+bin/infer_library_orientations/tests/*
+bin/pyquest_library_converter/tests/*
+bin/tests/*
+```
