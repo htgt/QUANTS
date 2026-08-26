@@ -8,6 +8,21 @@ Having retrieved data and placed it in the ref and sample-data folders, tests ca
 ```bash
 NXF_VER=23.10.0 nf-test test --profile docker
 ```
+
+If you are running individual tests, you can run them with the following command:
+```bash
+NXF_VER=23.10.0 nf-test test tests/test[n].main.nf.test --profile docker
+```
+
+If you are running nf-tests on the Farm cluster (make sure you are running on a worker node instead of the head node), follow the commands below:
+```bash
+module load ISG/singularity/3.11.4
+module load HGI/common/nextflow/23.10.0
+module load cellgen/nf-test/0.9.2
+
+nf-test test --profile singularity
+```
+
 Note that the `NXF_VER` is expected to changed in future releases of the pipeline, and should be updated to the version of Nextflow that is being used to run the tests.
 
 Make sure you download/clone `quants-data` from this repository `https://gitlab.internal.sanger.ac.uk/sci/quants-data` into your chosen directory on your local machine. Before running the end-to-end tests copy the contents `ref/` and `sample-data/` directories from your local `quants-data` repository into `tests/ref` and `tests/sample-data` respectively, overwriting existing contents.
