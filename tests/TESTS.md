@@ -84,6 +84,9 @@ modules/local/*
 modules/nf-core/*
 tests/modules/*
 
+# Subworkflow level nf-test
+subworkflows/local/*/tests
+
 # End to end tests
 tests/test1.main.nf.test
 tests/test2.main.nf.test
