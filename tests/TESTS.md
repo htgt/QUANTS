@@ -6,7 +6,7 @@ The `test/` directory contains end-to-end tests for the quants pipeline using th
 
 Having retrieved data and placed it in the ref and sample-data folders, tests can be run with the following command:
 ```bash
-NXF_VER=23.10.0 nf-test test --profile docker
+NXF_VER=23.10.0 nf-test test --profile <docker|singularity>
 ```
 
 If you are running individual tests, you can run them with the following command:
@@ -84,7 +84,7 @@ nf-test test modules --profile <docker|singularity>
 
 Running individual module tests can be done with the following command:
 ```bash
-nf-test test modules/<local-or-nf-core>/<module-name>/tests/main.nf.test
+nf-test test modules/<local-or-nf-core>/<module-name>/tests/main.nf.test --profile <docker|singularity>
 ```
 
 # Subworkflow tests
