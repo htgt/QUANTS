@@ -75,7 +75,7 @@ To confirm that you've retrieved the correct data, and named it appropriately if
 
 # Module tests
 
-Individual module tests are located in each module's tests directory, i.e. `modules/<local-or-nf-core>/<module-name>/tests/`.
+Individual module tests are located in each module's tests directory, i.e. `modules/<local|nf-core>/<module-name>/tests/`.
 
 Module tests should be run locally when developing or modifying a module to confirm that the module behaves as expected. Module tests can be run with the following command:
 ```bash
@@ -84,7 +84,7 @@ nf-test test modules --profile <docker|singularity>
 
 Running individual module tests can be done with the following command:
 ```bash
-nf-test test modules/<local-or-nf-core>/<module-name>/tests/main.nf.test --profile <docker|singularity>
+nf-test test modules/<local|nf-core>/<module-name>/tests/main.nf.test --profile <docker|singularity>
 ```
 
 # Subworkflow tests
